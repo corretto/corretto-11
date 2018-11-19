@@ -1,0 +1,365 @@
+#
+# Copyright (c) 2014, 2018, Oracle and/or its affiliates. All rights reserved.
+# DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+#
+# This code is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public License version 2 only, as
+# published by the Free Software Foundation.  Oracle designates this
+# particular file as subject to the "Classpath" exception as provided
+# by Oracle in the LICENSE file that accompanied this code.
+#
+# This code is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+# version 2 for more details (a copy is included in the LICENSE file that
+# accompanied this code).
+#
+# You should have received a copy of the GNU General Public License version
+# 2 along with this work; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+#
+# Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
+# or visit www.oracle.com if you need additional information or have any
+# questions.
+#
+
+default: all
+
+include $(SPEC)
+include MakeBase.gmk
+include Modules.gmk
+
+TOOL_TARGETS :=
+JDK_TARGETS :=
+JRE_TARGETS :=
+
+# Hook to include the corresponding custom file, if present.
+$(eval $(call IncludeCustomExtension, Images-pre.gmk))
+
+############################################################################
+
+# All modules for the current target platform.
+ALL_MODULES := $(call FindAllModules)
+
+$(eval $(call ReadImportMetaData))
+
+JRE_MODULES += $(filter $(ALL_MODULES), $(BOOT_MODULES) \
+    $(PLATFORM_MODULES) $(JRE_TOOL_MODULES))
+JDK_MODULES += $(ALL_MODULES)
+
+JRE_MODULES_LIST := $(call CommaList, $(JRE_MODULES))
+JDK_MODULES_LIST := $(call CommaList, $(JDK_MODULES))
+
+################################################################################
+
+BASE_RELEASE_FILE := $(JDK_OUTPUTDIR)/release
+
+JMODS := $(wildcard $(IMAGES_OUTPUTDIR)/jmods/*.jmod)
+
+# Use this file inside the image as target for make rule
+JIMAGE_TARGET_FILE := bin/java$(EXE_SUFFIX)
+
+JLINK_ORDER_RESOURCES := **module-info.class
+JLINK_JLI_CLASSES :=
+ifeq ($(ENABLE_GENERATE_CLASSLIST), true)
+  JLINK_ORDER_RESOURCES += @$(SUPPORT_OUTPUTDIR)/link_opt/classlist
+  JLINK_JLI_CLASSES := --generate-jli-classes=@$(SUPPORT_OUTPUTDIR)/link_opt/default_jli_trace.txt
+endif
+JLINK_ORDER_RESOURCES += \
+    /java.base/java/** \
+    /java.base/jdk/** \
+    /java.base/sun/** \
+    /java.base/com/** \
+    /jdk.localedata/** \
+    #
+
+JLINK_TOOL := $(JLINK) -J-Djlink.debug=true \
+    --module-path $(IMAGES_OUTPUTDIR)/jmods \
+    --endian $(OPENJDK_TARGET_CPU_ENDIAN) \
+    --release-info $(BASE_RELEASE_FILE) \
+    --order-resources=$(call CommaList, $(JLINK_ORDER_RESOURCES)) \
+    --dedup-legal-notices=error-if-not-same-content \
+    $(JLINK_JLI_CLASSES) \
+    #
+
+JLINK_JRE_EXTRA_OPTS := --no-man-pages --no-header-files --strip-debug
+
+ifeq ($(JLINK_KEEP_PACKAGED_MODULES), true)
+  JLINK_JDK_EXTRA_OPTS := --keep-packaged-modules $(JDK_IMAGE_DIR)/jmods
+endif
+
+$(JDK_IMAGE_DIR)/$(JIMAGE_TARGET_FILE): $(JMODS) \
+    $(call DependOnVariable, JDK_MODULES_LIST) $(BASE_RELEASE_FILE)
+	$(ECHO) Creating jdk image
+	$(RM) -r $(JDK_IMAGE_DIR)
+	$(call ExecuteWithLog, $(SUPPORT_OUTPUTDIR)/images/jdk, \
+	    $(JLINK_TOOL) --add-modules $(JDK_MODULES_LIST) \
+	        $(JLINK_JDK_EXTRA_OPTS) \
+	        --output $(JDK_IMAGE_DIR) \
+	)
+	$(TOUCH) $@
+
+$(JRE_IMAGE_DIR)/$(JIMAGE_TARGET_FILE): $(JMODS) \
+    $(call DependOnVariable, JRE_MODULES_LIST) $(BASE_RELEASE_FILE)
+	$(ECHO) Creating legacy jre image
+	$(RM) -r $(JRE_IMAGE_DIR)
+	$(call ExecuteWithLog, $(SUPPORT_OUTPUTDIR)/images/jre, \
+	    $(JLINK_TOOL) --add-modules $(JRE_MODULES_LIST) \
+	        $(JLINK_JRE_EXTRA_OPTS) \
+	        --output $(JRE_IMAGE_DIR) \
+	)
+	$(TOUCH) $@
+
+TOOL_JRE_TARGETS := $(JRE_IMAGE_DIR)/$(JIMAGE_TARGET_FILE)
+TOOL_JDK_TARGETS := $(JDK_IMAGE_DIR)/$(JIMAGE_TARGET_FILE)
+
+################################################################################
+# /man dir
+#
+# All variables in this section are assigned with simple =, without :, to enable
+# more selective overriding from the custom version of this file.
+#
+# Avoid evaluating this whole section on windows for speed and stability
+ifneq ($(OPENJDK_TARGET_OS), windows)
+  JRE_MAN_PAGES += \
+      java.1 \
+      jjs.1 \
+      keytool.1 \
+      orbd.1 \
+      pack200.1 \
+      rmid.1 \
+      rmiregistry.1 \
+      servertool.1 \
+      unpack200.1
+
+  JDK_MAN_PAGES += \
+      $(JRE_MAN_PAGES) \
+      idlj.1 \
+      jar.1 \
+      jarsigner.1 \
+      javac.1 \
+      javadoc.1 \
+      javap.1 \
+      jconsole.1 \
+      jcmd.1 \
+      jdb.1 \
+      jdeps.1 \
+      jinfo.1 \
+      jmap.1 \
+      jps.1 \
+      jrunscript.1 \
+      jstack.1 \
+      jstat.1 \
+      jstatd.1 \
+      rmic.1 \
+      serialver.1
+
+  # This variable is potentially overridden in the closed makefile.
+  MAN_SRC_BASEDIR ?= $(TOPDIR)/src
+
+  ifeq ($(OPENJDK_TARGET_OS), linux)
+    MAN_SRC_DIR = $(MAN_SRC_BASEDIR)/linux/doc
+    MAN1_SUBDIR = man
+  endif
+  ifeq ($(OPENJDK_TARGET_OS), solaris)
+    MAN_SRC_DIR = $(MAN_SRC_BASEDIR)/solaris/doc
+    MAN1_SUBDIR = sun/man/man1
+  endif
+  ifeq ($(OPENJDK_TARGET_OS), macosx)
+    MAN_SRC_DIR = $(MAN_SRC_BASEDIR)/bsd/doc
+    MAN1_SUBDIR = man
+  endif
+
+  $(JRE_IMAGE_DIR)/man/man1/%: $(MAN_SRC_DIR)/$(MAN1_SUBDIR)/%
+	$(call LogInfo, Copying $(patsubst $(OUTPUTDIR)/%,%,$@))
+	$(install-file)
+
+  $(JDK_IMAGE_DIR)/man/man1/%: $(MAN_SRC_DIR)/$(MAN1_SUBDIR)/%
+	$(call LogInfo, Copying $(patsubst $(OUTPUTDIR)/%,%,$@))
+	$(install-file)
+
+  $(JRE_IMAGE_DIR)/man/ja_JP.UTF-8/man1/%: $(MAN_SRC_DIR)/$(MAN1_SUBDIR)/ja/%
+	$(call LogInfo, Copying $(patsubst $(OUTPUTDIR)/%,%,$@))
+	$(install-file)
+
+  $(JDK_IMAGE_DIR)/man/ja_JP.UTF-8/man1/%: $(MAN_SRC_DIR)/$(MAN1_SUBDIR)/ja/%
+	$(call LogInfo, Copying $(patsubst $(OUTPUTDIR)/%,%,$@))
+	$(install-file)
+
+  ifeq ($(OPENJDK_TARGET_OS), solaris)
+    $(JRE_IMAGE_DIR)/man/ja/man1/%: $(MAN_SRC_DIR)/$(MAN1_SUBDIR)/ja/%
+	$(call LogInfo, Converting $(patsubst $(OUTPUTDIR)/%,%,$@))
+	$(install-file)
+
+    $(JDK_IMAGE_DIR)/man/ja/man1/%: $(MAN_SRC_DIR)/$(MAN1_SUBDIR)/ja/%
+	$(call LogInfo, Converting $(patsubst $(OUTPUTDIR)/%,%,$@))
+	$(install-file)
+  endif
+
+  ifneq ($(findstring $(OPENJDK_TARGET_OS), linux macosx), )
+    $(JRE_IMAGE_DIR)/man/ja:
+	$(call LogInfo, Creating $(patsubst $(OUTPUTDIR)/%,%,$@))
+	$(CD) $(@D) && $(RM) ja && $(LN) -s ja_JP.UTF-8 ja
+
+    $(JDK_IMAGE_DIR)/man/ja:
+	$(call LogInfo, Creating $(patsubst $(OUTPUTDIR)/%,%,$@))
+	$(CD) $(@D) && $(RM) ja && $(LN) -s ja_JP.UTF-8 ja
+  endif
+
+  ifeq ($(OPENJDK_TARGET_OS), solaris)
+    JRE_MAN_PAGE_LIST = $(addprefix $(JRE_IMAGE_DIR)/man/man1/, $(JRE_MAN_PAGES)) \
+        $(addprefix $(JRE_IMAGE_DIR)/man/ja/man1/, $(JRE_MAN_PAGES)) \
+        $(addprefix $(JRE_IMAGE_DIR)/man/ja_JP.UTF-8/man1/, $(JRE_MAN_PAGES)) \
+        $(addprefix $(JRE_IMAGE_DIR)/man/ja_JP.PCK/man1/, $(JRE_MAN_PAGES))
+
+    JDK_MAN_PAGE_LIST = $(addprefix $(JDK_IMAGE_DIR)/man/man1/, $(JDK_MAN_PAGES)) \
+        $(addprefix $(JDK_IMAGE_DIR)/man/ja/man1/, $(JDK_MAN_PAGES)) \
+        $(addprefix $(JDK_IMAGE_DIR)/man/ja_JP.UTF-8/man1/, $(JDK_MAN_PAGES)) \
+        $(addprefix $(JDK_IMAGE_DIR)/man/ja_JP.PCK/man1/, $(JDK_MAN_PAGES))
+  endif
+
+  ifneq ($(findstring $(OPENJDK_TARGET_OS), linux macosx), )
+    JRE_MAN_PAGE_LIST = $(addprefix $(JRE_IMAGE_DIR)/man/man1/, $(JRE_MAN_PAGES)) \
+        $(addprefix $(JRE_IMAGE_DIR)/man/ja_JP.UTF-8/man1/, $(JRE_MAN_PAGES)) \
+        $(JRE_IMAGE_DIR)/man/ja
+
+    JDK_MAN_PAGE_LIST = $(addprefix $(JDK_IMAGE_DIR)/man/man1/, $(JDK_MAN_PAGES)) \
+        $(addprefix $(JDK_IMAGE_DIR)/man/ja_JP.UTF-8/man1/, $(JDK_MAN_PAGES)) \
+        $(JDK_IMAGE_DIR)/man/ja
+  endif
+
+  JRE_TARGETS += $(JRE_MAN_PAGE_LIST)
+  JDK_TARGETS += $(JDK_MAN_PAGE_LIST)
+endif # Windows
+
+################################################################################
+# src.zip
+
+$(JDK_IMAGE_DIR)/lib/src.zip: $(SUPPORT_OUTPUTDIR)/src.zip
+	$(call LogInfo, Copying $(patsubst $(OUTPUTDIR)/%,%,$@))
+	$(install-file)
+
+JDK_TARGETS += $(JDK_IMAGE_DIR)/lib/src.zip
+
+################################################################################
+# /demo dir
+# Avoid doing the expensive find unless called with "jdk" as target.
+ifneq ($(filter jdk, $(MAKECMDGOALS)), )
+
+  DEMO_FILES := \
+      $(if $(wildcard $(SUPPORT_OUTPUTDIR)/demos/image), \
+        $(shell $(FIND) $(SUPPORT_OUTPUTDIR)/demos/image \
+            -type f -a ! \( -name "_the*" -o -name "javac_state" \) ) \
+      )
+
+  ifeq ($(ZIP_EXTERNAL_DEBUG_SYMBOLS), true)
+    ifeq ($(OPENJDK_TARGET_OS), macosx)
+      DEMO_FILES := $(call not-containing, .dSYM, $(DEMO_FILES))
+    else
+      DEMO_FILES := $(filter-out %.debuginfo %.pdb %.map, $(DEMO_FILES))
+    endif
+  endif
+
+  $(eval $(call SetupCopyFiles, JDK_COPY_DEMOS, \
+      SRC := $(SUPPORT_OUTPUTDIR)/demos/image, \
+      DEST := $(JDK_IMAGE_DIR)/demo, \
+      FILES := $(DEMO_FILES), \
+  ))
+
+  JDK_TARGETS += $(JDK_COPY_DEMOS)
+endif
+
+################################################################################
+# Code coverage data files
+
+ifeq ($(GCOV_ENABLED), true)
+
+  GCOV_FIND_EXPR := -type f -name "*.gcno"
+
+  $(eval $(call SetupCopyFiles,COPY_HOTSPOT_GCOV_GCNO, \
+      SRC := $(OUTPUTDIR), \
+      DEST := $(SYMBOLS_IMAGE_DIR)/gcov, \
+      FILES := $(shell $(FIND) $(HOTSPOT_OUTPUTDIR) $(GCOV_FIND_EXPR))))
+
+  SYMBOLS_TARGETS += $(COPY_HOTSPOT_GCOV_GCNO)
+
+  $(eval $(call SetupCopyFiles,COPY_JDK_GCOV_GCNO, \
+      SRC := $(OUTPUTDIR), \
+      DEST := $(SYMBOLS_IMAGE_DIR)/gcov, \
+      FILES := $(shell $(FIND) $(SUPPORT_OUTPUTDIR)/native $(GCOV_FIND_EXPR))))
+
+  SYMBOLS_TARGETS += $(COPY_JDK_GCOV_GCNO)
+
+endif
+
+################################################################################
+# Debug symbols
+# Since debug symbols are not included in the jmod files, they need to be copied
+# in manually after generating the images.
+
+ALL_JDK_MODULES := $(JDK_MODULES)
+ALL_JRE_MODULES := $(sort $(JRE_MODULES), $(foreach m, $(JRE_MODULES), \
+    $(call FindTransitiveDepsForModule, $m)))
+
+ifeq ($(OPENJDK_TARGET_OS), windows)
+  LIBS_TARGET_SUBDIR := bin
+else
+  LIBS_TARGET_SUBDIR := lib
+endif
+
+# Param 1 - dir to find debuginfo files in
+FindDebuginfoFiles = \
+    $(wildcard $(addprefix $1/*, $(DEBUGINFO_SUFFIXES)) \
+        $(addprefix $1/*/*, $(DEBUGINFO_SUFFIXES)) \
+        $(addprefix $1/*/*/*, $(DEBUGINFO_SUFFIXES)))
+
+# Pick the correct debug info files to copy, either zipped or not.
+ifeq ($(ZIP_EXTERNAL_DEBUG_SYMBOLS), true)
+  DEBUGINFO_SUFFIXES += .diz
+else
+  DEBUGINFO_SUFFIXES := .debuginfo .pdb .map
+  # On Macosx, if debug symbols have not been zipped, find all files inside *.dSYM
+  # dirs.
+  ifeq ($(OPENJDK_TARGET_OS), macosx)
+    $(eval $(call FillCacheFind, \
+        $(SUPPORT_OUTPUTDIR)/modules_cmds $(SUPPORT_OUTPUTDIR)/modules_libs))
+    FindDebuginfoFiles = \
+        $(if $(wildcard $1), $(call containing, .dSYM/, $(call CacheFind, $1)))
+  endif
+endif
+
+# Param 1 - either JDK or JRE
+SetupCopyDebuginfo = \
+    $(foreach m, $(ALL_$1_MODULES), \
+      $(eval $(call SetupCopyFiles, COPY_$1_LIBS_DEBUGINFO_$m, \
+          SRC := $(SUPPORT_OUTPUTDIR)/modules_libs/$m, \
+          DEST := $($1_IMAGE_DIR)/$(LIBS_TARGET_SUBDIR), \
+          FILES := $(call FindDebuginfoFiles, \
+              $(SUPPORT_OUTPUTDIR)/modules_libs/$m), \
+      )) \
+      $(eval $1_TARGETS += $$(COPY_$1_LIBS_DEBUGINFO_$m)) \
+    )
+
+# No space before argument to avoid having to put $(strip ) everywhere in
+# implementation above.
+$(call SetupCopyDebuginfo,JDK)
+$(call SetupCopyDebuginfo,JRE)
+
+################################################################################
+
+# Include custom post hook here to make it possible to augment the target lists
+# before actual target prerequisites are declared.
+$(eval $(call IncludeCustomExtension, Images-post.gmk))
+
+################################################################################
+
+$(JRE_TARGETS): $(TOOL_JRE_TARGETS)
+$(JDK_TARGETS): $(TOOL_JDK_TARGETS)
+
+jdk: $(TOOL_JDK_TARGETS) $(JDK_TARGETS)
+jre: $(TOOL_JRE_TARGETS) $(JRE_TARGETS)
+symbols: $(SYMBOLS_TARGETS)
+
+all: jdk jre symbols
+
+.PHONY: default all jdk jre symbols

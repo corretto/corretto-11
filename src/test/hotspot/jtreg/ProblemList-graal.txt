@@ -1,0 +1,186 @@
+#
+# Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
+# DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+#
+# This code is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public License version 2 only, as
+# published by the Free Software Foundation.
+#
+# This code is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+# version 2 for more details (a copy is included in the LICENSE file that
+# accompanied this code).
+#
+# You should have received a copy of the GNU General Public License version
+# 2 along with this work; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+#
+# Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
+# or visit www.oracle.com if you need additional information or have any
+# questions.
+#
+
+#############################################################################
+#
+# List of quarantined tests for testing in Graal JIT mode.
+#
+#############################################################################
+
+compiler/c2/cr7200264/TestSSE2IntVect.java                      8194958   generic-all
+compiler/c2/cr7200264/TestSSE4IntVect.java                      8194958   generic-all
+
+compiler/ciReplay/TestServerVM.java                             8181747   generic-all
+compiler/ciReplay/TestVMNoCompLevel.java                        8181747   generic-all
+
+compiler/compilercontrol/commandfile/LogTest.java               8181753   generic-all
+compiler/compilercontrol/commands/LogTest.java                  8181753   generic-all
+compiler/compilercontrol/directives/ExcludeTest.java            8181753   generic-all
+compiler/compilercontrol/jcmd/AddExcludeTest.java               8181753   generic-all
+compiler/compilercontrol/jcmd/AddLogTest.java                   8181753   generic-all
+compiler/compilercontrol/mixed/RandomValidCommandsTest.java     8181753   generic-all
+
+compiler/intrinsics/mathexact/LongMulOverflowTest.java          8196568   generic-all
+
+compiler/jvmci/SecurityRestrictionsTest.java                    8181837   generic-all
+
+compiler/jvmci/TestValidateModules.java                         8194942   generic-all
+gc/arguments/TestVerifyBeforeAndAfterGCFlags.java               8194942   generic-all
+
+compiler/unsafe/UnsafeGetConstantField.java                     8181833   generic-all
+compiler/unsafe/UnsafeGetStableArrayElement.java                8181833   generic-all
+compiler/unsafe/UnsafeOffHeapBooleanTest.java                   8181833   generic-all
+compiler/unsafe/UnsafeOnHeapBooleanTest.java                    8181833   generic-all
+
+compiler/whitebox/ClearMethodStateTest.java                     8181831   generic-all
+compiler/whitebox/EnqueueMethodForCompilationTest.java          8181831   generic-all
+compiler/whitebox/MakeMethodNotCompilableTest.java              8181831   generic-all
+
+gc/arguments/TestNewSizeFlags.java                              8196611   generic-all
+gc/g1/TestConcurrentSystemGC.java                               8196611   generic-all
+vmTestbase/gc/lock/malloc/malloclock03/TestDescription.java     8196611   macosx-all
+
+gc/g1/ihop/TestIHOPErgo.java                                    8191048   generic-all
+gc/g1/plab/TestPLABEvacuationFailure.java                       8191048   generic-all
+gc/g1/plab/TestPLABPromotion.java                               8191048   generic-all
+gc/g1/plab/TestPLABResize.java                                  8191048   generic-all
+
+gc/TestNUMAPageSize.java                                        8194949   generic-all
+
+serviceability/jvmti/GetModulesInfo/JvmtiGetAllModulesTest.java 8195156   generic-all
+
+compiler/compilercontrol/directives/LogTest.java                8181753   generic-all
+
+gc/g1/ihop/TestIHOPStatic.java                                  8199486   generic-all
+
+gc/parallel/TestPrintGCDetailsVerbose.java                      8200186   macosx-all
+
+compiler/jvmci/compilerToVM/ReprofileTest.java                  8201333   generic-all
+
+compiler/tiered/LevelTransitionTest.java                         8202124   generic-all
+compiler/tiered/TieredLevelsTest.java                            8202124   generic-all
+compiler/tiered/NonTieredLevelsTest.java                         8202124   generic-all
+compiler/intrinsics/mathexact/sanity/IncrementExactIntTest.java  8202124   generic-all
+compiler/intrinsics/mathexact/sanity/NegateExactIntTest.java     8202124   generic-all
+compiler/intrinsics/mathexact/sanity/AddExactLongTest.java       8202124   generic-all
+compiler/intrinsics/mathexact/sanity/SubtractExactLongTest.java  8202124   generic-all
+compiler/intrinsics/mathexact/sanity/AddExactIntTest.java        8202124   generic-all
+compiler/intrinsics/mathexact/sanity/NegateExactLongTest.java    8202124   generic-all
+compiler/intrinsics/mathexact/sanity/DecrementExactLongTest.java 8202124   generic-all
+compiler/intrinsics/mathexact/sanity/DecrementExactIntTest.java  8202124   generic-all
+compiler/intrinsics/mathexact/sanity/IncrementExactLongTest.java 8202124   generic-all
+compiler/intrinsics/mathexact/sanity/SubtractExactIntTest.java   8202124   generic-all
+compiler/intrinsics/mathexact/sanity/MultiplyExactLongTest.java  8202124   generic-all
+compiler/intrinsics/mathexact/sanity/MultiplyExactIntTest.java   8202124   generic-all
+compiler/whitebox/DeoptimizeAllTest.java                         8202124   generic-all
+compiler/whitebox/DeoptimizeFramesTest.java                      8202124   generic-all
+compiler/whitebox/DeoptimizeMethodTest.java                      8202124   generic-all
+compiler/whitebox/ForceNMethodSweepTest.java                     8202124   generic-all
+compiler/whitebox/GetNMethodTest.java                            8202124   generic-all
+compiler/whitebox/IsMethodCompilableTest.java                    8202124   generic-all
+compiler/whitebox/LockCompilationTest.java                       8202124   generic-all
+compiler/whitebox/SetDontInlineMethodTest.java                   8202124   generic-all
+compiler/whitebox/SetForceInlineMethodTest.java                  8202124   generic-all
+
+compiler/jvmci/meta/StableFieldTest.java                        CODETOOLS-7902162   generic-all
+compiler/jvmci/jdk.vm.ci.hotspot.test/src/jdk/vm/ci/hotspot/test/HotSpotConstantReflectionProviderTest.java   CODETOOLS-7902162   generic-all
+compiler/jvmci/jdk.vm.ci.hotspot.test/src/jdk/vm/ci/hotspot/test/MemoryAccessProviderTest.java                CODETOOLS-7902162   generic-all
+compiler/jvmci/events/JvmciShutdownEventTest.java               CODETOOLS-7902162   generic-all
+
+vmTestbase/nsk/stress/strace/strace001.java                     8191047   generic-all
+vmTestbase/nsk/stress/strace/strace002.java                     8191047   generic-all
+vmTestbase/nsk/stress/strace/strace005.java                     8191047   generic-all
+vmTestbase/nsk/stress/strace/strace006.java                     8191047   generic-all
+vmTestbase/nsk/jvmti/scenarios/sampling/SP07/sp07t002/TestDescription.java                         8191047   generic-all
+vmTestbase/nsk/jdi/ThreadReference/forceEarlyReturn/forceEarlyReturn009/forceEarlyReturn009.java   8191047   generic-all
+
+vmTestbase/nsk/jdi/ThreadReference/forceEarlyReturn/forceEarlyReturn007/TestDescription.java       8195600   generic-all
+
+vmTestbase/nsk/jdi/ArrayType/newInstance/newinstance001/TestDescription.java                              8203174   generic-all
+vmTestbase/nsk/jdi/ArrayType/newInstance/newinstance002/TestDescription.java                              8203174   generic-all
+vmTestbase/nsk/jdi/ArrayType/newInstance/newinstance003/TestDescription.java                              8203174   generic-all
+vmTestbase/nsk/jdi/EventRequestManager/methodExitRequests/methexitreq002/TestDescription.java             8203174   generic-all
+vmTestbase/nsk/jdi/MonitorContendedEnteredRequest/MonitorContendedEnteredRequest001/TestDescription.java  8203174   generic-all
+vmTestbase/nsk/jdi/MonitorContendedEnteredRequest/MonitorContendedEnteredRequest002/TestDescription.java  8203174   generic-all
+vmTestbase/nsk/jdi/MonitorWaitedRequest/addClassExclusionFilter/TestDescription.java                      8203174   generic-all
+vmTestbase/nsk/jdi/ReferenceType/instances/instances002/instances002.java                                 8203174   generic-all
+vmTestbase/nsk/jdi/ReferenceType/instances/instances003/instances003.java                                 8203174   generic-all
+vmTestbase/nsk/jdi/stress/MonitorEvents/MonitorEvents002/TestDescription.java                             8203174   generic-all
+vmTestbase/nsk/jdi/stress/serial/heapwalking001/TestDescription.java                                      8203174   generic-all
+vmTestbase/nsk/jdi/stress/serial/heapwalking002/TestDescription.java                                      8203174   generic-all
+vmTestbase/nsk/jdi/stress/serial/mixed002/TestDescription.java                                            8203174   generic-all
+
+vmTestbase/nsk/jdi/VirtualMachine/redefineClasses/redefineclasses026/TestDescription.java   8195627   generic-all
+vmTestbase/nsk/jdi/VirtualMachine/redefineClasses/redefineclasses028/TestDescription.java   8195627   generic-all
+vmTestbase/nsk/jdi/VirtualMachine/redefineClasses/redefineclasses030/TestDescription.java   8195627   generic-all
+vmTestbase/nsk/jdb/wherei/wherei001/wherei001.java                                          8195627   generic-all
+
+vmTestbase/vm/mlvm/anonloader/stress/oome/heap/Test.java         8186299   generic-all
+vmTestbase/vm/mlvm/anonloader/stress/oome/metaspace/Test.java    8186299   generic-all
+
+# jvmti tests
+vmTestbase/nsk/jvmti/IterateThroughHeap/filter-tagged/TestDescription.java         8193577   generic-all
+vmTestbase/nsk/jvmti/IterateThroughHeap/filter-class-tagged/TestDescription.java   8193577   generic-all
+
+vmTestbase/nsk/jvmti/unit/ForceEarlyReturn/earlyretbase/TestDescription.java       8195635   generic-all
+
+vmTestbase/nsk/jvmti/PopFrame/popframe009/TestDescription.java                     8195639   generic-all
+
+vmTestbase/nsk/jvmti/ForceEarlyReturn/ForceEarlyReturn001/TestDescription.java     8195674   generic-all
+vmTestbase/nsk/jvmti/ForceEarlyReturn/ForceEarlyReturn002/TestDescription.java     8195674   generic-all
+
+vmTestbase/nsk/jvmti/unit/FollowReferences/followref003/TestDescription.java       8202342   generic-all
+
+vmTestbase/nsk/jvmti/scenarios/hotswap/HS102/hs102t002/TestDescription.java        8204506   macosx-all
+
+compiler/stable/TestStableBoolean.java                           8204347   generic-all
+compiler/stable/TestStableByte.java                              8204347   generic-all
+compiler/stable/TestStableChar.java                              8204347   generic-all
+compiler/stable/TestStableDouble.java                            8204347   generic-all
+compiler/stable/TestStableFloat.java                             8204347   generic-all
+compiler/stable/TestStableInt.java                               8204347   generic-all
+compiler/stable/TestStableLong.java                              8204347   generic-all
+compiler/stable/TestStableMismatched.java                        8204347   generic-all
+compiler/stable/TestStableObject.java                            8204347   generic-all
+compiler/stable/TestStableShort.java                             8204347   generic-all
+compiler/stable/TestStableUByte.java                             8204347   generic-all
+compiler/stable/TestStableUShort.java                            8204347   generic-all
+
+# Graal unit tests
+org.graalvm.compiler.core.test.CheckGraalInvariants                              8205081
+org.graalvm.compiler.core.test.inlining.PolymorphicInliningTest                  8205081
+org.graalvm.compiler.core.test.OptionsVerifierTest                               8205081
+org.graalvm.compiler.core.test.ProfilingInfoTest                                 8205081
+org.graalvm.compiler.hotspot.test.CompilationWrapperTest                         8205081
+org.graalvm.compiler.hotspot.test.HsErrLogTest                                   8205081
+org.graalvm.compiler.hotspot.test.OptionsInFileTest                              8205081
+org.graalvm.compiler.hotspot.test.ReservedStackAccessTest                        8205081
+org.graalvm.compiler.replacements.test.classfile.ClassfileBytecodeProviderTest   8205081
+org.graalvm.compiler.replacements.test.classfile.RedefineIntrinsicTest           8205081
+
+org.graalvm.compiler.core.test.deopt.CompiledMethodTest          8202955
+org.graalvm.compiler.core.test.CountedLoopTest                   8199885
+org.graalvm.compiler.debug.test.DebugContextTest                 8203504
+org.graalvm.compiler.core.test.VerifyDebugUsageTest              8205078
+
+org.graalvm.compiler.hotspot.test.GraalOSRTest                   8206947

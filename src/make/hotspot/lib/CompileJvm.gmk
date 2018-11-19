@@ -1,0 +1,274 @@
+#
+# Copyright (c) 2013, 2018, Oracle and/or its affiliates. All rights reserved.
+# DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+#
+# This code is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public License version 2 only, as
+# published by the Free Software Foundation.  Oracle designates this
+# particular file as subject to the "Classpath" exception as provided
+# by Oracle in the LICENSE file that accompanied this code.
+#
+# This code is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+# version 2 for more details (a copy is included in the LICENSE file that
+# accompanied this code).
+#
+# You should have received a copy of the GNU General Public License version
+# 2 along with this work; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+#
+# Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
+# or visit www.oracle.com if you need additional information or have any
+# questions.
+#
+
+# Include support files that will setup compiler flags due to the selected
+# jvm feature set, specific file overrides, and general flags.
+include lib/JvmFeatures.gmk
+include lib/JvmOverrideFiles.gmk
+include lib/JvmFlags.gmk
+
+# Include support files that will setup DTRACE_EXTRA_OBJECT_FILES.
+include lib/JvmDtraceObjects.gmk
+
+################################################################################
+# Setup compilation of the main Hotspot native library (libjvm).
+
+JVM_OUTPUTDIR := $(JVM_VARIANT_OUTPUTDIR)/libjvm
+JVM_MAPFILE := $(JVM_OUTPUTDIR)/mapfile
+
+################################################################################
+# Platform independent setup
+
+JVM_LDFLAGS += \
+    $(SHARED_LIBRARY_FLAGS) \
+    $(JVM_LDFLAGS_FEATURES) \
+    $(EXTRA_LDFLAGS) \
+    #
+
+JVM_LIBS += \
+    $(JVM_LIBS_FEATURES) \
+    #
+
+# These files and directories are always excluded
+JVM_EXCLUDE_FILES += args.cc
+JVM_EXCLUDES += adlc
+
+# Needed by vm_version.cpp
+ifeq ($(OPENJDK_TARGET_CPU), x86_64)
+  OPENJDK_TARGET_CPU_VM_VERSION := amd64
+else ifeq ($(OPENJDK_TARGET_CPU), sparcv9)
+  OPENJDK_TARGET_CPU_VM_VERSION := sparc
+else ifeq ($(HOTSPOT_TARGET_CPU_ARCH), arm)
+  ifeq ($(OPENJDK_TARGET_CPU), aarch64)
+    # This sets the Oracle Aarch64 port to use arm64
+    # while the original Aarch64 port uses aarch64
+    OPENJDK_TARGET_CPU_VM_VERSION := arm64
+  endif
+else
+  OPENJDK_TARGET_CPU_VM_VERSION := $(OPENJDK_TARGET_CPU)
+endif
+
+CFLAGS_VM_VERSION := \
+    $(VERSION_CFLAGS) \
+    -DHOTSPOT_VERSION_STRING='"$(VERSION_STRING)"' \
+    -DDEBUG_LEVEL='"$(DEBUG_LEVEL)"' \
+    -DHOTSPOT_BUILD_USER='"$(USERNAME)"' \
+    -DHOTSPOT_VM_DISTRO='"$(HOTSPOT_VM_DISTRO)"' \
+    -DCPU='"$(OPENJDK_TARGET_CPU_VM_VERSION)"' \
+    #
+
+################################################################################
+# Platform specific setup
+
+# ARM source selection
+
+ifeq ($(OPENJDK_TARGET_OS)-$(OPENJDK_TARGET_CPU), linux-arm)
+  JVM_EXCLUDE_PATTERNS += arm_64
+
+else ifeq ($(OPENJDK_TARGET_OS)-$(OPENJDK_TARGET_CPU), linux-aarch64)
+  # For 64-bit arm builds, we use the 64 bit hotspot/src/cpu/arm
+  # hotspot sources if HOTSPOT_TARGET_CPU_ARCH is set to arm.
+  # Exclude the aarch64 and 32 bit arm files for this build.
+  ifeq ($(HOTSPOT_TARGET_CPU_ARCH), arm)
+    JVM_EXCLUDE_PATTERNS += arm_32 aarch64
+  endif
+endif
+
+ifneq ($(filter $(OPENJDK_TARGET_OS), linux macosx windows), )
+  JVM_PRECOMPILED_HEADER := $(TOPDIR)/src/hotspot/share/precompiled/precompiled.hpp
+endif
+
+ifeq ($(OPENJDK_TARGET_CPU), x86)
+  JVM_EXCLUDE_PATTERNS += x86_64
+else ifeq ($(OPENJDK_TARGET_CPU), x86_64)
+  JVM_EXCLUDE_PATTERNS += x86_32
+endif
+
+# Inline assembly for solaris
+ifeq ($(OPENJDK_TARGET_OS), solaris)
+  ifeq ($(OPENJDK_TARGET_CPU), x86_64)
+    JVM_CFLAGS += $(TOPDIR)/src/hotspot/os_cpu/solaris_x86/solaris_x86_64.il
+  else ifeq ($(OPENJDK_TARGET_CPU), sparcv9)
+    JVM_CFLAGS += $(TOPDIR)/src/hotspot/os_cpu/solaris_sparc/solaris_sparc.il
+  endif
+  # Exclude warnings in devstudio 12.6
+  ifeq ($(CC_VERSION_NUMBER), 5.15)
+    DISABLED_WARNINGS_solstudio := SEC_ARR_OUTSIDE_BOUND_READ \
+      SEC_ARR_OUTSIDE_BOUND_WRITE
+  endif
+endif
+
+ifeq ($(OPENJDK_TARGET_OS)-$(OPENJDK_TARGET_CPU), solaris-sparcv9)
+  ifeq ($(COMPILE_WITH_DEBUG_SYMBOLS), false)
+    # NOTE: In the old build, we weirdly enough set -g/-g0 always, regardless
+    # of if debug symbols were needed. Without it, compilation fails on
+    # sparc! :-(
+    JVM_CFLAGS += -g0
+  endif
+endif
+
+ifeq ($(OPENJDK_TARGET_OS), windows)
+  ifeq ($(OPENJDK_TARGET_CPU_BITS), 64)
+    RC_DESC := 64-Bit$(SPACE)
+  endif
+  JVM_RCFLAGS += -D"HS_FILEDESC=$(HOTSPOT_VM_DISTRO) $(RC_DESC)$(JVM_VARIANT) VM"
+endif
+
+JVM_OPTIMIZATION ?= HIGHEST_JVM
+
+# Need to set JVM_STRIPFLAGS to the default value from SPEC since the STRIPFLAGS
+# parameter to SetupNativeCompilation allows an empty value to override the
+# default.
+JVM_STRIPFLAGS ?= $(STRIPFLAGS)
+
+################################################################################
+# Now set up the actual compilation of the main hotspot native library
+
+$(eval $(call SetupNativeCompilation, BUILD_LIBJVM, \
+    NAME := jvm, \
+    TOOLCHAIN := TOOLCHAIN_LINK_CXX, \
+    OUTPUT_DIR := $(JVM_LIB_OUTPUTDIR), \
+    SRC := $(JVM_SRC_DIRS), \
+    EXCLUDES := $(JVM_EXCLUDES), \
+    EXCLUDE_FILES := $(JVM_EXCLUDE_FILES), \
+    EXCLUDE_PATTERNS := $(JVM_EXCLUDE_PATTERNS), \
+    EXTRA_OBJECT_FILES := $(DTRACE_EXTRA_OBJECT_FILES), \
+    CFLAGS := $(JVM_CFLAGS), \
+    vm_version.cpp_CXXFLAGS := $(CFLAGS_VM_VERSION), \
+    arguments.cpp_CXXFLAGS := $(CFLAGS_VM_VERSION), \
+    DISABLED_WARNINGS_clang := tautological-compare, \
+    DISABLED_WARNINGS_solstudio := $(DISABLED_WARNINGS_solstudio), \
+    DISABLED_WARNINGS_xlc := 1540-0216 1540-0198 1540-1090 1540-1639 \
+        1540-1088 1500-010, \
+    ASFLAGS := $(JVM_ASFLAGS), \
+    LDFLAGS := $(JVM_LDFLAGS), \
+    LIBS := $(JVM_LIBS), \
+    OPTIMIZATION := $(JVM_OPTIMIZATION), \
+    OBJECT_DIR := $(JVM_OUTPUTDIR)/objs, \
+    MAPFILE := $(JVM_MAPFILE), \
+    USE_MAPFILE_FOR_SYMBOLS := true, \
+    STRIPFLAGS := $(JVM_STRIPFLAGS), \
+    EMBED_MANIFEST := true, \
+    RC_FLAGS := $(JVM_RCFLAGS), \
+    VERSIONINFO_RESOURCE := $(TOPDIR)/src/hotspot/os/windows/version.rc, \
+    PRECOMPILED_HEADER := $(JVM_PRECOMPILED_HEADER), \
+    PRECOMPILED_HEADER_EXCLUDE := $(JVM_PRECOMPILED_HEADER_EXCLUDE), \
+))
+
+# Always recompile vm_version.cpp if libjvm needs to be relinked. This ensures
+# that the internal vm version is updated as it relies on __DATE__ and __TIME__
+# macros.
+VM_VERSION_OBJ := $(JVM_OUTPUTDIR)/objs/vm_version$(OBJ_SUFFIX)
+$(VM_VERSION_OBJ): $(filter-out $(VM_VERSION_OBJ) $(JVM_MAPFILE), \
+    $(BUILD_LIBJVM_TARGET_DEPS))
+
+ifeq ($(OPENJDK_TARGET_OS), windows)
+  # It doesn't matter which jvm.lib file gets exported, but we need
+  # to pick just one.
+  ifeq ($(JVM_VARIANT), $(JVM_VARIANT_MAIN))
+    $(eval $(call SetupCopyFiles, COPY_JVM_LIB, \
+        DEST := $(LIB_OUTPUTDIR), \
+        FILES :=$(BUILD_LIBJVM_IMPORT_LIBRARY), \
+    ))
+    TARGETS += $(COPY_JVM_LIB)
+  endif
+endif
+
+# AIX warning explanation:
+# 1500-010  : (W) WARNING in ...: Infinite loop.  Program may not stop.
+#             There are several infinite loops in the vm, so better suppress.
+# 1540-0198 : (W) The omitted keyword "private" is assumed for base class "...".
+# 1540-0216 : (W) An expression of type .. cannot be converted to type ..
+#             In hotspot this fires for functionpointer to pointer conversions
+# 1540-1088 : (W) The exception specification is being ignored.
+#             In hotspot this is caused by throw() in declaration of new() in nmethod.hpp.
+# 1540-1090 : (I) The destructor of "..." might not be called.
+# 1540-1639 : (I) The behavior of long type bit fields has changed ...
+
+# Include mapfile generation. It relies on BUILD_LIBJVM_ALL_OBJS which is only
+# defined after the above call to BUILD_LIBJVM. Mapfile will be generated
+# after all object files are built, but before the jvm library is linked.
+include lib/JvmMapfile.gmk
+
+TARGETS += $(BUILD_LIBJVM)
+
+################################################################################
+# Hotspot disallows the use of global operators 'new' and 'delete'. This build
+# time check helps enforce this requirement. If you trigger this check and the
+# reference is not obvious from the source, GNU objdump can be used to help find
+# the reference if compiled with GCC:
+#
+# objdump -lrdSC <path/to/file.o>
+#
+# -C demangle
+# -d disassemble
+# -r print relocation entries, interspersed with the disassembly
+# -S print source code, intermixed with disassembly
+# -l include filenames and line numbers
+#
+# Search the output for the operator(s) of interest, to see where they are
+# referenced.
+
+ifneq ($(filter $(TOOLCHAIN_TYPE), gcc clang solstudio), )
+
+  DEMANGLED_REGEXP := [^:]operator (new|delete)
+
+  # Running c++filt to find offending symbols in all files is too expensive,
+  # especially on Solaris, so use mangled names when looking for symbols.
+  # Save the demangling for when something is actually found.
+  ifeq ($(TOOLCHAIN_TYPE), solstudio)
+    MANGLED_SYMS := \
+        __1c2n6FL_pv_ \
+        __1c2N6FL_pv_ \
+        __1c2k6Fpv_v_ \
+        __1c2K6Fpv_v_ \
+        #
+    UNDEF_PATTERN := UNDEF
+  else
+    MANGLED_SYMS := \
+        _ZdaPv \
+        _ZdlPv \
+        _Znam \
+        _Znwm \
+        #
+    UNDEF_PATTERN := ' U '
+  endif
+
+  define SetupOperatorNewDeleteCheck
+    $1.op_check: $1
+	if [ -n "`$(NM) $$< | $(GREP) $(addprefix -e , $(MANGLED_SYMS)) \
+	    | $(GREP) $(UNDEF_PATTERN)`" ]; then \
+	  $(ECHO) "$$<: Error: Use of global operators new and delete is not allowed in Hotspot:"; \
+	  $(NM) $$< | $(CXXFILT) | $(EGREP) '$(DEMANGLED_REGEXP)' | $(GREP) $(UNDEF_PATTERN); \
+	  $(ECHO) "See: $(TOPDIR)/make/hotspot/lib/CompileJvm.gmk"; \
+	  exit 1; \
+	fi
+	$(TOUCH) $$@
+
+    TARGETS += $1.op_check
+  endef
+
+  $(foreach o, $(BUILD_LIBJVM_ALL_OBJS), $(eval $(call SetupOperatorNewDeleteCheck,$o)))
+endif
