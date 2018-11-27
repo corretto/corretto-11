@@ -127,9 +127,7 @@ final class SSLEngineImpl extends SSLEngine implements SSLTransport {
         }
 
         // See if the handshaker needs to report back some SSLException.
-        if (conContext.outputRecord.isEmpty()) {
-            checkTaskThrown();
-        }   // Otherwise, deliver cached records before throwing task exception.
+        checkTaskThrown();
 
         // check parameters
         checkParams(srcs, srcsOffset, srcsLength, dsts, dstsOffset, dstsLength);
@@ -155,6 +153,7 @@ final class SSLEngineImpl extends SSLEngine implements SSLTransport {
         ByteBuffer[] srcs, int srcsOffset, int srcsLength,
         ByteBuffer[] dsts, int dstsOffset, int dstsLength) throws IOException {
 
+        // May need to deliver cached records.
         if (isOutboundDone()) {
             return new SSLEngineResult(
                     Status.CLOSED, getHandshakeStatus(), 0, 0);
@@ -162,8 +161,9 @@ final class SSLEngineImpl extends SSLEngine implements SSLTransport {
 
         HandshakeContext hc = conContext.handshakeContext;
         HandshakeStatus hsStatus = null;
-        if (!conContext.isNegotiated &&
-                !conContext.isClosed() && !conContext.isBroken) {
+        if (!conContext.isNegotiated && !conContext.isBroken &&
+                !conContext.isInboundClosed() &&
+                !conContext.isOutboundClosed()) {
             conContext.kickstart();
 
             hsStatus = getHandshakeStatus();
@@ -315,7 +315,8 @@ final class SSLEngineImpl extends SSLEngine implements SSLTransport {
         }
 
         // Is the sequence number is nearly overflow?
-        if (conContext.outputRecord.seqNumIsHuge()) {
+        if (conContext.outputRecord.seqNumIsHuge() ||
+                conContext.outputRecord.writeCipher.atKeyLimit()) {
             hsStatus = tryKeyUpdate(hsStatus);
         }
 
@@ -343,25 +344,29 @@ final class SSLEngineImpl extends SSLEngine implements SSLTransport {
     }
 
     /**
-     * Try renegotiation or key update for sequence number wrap.
+     * Try key update for sequence number wrap or key usage limit.
      *
      * Note that in order to maintain the handshake status properly, we check
-     * the sequence number after the last record reading/writing process.  As
-     * we request renegotiation or close the connection for wrapped sequence
+     * the sequence number and key usage limit after the last record
+     * reading/writing process.
+     *
+     * As we request renegotiation or close the connection for wrapped sequence
      * number when there is enough sequence number space left to handle a few
      * more records, so the sequence number of the last record cannot be
      * wrapped.
      */
     private HandshakeStatus tryKeyUpdate(
             HandshakeStatus currentHandshakeStatus) throws IOException {
-        // Don't bother to kickstart the renegotiation or key update when the
-        // local is asking for it.
+        // Don't bother to kickstart if handshaking is in progress, or if the
+        // connection is not duplex-open.
         if ((conContext.handshakeContext == null) &&
-                !conContext.isClosed() && !conContext.isBroken) {
+                !conContext.isOutboundClosed() &&
+                !conContext.isInboundClosed() &&
+                !conContext.isBroken) {
             if (SSLLogger.isOn && SSLLogger.isOn("ssl")) {
-                SSLLogger.finest("key update to wrap sequence number");
+                SSLLogger.finest("trigger key update");
             }
-            conContext.keyUpdate();
+            beginHandshake();
             return conContext.getHandshakeStatus();
         }
 
@@ -471,8 +476,9 @@ final class SSLEngineImpl extends SSLEngine implements SSLTransport {
         }
 
         HandshakeStatus hsStatus = null;
-        if (!conContext.isNegotiated &&
-                !conContext.isClosed() && !conContext.isBroken) {
+        if (!conContext.isNegotiated && !conContext.isBroken &&
+                !conContext.isInboundClosed() &&
+                !conContext.isOutboundClosed()) {
             conContext.kickstart();
 
             /*
@@ -677,7 +683,8 @@ final class SSLEngineImpl extends SSLEngine implements SSLTransport {
             }
 
             // Is the sequence number is nearly overflow?
-            if (conContext.inputRecord.seqNumIsHuge()) {
+            if (conContext.inputRecord.seqNumIsHuge() ||
+                    conContext.inputRecord.readCipher.atKeyLimit()) {
                 pt.handshakeStatus =
                         tryKeyUpdate(pt.handshakeStatus);
             }
@@ -700,16 +707,42 @@ final class SSLEngineImpl extends SSLEngine implements SSLTransport {
 
     @Override
     public synchronized void closeInbound() throws SSLException {
+        if (isInboundDone()) {
+            return;
+        }
+
+        if (SSLLogger.isOn && SSLLogger.isOn("ssl")) {
+            SSLLogger.finest("Closing inbound of SSLEngine");
+        }
+
+        // Is it ready to close inbound?
+        //
+        // No need to throw exception if the initial handshake is not started.
+        if (!conContext.isInputCloseNotified &&
+            (conContext.isNegotiated || conContext.handshakeContext != null)) {
+
+            conContext.fatal(Alert.INTERNAL_ERROR,
+                    "closing inbound before receiving peer's close_notify");
+        }
+
         conContext.closeInbound();
     }
 
     @Override
     public synchronized boolean isInboundDone() {
-        return conContext.isInboundDone();
+        return conContext.isInboundClosed();
     }
 
     @Override
     public synchronized void closeOutbound() {
+        if (conContext.isOutboundClosed()) {
+            return;
+        }
+
+        if (SSLLogger.isOn && SSLLogger.isOn("ssl")) {
+            SSLLogger.finest("Closing outbound of SSLEngine");
+        }
+
         conContext.closeOutbound();
     }
 
@@ -861,18 +894,58 @@ final class SSLEngineImpl extends SSLEngine implements SSLTransport {
         return true;
     }
 
+    /*
+     * Depending on whether the error was just a warning and the
+     * handshaker wasn't closed, or fatal and the handshaker is now
+     * null, report back the Exception that happened in the delegated
+     * task(s).
+     */
     private synchronized void checkTaskThrown() throws SSLException {
+
+        Exception exc = null;
+
+        // First check the handshake context.
         HandshakeContext hc = conContext.handshakeContext;
-        if (hc != null && hc.delegatedThrown != null) {
-            try {
-                throw getTaskThrown(hc.delegatedThrown);
-            } finally {
-                hc.delegatedThrown = null;
+        if ((hc != null) && (hc.delegatedThrown != null)) {
+            exc = hc.delegatedThrown;
+            hc.delegatedThrown = null;
+        }
+
+        /*
+         * hc.delegatedThrown and conContext.delegatedThrown are most likely
+         * the same, but it's possible we could have had a non-fatal
+         * exception and thus the new HandshakeContext is still valid
+         * (alert warning).  If so, then we may have a secondary exception
+         * waiting to be reported from the TransportContext, so we will
+         * need to clear that on a successive call.  Otherwise, clear it now.
+         */
+        if (conContext.delegatedThrown != null) {
+            if (exc != null) {
+                // hc object comparison
+                if (conContext.delegatedThrown == exc) {
+                    // clear if/only if both are the same
+                    conContext.delegatedThrown = null;
+                } // otherwise report the hc delegatedThrown
+            } else {
+                // Nothing waiting in HandshakeContext, but one is in the
+                // TransportContext.
+                exc = conContext.delegatedThrown;
+                conContext.delegatedThrown = null;
             }
         }
 
-        if (conContext.isBroken && conContext.closeReason != null) {
-            throw getTaskThrown(conContext.closeReason);
+        // Anything to report?
+        if (exc == null) {
+            return;
+        }
+
+        // If it wasn't a RuntimeException/SSLException, need to wrap it.
+        if (exc instanceof SSLException) {
+            throw (SSLException)exc;
+        } else if (exc instanceof RuntimeException) {
+            throw (RuntimeException)exc;
+        } else {
+            throw getTaskThrown(exc);
         }
     }
 
@@ -928,20 +1001,41 @@ final class SSLEngineImpl extends SSLEngine implements SSLTransport {
                 } catch (PrivilegedActionException pae) {
                     // Get the handshake context again in case the
                     // handshaking has completed.
+                    Exception reportedException = pae.getException();
+
+                    // Report to both the TransportContext...
+                    if (engine.conContext.delegatedThrown == null) {
+                        engine.conContext.delegatedThrown = reportedException;
+                    }
+
+                    // ...and the HandshakeContext in case condition
+                    // wasn't fatal and the handshakeContext is still
+                    // around.
                     hc = engine.conContext.handshakeContext;
                     if (hc != null) {
-                        hc.delegatedThrown = pae.getException();
+                        hc.delegatedThrown = reportedException;
                     } else if (engine.conContext.closeReason != null) {
+                        // Update the reason in case there was a previous.
                         engine.conContext.closeReason =
-                                getTaskThrown(pae.getException());
+                                getTaskThrown(reportedException);
                     }
                 } catch (RuntimeException rte) {
                     // Get the handshake context again in case the
                     // handshaking has completed.
+
+                    // Report to both the TransportContext...
+                    if (engine.conContext.delegatedThrown == null) {
+                        engine.conContext.delegatedThrown = rte;
+                    }
+
+                    // ...and the HandshakeContext in case condition
+                    // wasn't fatal and the handshakeContext is still
+                    // around.
                     hc = engine.conContext.handshakeContext;
                     if (hc != null) {
                         hc.delegatedThrown = rte;
                     } else if (engine.conContext.closeReason != null) {
+                        // Update the reason in case there was a previous.
                         engine.conContext.closeReason = rte;
                     }
                 }
@@ -965,13 +1059,6 @@ final class SSLEngineImpl extends SSLEngine implements SSLTransport {
             @Override
             public Void run() throws Exception {
                 while (!context.delegatedActions.isEmpty()) {
-                    // Report back the task SSLException
-                    if (context.delegatedThrown != null) {
-                        Exception delegatedThrown = context.delegatedThrown;
-                        context.delegatedThrown = null;
-                        throw getTaskThrown(delegatedThrown);
-                    }
-
                     Map.Entry<Byte, ByteBuffer> me =
                             context.delegatedActions.poll();
                     if (me != null) {
