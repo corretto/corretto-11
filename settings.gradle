@@ -1,0 +1,6 @@
+rootProject.name = 'corretto11'
+
+include ':openjdksrc',
+        ':installers:linux:universal:tar'
+
+project(':openjdksrc').projectDir = file('src')

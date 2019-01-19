@@ -1,0 +1,85 @@
+/*
+* Copyright (c) 2019, Amazon.com, Inc. or its affiliates. All Rights Reserved.
+* DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+*
+* This code is free software; you can redistribute it and/or modify it
+* under the terms of the GNU General Public License version 2 only, as
+* published by the Free Software Foundation. Amazon designates this
+* particular file as subject to the "Classpath" exception as provided
+* by Oracle in the LICENSE file that accompanied this code.
+*
+* This code is distributed in the hope that it will be useful, but WITHOUT
+* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+* FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
+* version 2 for more details (a copy is included in the LICENSE file that
+* accompanied this code).
+*
+* You should have received a copy of the GNU General Public License version
+* 2 along with this work; if not, write to the Free Software Foundation,
+* Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+*/
+
+// Tasks can refer to version information using the project.version
+// property. For an example of its usage, see ':installers:linux:rpm:buildLogic'
+// where the version numbers are used to populate a templated RPM spec file.
+allprojects {
+    apply plugin: 'base'
+
+    configurations {
+        compile {
+            transitive = false
+        }
+    }
+
+    version = {
+        def full = file('version.txt').text.trim()
+        def tokens = full.tokenize(".")
+        [full    : full,
+         major   : tokens[0],
+         minor   : tokens[1],
+         security: tokens[2],
+         build   : tokens[3],
+         revision: tokens[4]]
+    }.call()
+    buildDir = 'corretto-build'
+
+    ext {
+        buildRoot = file("$buildDir/buildRoot")
+        packageInfo = [
+                url       : "https://github.com/corretto/corretto-${project.version.major}",
+                vendor    : 'Amazon',
+                packager  : 'Amazon',
+                license   : 'ASL 1.1 and ASL 2.0 and BSD and BSD with advertising and GPL+ and GPLv2 and GPLv2 with ' +
+                        'exceptions and IJG and LGPLv2+ and MIT and MPLv2.0 and Public Domain and W3C and zlib and ' +
+                        'ISC and FTL and RSA.',
+                maintainer: 'Amazon Corretto Team <corretto-team@amazon.com>',
+                buildHost : 'build.amazon.com'
+        ]
+    }
+}
+
+project(':openjdksrc') {
+    /**
+     * Compresses a snapshot of the source code used to perform the build.
+     */
+    task sourceDistributionTarball(type: Tar) {
+        description 'Assemble source files required for building and distributing Corretto.'
+        compression Compression.GZIP
+        archiveName "amazon-corretto-source-${project.version.full}.tar.gz"
+        from fileTree(rootDir) {
+            include 'src/**'
+            exclude 'src/corretto-build/**'
+            include 'LICENSE',
+                    'ADDITIONAL_LICENSE_INFO',
+                    'README.md',
+                    'ASSEMBLY_EXCEPTION',
+                    'version.txt',
+                    'cacerts'
+        }
+    }
+
+    artifacts {
+        archives sourceDistributionTarball
+    }
+}
+
