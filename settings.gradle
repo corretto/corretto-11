@@ -1,6 +1,8 @@
 rootProject.name = 'corretto11'
 
 include ':openjdksrc',
+        ':installers:linux:al2:spec',
+        ':installers:linux:al2:docker',
         ':installers:linux:universal:tar'
 
 project(':openjdksrc').projectDir = file('src')
