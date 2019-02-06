@@ -118,6 +118,7 @@ task packageBuildResults(type: Tar) {
         include 'legal/**'
         include 'lib/**'
         include 'man/man1/**'
+        include 'release'
     }
     from(buildRoot) {
         include 'cacerts'
