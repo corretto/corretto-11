@@ -1,0 +1,17 @@
+if [ $1 -eq 1 ] ; then
+     alternatives --install /usr/bin/java java ${RPM_INSTALL_PREFIX}/bin/java @alternatives_priority@ \
+                  --slave /usr/lib/jvm/jre jre ${RPM_INSTALL_PREFIX} \
+                  --slave /usr/bin/jjs jjs ${RPM_INSTALL_PREFIX}/bin/jjs \
+                  --slave /usr/bin/keytool keytool ${RPM_INSTALL_PREFIX}/bin/keytool \
+                  --slave /usr/bin/pack200 pack200 ${RPM_INSTALL_PREFIX}/bin/pack200 \
+                  --slave /usr/bin/rmid rmid ${RPM_INSTALL_PREFIX}/bin/rmid \
+                  --slave /usr/bin/rmiregistry rmiregistry ${RPM_INSTALL_PREFIX}/bin/rmiregistry \
+                  --slave /usr/bin/unpack200 unpack200 ${RPM_INSTALL_PREFIX}/bin/unpack200 \
+                  --slave /usr/share/man/man1/java.1 java.1 ${RPM_INSTALL_PREFIX}/man/man1/java.1 \
+                  --slave /usr/share/man/man1/jjs.1 jjs.1 ${RPM_INSTALL_PREFIX}/man/man1/jjs.1 \
+                  --slave /usr/share/man/man1/keytool.1 keytool.1 ${RPM_INSTALL_PREFIX}/man/man1/keytool.1 \
+                  --slave /usr/share/man/man1/pack200.1 pack200.1 ${RPM_INSTALL_PREFIX}/man/man1/pack200.1 \
+                  --slave /usr/share/man/man1/rmid.1 rmid.1 ${RPM_INSTALL_PREFIX}/man/man1/rmid.1 \
+                  --slave /usr/share/man/man1/rmiregistry.1 rmiregistry.1 ${RPM_INSTALL_PREFIX}/man/man1/rmiregistry.1 \
+                  --slave /usr/share/man/man1/unpack200.1 unpack200.1 ${RPM_INSTALL_PREFIX}/man/man1/unpack200.1
+fi
