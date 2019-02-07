@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2011, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2019, Oracle and/or its affiliates. All rights reserved.
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
 #
 # This code is free software; you can redistribute it and/or modify it
@@ -693,7 +693,7 @@ AC_DEFUN([TOOLCHAIN_SETUP_VS_RUNTIME_DLLS],
   if test "x$USE_UCRT" = "xtrue"; then
     AC_MSG_CHECKING([for UCRT DLL dir])
     if test "x$with_ucrt_dll_dir" != x; then
-      if test -z "$(ls -d "$with_ucrt_dll_dir/*.dll" 2> /dev/null)"; then
+      if test -z "$(ls -d "$with_ucrt_dll_dir/"*.dll 2> /dev/null)"; then
         AC_MSG_RESULT([no])
         AC_MSG_ERROR([Could not find any dlls in $with_ucrt_dll_dir])
       else
