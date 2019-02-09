@@ -57,6 +57,9 @@ allprojects {
                 maintainer: 'Amazon Corretto Team <corretto-team@amazon.com>',
                 buildHost : 'build.amazon.com'
         ]
+        jdkTools = ['java', 'keytool', 'rmid', 'rmiregistry', 'jjs', 'pack200', 'unpack200', 'javac', 'jaotc', 'jlink',
+            'jmod', 'jhsdb', 'jar', 'jarsigner', 'javadoc', 'javap', 'jcmd', 'jconsole', 'jdb', 'jdeps', 'jdeprscan',
+            'jimage', 'jinfo', 'jmap', 'jps', 'jrunscript', 'jshell', 'jstack', 'jstat', 'jstatd', 'rmic', 'serialver']
     }
 }
 
