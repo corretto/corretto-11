@@ -78,7 +78,7 @@ task configureBuild(type: Exec) {
         "--with-version-feature=${version.major}",
         '--with-freetype=bundled',
         '--with-zlib=bundled',
-        '--with-version-opt=',
+        '--with-version-opt=LTS',
         "--with-version-string=${version.major}.${version.minor}.${version.security}",
         "--with-version-build=${version.build}",
         "--with-vendor-version-string=Corretto-${version.full}",
