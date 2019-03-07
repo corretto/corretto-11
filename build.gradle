@@ -46,6 +46,7 @@ allprojects {
 
     ext {
         buildRoot = file("$buildDir/buildRoot")
+        distributionDir = file("$buildDir/distributions")
         packageInfo = [
                 url       : "https://github.com/corretto/corretto-${project.version.major}",
                 vendor    : 'Amazon',

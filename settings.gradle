@@ -1,10 +1,20 @@
 rootProject.name = 'corretto11'
 
-include ':openjdksrc',
-        ':installers:linux:al2:spec',
-        ':installers:linux:al2:docker',
-        ':installers:linux:universal:tar',
-        ':installers:linux:universal:rpm',
-        ':installers:linux:universal:deb'
+import org.apache.tools.ant.taskdefs.condition.Os
+
+def subProjects = [':openjdksrc']
+
+if (Os.isFamily(Os.FAMILY_MAC)) {
+    subProjects += [':installers:mac:pkg',
+                ':installers:mac:tar']
+} else if (Os.isFamily(Os.FAMILY_UNIX)) {
+    subProjects += [':installers:linux:al2:spec',
+                ':installers:linux:al2:docker',
+                ':installers:linux:universal:tar',
+                ':installers:linux:universal:rpm',
+                ':installers:linux:universal:deb']
+}
+
+include subProjects as String[]
 
 project(':openjdksrc').projectDir = file('src')
