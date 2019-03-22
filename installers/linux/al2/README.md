@@ -10,9 +10,7 @@ and tarball are located in `/installers/linux/al2/spec/corretto-build/distributi
 ➜ ./gradlew :installers:linux:al2:spec:build
 ➜ tree installers/linux/al2/spec/corretto-build/distributions
   installers/linux/al2/spec/corretto-build/distributions
-  ├── java-11-amazon-corretto.spec
-  └── SOURCES
-      └── amazon-corretto-source-11.0.2.7.1.tar.gz
+  └── amazon-corretto-source-11.0.2.7.1.tar.gz
 
 
 ```
