@@ -38,11 +38,8 @@
 %global abs2rel %{__perl} -e %{script}
 
 Summary: Amazon Corretto development environment
-Name: java-11-amazon-corretto
-# Matches the 'full version' from Java's release notes:
-# https://www.oracle.com/technetwork/java/javase/11-0-2-relnotes-5188746.html
-# Eg: 11.0.2+7
-Version: ${version.major}.${version.minor}.${version.security}+${version.build}
+Name: ${rpmName}
+Version: ${rpmVersion}
 Release: ${version.revision}%{?dist}
 Epoch: 1
 Group: Development/Languages
@@ -57,6 +54,7 @@ ExclusiveArch: x86_64
 # For build, it provides the jvmdir macro. For runtime,
 # it provides the /usr/lib/jvm directory.
 BuildRequires: jpackage-utils
+BuildRequires: java-11-devel
 BuildRequires: autoconf
 BuildRequires: make
 BuildRequires: alsa-lib-devel
@@ -119,9 +117,10 @@ ${packageInfo.description}
 ${packageInfo.description} (Headless environment)
 
 %prep
-%setup -q -n src
+%setup -q
 
 %build
+cd src
 bash ./configure \\
         --with-jvm-features=zgc \\
         --with-version-feature="${version.major}" \\
@@ -146,7 +145,7 @@ make images
 %install
 rm -rf %{buildroot}
 install -d -m 755 %{buildroot}%{java_home}
-cp -a build/linux-%{_arch}-normal-server-release/images/jdk/* %{buildroot}%{java_home}
+cp -a src/build/linux-%{_arch}-normal-server-release/images/jdk/* %{buildroot}%{java_home}
 rm -rf %{buildroot}%{java_home}/demo
 
 # Make a *relative* symlink pointing to the cacerts file from ca-certificates.
@@ -189,7 +188,32 @@ if [ \$1 -eq 1 ] ; then
                --slave %{_bindir}/rmid rmid %{java_home}/bin/rmid \\
                --slave %{_bindir}/rmiregistry rmiregistry %{java_home}/bin/rmiregistry \\
                --slave %{_bindir}/serialver serialver %{java_home}/bin/serialver \\
-               --slave %{_bindir}/unpack200 unpack200 %{java_home}/bin/unpack200
+               --slave %{_bindir}/unpack200 unpack200 %{java_home}/bin/unpack200 \\
+               --slave %{_mandir}/man1/jar.1 jar.1 %{java_home}/man/man1/jar.1 \\
+               --slave %{_mandir}/man1/jarsigner.1 jarsigner.1 %{java_home}/man/man1/jarsigner.1 \\
+               --slave %{_mandir}/man1/java.1 java.1 %{java_home}/man/man1/java.1 \\
+               --slave %{_mandir}/man1/javac.1 javac.1 %{java_home}/man/man1/javac.1 \\
+               --slave %{_mandir}/man1/javadoc.1 javadoc.1 %{java_home}/man/man1/javadoc.1 \\
+               --slave %{_mandir}/man1/javap.1 javap.1 %{java_home}/man/man1/javap.1 \\
+               --slave %{_mandir}/man1/jcmd.1 jcmd.1 %{java_home}/man/man1/jcmd.1 \\
+               --slave %{_mandir}/man1/jconsole.1 jconsole.1 %{java_home}/man/man1/jconsole.1 \\
+               --slave %{_mandir}/man1/jdb.1 jdb.1 %{java_home}/man/man1/jdb.1 \\
+               --slave %{_mandir}/man1/jdeps.1 jdeps.1 %{java_home}/man/man1/jdeps.1 \\
+               --slave %{_mandir}/man1/jinfo.1 jinfo.1 %{java_home}/man/man1/jinfo.1 \\
+               --slave %{_mandir}/man1/jjs.1 jjs.1 %{java_home}/man/man1/jjs.1 \\
+               --slave %{_mandir}/man1/jmap.1 jmap.1 %{java_home}/man/man1/jmap.1 \\
+               --slave %{_mandir}/man1/jps.1 jps.1 %{java_home}/man/man1/jps.1 \\
+               --slave %{_mandir}/man1/jrunscript.1 jrunscript.1 %{java_home}/man/man1/jrunscript.1 \\
+               --slave %{_mandir}/man1/jstack.1 jstack.1 %{java_home}/man/man1/jstack.1 \\
+               --slave %{_mandir}/man1/jstat.1 jstat.1 %{java_home}/man/man1/jstat.1 \\
+               --slave %{_mandir}/man1/jstatd.1 jstatd.1 %{java_home}/man/man1/jstatd.1 \\
+               --slave %{_mandir}/man1/keytool.1 keytool.1 %{java_home}/man/man1/keytool.1 \\
+               --slave %{_mandir}/man1/pack200.1 pack200.1 %{java_home}/man/man1/pack200.1 \\
+               --slave %{_mandir}/man1/rmic.1 rmic.1 %{java_home}/man/man1/rmic.1 \\
+               --slave %{_mandir}/man1/rmid.1 rmid.1 %{java_home}/man/man1/rmid.1 \\
+               --slave %{_mandir}/man1/rmiregistry.1 rmiregistry.1 %{java_home}/man/man1/rmiregistry.1 \\
+               --slave %{_mandir}/man1/serialver.1 serialver.1 %{java_home}/man/man1/serialver.1 \\
+               --slave %{_mandir}/man1/unpack200.1 unpack200.1 %{java_home}/man/man1/unpack200.1
 fi
 
 %postun headless
