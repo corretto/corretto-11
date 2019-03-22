@@ -25,16 +25,13 @@ dependencies {
     compile project(path: ':openjdksrc', configuration: 'archives')
 }
 
-task copySourceTar(type: Copy) {
-    dependsOn project.configurations.compile
-    from project.configurations.compile
-    into "$buildDir/distributions/SOURCES"
-
-    doLast {
-        def tar = copySourceTar
-        println tar.outputs.files
-    }
-}
+// Matches Red Hat's naming convention of java-version-provider:
+// https://developers.redhat.com/articles/using-java-rhel-7-openjdk-8/
+def rpmName = 'java-11-amazon-corretto'
+// Matches the 'full version' from Java's release notes:
+// https://www.oracle.com/technetwork/java/javase/11-0-2-relnotes-5188746.html
+// Eg: 11.0.2+7
+def rpmVersion = "${version.major}.${version.minor}.${version.security}+${version.build}"
 
 /**
  * Apply version numbers to the RPM spec file template and copy
@@ -42,12 +39,14 @@ task copySourceTar(type: Copy) {
  */
 task inflateRpmSpec {
     inputs.file 'java-11-amazon-corretto.spec.template'
-    outputs.file "$buildDir/distributions/java-11-amazon-corretto.spec"
+    outputs.file "$buildDir/java-11-amazon-corretto.spec"
     doLast {
         def renderedTemplate = new GStringTemplateEngine()
                 .createTemplate(file('java-11-amazon-corretto.spec.template'))
                 .make(
                 [
+                        rpmName    : rpmName,
+                        rpmVersion : rpmVersion,
                         version    : project.version,
                         sourceTar  : project.configurations.compile.singleFile.name,
                         packageInfo: packageInfo
@@ -56,9 +55,18 @@ task inflateRpmSpec {
     }
 }
 
-artifacts {
-    archives(file("$buildDir/distributions")) {
-        builtBy inflateRpmSpec
-        builtBy copySourceTar
+task copySourceTar(type: Tar) {
+    dependsOn project.configurations.compile, inflateRpmSpec
+    compression Compression.GZIP
+    archiveName project.configurations.compile.singleFile.name
+    from("$buildDir") {
+        include 'java-11-amazon-corretto.spec'
+        into 'rpm'
     }
+    from tarTree(project.configurations.compile.singleFile)
+    into "$rpmName-$rpmVersion"
+}
+
+artifacts {
+    archives copySourceTar
 }
