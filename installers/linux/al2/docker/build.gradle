@@ -30,22 +30,36 @@ dependencies {
     compile project(path: ':installers:linux:al2:spec', configuration: 'archives')
 }
 
-task copySource(type: Copy) {
+// The Docker image is built in a directory that contains
+// the source tarball and the spec file.
+// The following two tasks create this directory structure:
+//  buildRoot
+//  ├── Dockerfile
+//  └── rpmbuild
+//      └── java-11-amazon-corretto.spec
+//      └── SOURCES
+//          └── amazon-corretto-source-11.0.2.7.1.tar.gz
+task createRpmBuildRoot(type: Copy) {
     dependsOn project.configurations.compile
-    from project.configurations.compile.singleFile
-    into buildRoot
+    from (project.configurations.compile.singleFile) {
+        into 'SOURCES'
+    }
+    from(tarTree(project.configurations.compile.singleFile)) {
+        include "**/java-11-amazon-corretto.spec"
+        eachFile { f -> f.path = f.name }
+    }
+    includeEmptyDirs = false
+    into "$buildRoot/rpmbuild"
 }
 
 task copyDockerFile(type: Copy) {
     from 'Dockerfile'
+    from 'post-install-test.sh'
     into buildRoot
 }
 
-assemble.dependsOn copySource
-assemble.dependsOn copyDockerFile
-
 task buildRpmsWithDocker(type: DockerBuildImage) {
-    dependsOn assemble
+    dependsOn copyDockerFile, createRpmBuildRoot
     inputDir = buildRoot
 }
 
@@ -64,4 +78,4 @@ task copyRpmsFromContainer(type: Exec) {
             "$buildDir/distributions"
 }
 
-build.dependsOn copyRpmsFromContainer
+build.dependsOn buildRpmsWithDocker
