@@ -105,11 +105,21 @@ class CharacterData00 extends CharacterData {
     }
 
     boolean isJavaIdentifierStart(int ch) {
+        // isJavaIdentifierStart strictly conforms to code points assigned
+        // in Unicode 10.0. Since code point {32FF} is not from Unicode 10.0,
+        // return false.
+        if(ch == 0x32FF)
+            return false;
         int props = getProperties(ch);
         return ((props & $$maskIdentifierInfo) >= $$lowJavaStart);
     }
 
     boolean isJavaIdentifierPart(int ch) {
+        // isJavaIdentifierPart strictly conforms to code points assigned
+        // in Unicode 10.0. Since code point {32FF} is not from Unicode 10.0,
+        // return false.
+        if(ch == 0x32FF)
+            return false;
         int props = getProperties(ch);
         return ((props & $$nonzeroJavaPart) != 0);
     }
@@ -651,6 +661,21 @@ class CharacterData00 extends CharacterData {
             break;
         }
         return retval;
+    }
+
+    boolean isDigit(int ch) {
+        int props = getProperties(ch);
+        return (props & $$maskType) == Character.DECIMAL_DIGIT_NUMBER;
+    }
+
+    boolean isLowerCase(int ch) {
+        int props = getProperties(ch);
+        return (props & $$maskType) == Character.LOWERCASE_LETTER;
+    }
+
+    boolean isUpperCase(int ch) {
+        int props = getProperties(ch);
+        return (props & $$maskType) == Character.UPPERCASE_LETTER;
     }
 
     boolean isWhitespace(int ch) {
