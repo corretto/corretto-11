@@ -33,6 +33,10 @@ def jdkHome = "${jvmDir}/${jdkInstallationDirName}".toString()
 def jdkBinaryDir = "${buildRoot}/amazon-corretto-${project.version.full}-linux-x64"
 def jdkPackageName = "java-${project.version.major}-amazon-corretto-jdk"
 
+def alternativesPriority = String.format("1%2s%2s%3s", project.version.major, project.version.minor, project.version.security).replace(' ', '0')
+
+def jinfoName = ".${jdkInstallationDirName}.jinfo"
+
 ospackage {
     // Valid version must start with a digit and only contain [A-Za-z0-9.+:~-]
     // See http://manpages.ubuntu.com/manpages/artful/en/man5/deb-version.5.html
@@ -70,18 +74,35 @@ task extractUniversalTar(type: Copy) {
  * Create script copies under build root scripts folder.
  */
 task inflateDebScriptTemplate(type: Copy) {
-    dependsOn extractUniversalTar 
+    dependsOn extractUniversalTar
     // In trusty repo, openjdk7 has priority 1071 and openjdk6 has 1061
     // Corretto uses the same priority in both rpm and deb
-    def priority = String.format("1%2s%2s%3s", project.version.major, project.version.minor, project.version.security).replace(' ', '0')
-    from('scripts') {
-        include '**/*.template'
-        rename { file -> file.replace('.template', '') }
-        filter(org.apache.tools.ant.filters.ReplaceTokens,
-                tokens: project.version + [java_home: jdkHome, alternatives_priority: priority,
-                                           jdk_tools: jdkTools.join(' ')])
-    }
+    def priority =
+            from('scripts') {
+                include '**/*.template'
+                rename { file -> file.replace('.template', '') }
+                filter(org.apache.tools.ant.filters.ReplaceTokens,
+                        tokens: project.version + [java_home: jdkHome, alternatives_priority: alternativesPriority,
+                                                   jdk_tools: jdkTools.join(' ')])
+            }
     into "${buildRoot}/scripts"
+}
+
+/**
+ * Inflate jinfo file used by update-java-alternatives command.
+ * Create script copy under buildRoot/jinfo folder. See
+ * http://manpages.ubuntu.com/manpages/xenial/man8/update-java-alternatives.8.html#files
+ */
+task inflateJinfoTemplate(type: Copy) {
+    from('jinfo') {
+        include '**/*.template'
+        rename('jinfo.template', jinfoName)
+        filter(org.apache.tools.ant.filters.ReplaceTokens,
+                tokens: project.version + [java_home     : jdkHome, alternatives_priority: alternativesPriority,
+                                           directory_name: jdkInstallationDirName.toString()])
+        expand(jdk_tools: jdkTools)
+    }
+    into "${buildRoot}/jinfo"
 }
 
 /**
@@ -91,6 +112,7 @@ task inflateDebScriptTemplate(type: Copy) {
 task generateJdkDeb(type: Deb) {
     description 'Create the DEB package for Corretto JDK'
     dependsOn inflateDebScriptTemplate
+    dependsOn inflateJinfoTemplate
 
     packageName jdkPackageName
     packageDescription "Amazon Corretto\'s packaging of the OpenJDK ${project.version.major} code."
@@ -109,6 +131,11 @@ task generateJdkDeb(type: Deb) {
 
     from(jdkBinaryDir) {
         into jdkHome
+    }
+
+    from("$buildRoot/jinfo") {
+        include '**/*.jinfo'
+        into jvmDir
     }
 }
 
