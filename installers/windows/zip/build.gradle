@@ -1,0 +1,94 @@
+/*
+* Copyright (c) 2019, Amazon.com, Inc. or its affiliates. All Rights Reserved.
+* DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+*
+* This code is free software; you can redistribute it and/or modify it
+* under the terms of the GNU General Public License version 2 only, as
+* published by the Free Software Foundation. Amazon designates this
+* particular file as subject to the "Classpath" exception as provided
+* by Oracle in the LICENSE file that accompanied this code.
+*
+* This code is distributed in the hope that it will be useful, but WITHOUT
+* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+* FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
+* version 2 for more details (a copy is included in the LICENSE file that
+* accompanied this code).
+*
+* You should have received a copy of the GNU General Public License version
+* 2 along with this work; if not, write to the Free Software Foundation,
+* Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+*/
+
+dependencies {
+    compile project(path: ':openjdksrc', configuration: 'archives')
+}
+
+ext {
+    arch = System.getenv('PROCESSOR_ARCHITECTURE')
+
+    switch(arch) {
+        case 'AMD64':
+            arch_alias = 'x64'
+            folder_alias = 'x86_64'
+            break;
+        default:
+            throw new GradleException("${arch} is not suported")
+    }
+}
+
+task copySource(type: Copy) {
+    dependsOn project.configurations.compile
+    from tarTree(project.configurations.compile.singleFile)
+    into buildRoot
+}
+
+task configureBuild(type: Exec) {
+    dependsOn copySource
+    workingDir "$buildRoot/src"
+
+    commandLine 'bash', 'configure',
+            "--with-boot-jdk=${project.getProperty('bootjdk_dir')}",
+            "--with-ucrt-dll-dir=${project.getProperty('ucrt_dll_dir')}",
+            "--with-jtreg=${project.getProperty('jtreg_dir')}",
+            "--with-jvm-features=zgc",
+            "--with-freetype=bundled",
+            "--with-zlib=bundled",
+            "--with-version-opt=LTS",
+            "--with-version-feature=${project.version.major}",
+            "--with-version-string=${project.version.major}.${project.version.minor}.${project.version.security}",
+            "--with-version-build=${project.version.build}",
+            "--with-vendor-version-string=Corretto-${project.version.full}",
+            "--with-version-pre=",
+            "--with-vendor-name=Amazon.com Inc.",
+            "--with-vendor-url=https://aws.amazon.com/corretto/",
+            "--with-vendor-bug-url=https://github.com/corretto/corretto-11/issues/",
+            "--with-debug-level=release",
+            "--with-native-debug-symbols=none",
+            "--with-stdc++lib=static",
+            "--with-msvcr-dll=${project.getProperty('vcruntime_dir')}/vcruntime140.dll"
+}
+
+task executeBuild(type: Exec) {
+    dependsOn configureBuild
+    workingDir "$buildRoot/src"
+
+    commandLine 'make', 'clean', 'images'
+}
+
+task copyImage(type: Copy) {
+    dependsOn executeBuild
+
+    from "${executeBuild.workingDir}/build/windows-$folder_alias-normal-server-release/images"
+    into "$buildRoot/build"
+}
+
+task packageJdk(type: Zip) {
+    dependsOn copyImage
+    archiveName  = "unsigned-jdk-image.zip"
+
+    from "${copyImage.destinationDir}/jdk"
+}
+
+artifacts {
+    archives packageJdk
+}
