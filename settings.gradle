@@ -6,13 +6,15 @@ def subProjects = [':openjdksrc']
 
 if (Os.isFamily(Os.FAMILY_MAC)) {
     subProjects += [':installers:mac:pkg',
-                ':installers:mac:tar']
+                    ':installers:mac:tar']
 } else if (Os.isFamily(Os.FAMILY_UNIX)) {
     subProjects += [':installers:linux:al2:spec',
-                ':installers:linux:al2:docker',
-                ':installers:linux:universal:tar',
-                ':installers:linux:universal:rpm',
-                ':installers:linux:universal:deb']
+                    ':installers:linux:al2:docker',
+                    ':installers:linux:universal:tar',
+                    ':installers:linux:universal:rpm',
+                    ':installers:linux:universal:deb']
+} else if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+    subProjects += [':installers:windows:zip']
 }
 
 include subProjects as String[]
