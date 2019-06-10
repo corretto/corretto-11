@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2019, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -402,10 +402,18 @@ static int setupFTContext(JNIEnv *env,
     return errCode;
 }
 
-/* ftsynth.c uses (0x10000, 0x06000, 0x0, 0x10000) matrix to get oblique
-   outline.  Therefore x coordinate will change by 0x06000*y.
-   Note that y coordinate does not change. */
-#define OBLIQUE_MODIFIER(y)  (context->doItalize ? ((y)*6/16) : 0)
+/* ftsynth.c uses (0x10000, 0x0366A, 0x0, 0x10000) matrix to get oblique
+   outline.  Therefore x coordinate will change by 0x0366A*y.
+   Note that y coordinate does not change. These values are based on
+   libfreetype version 2.9.1. */
+#define OBLIQUE_MODIFIER(y)  (context->doItalize ? ((y)*0x366A/0x10000) : 0)
+
+/* FT_GlyphSlot_Embolden (ftsynth.c) uses FT_MulFix(units_per_EM, y_scale) / 24
+ * strength value when glyph format is FT_GLYPH_FORMAT_OUTLINE. This value has
+ * been taken from libfreetype version 2.6 and remain valid at least up to
+ * 2.9.1. */
+#define BOLD_MODIFIER(units_per_EM, y_scale) \
+    (context->doBold ? FT_MulFix(units_per_EM, y_scale) / 24 : 0)
 
 /*
  * Class:     sun_font_FreetypeFontScaler
@@ -458,6 +466,14 @@ Java_sun_font_FreetypeFontScaler_getFontMetricsNative(
     /* See https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=657854 */
 #define FT_MulFixFloatShift6(a, b) (((float) (a)) * ((float) (b)) / 65536.0 / 64.0)
 
+#define contextAwareMetricsX(x, y) \
+    (FTFixedToFloat(context->transform.xx) * (x) - \
+     FTFixedToFloat(context->transform.xy) * (y))
+
+#define contextAwareMetricsY(x, y) \
+    (-FTFixedToFloat(context->transform.yx) * (x) + \
+     FTFixedToFloat(context->transform.yy) * (y))
+
     /*
      * See FreeType source code: src/base/ftobjs.c ft_recompute_scaled_metrics()
      * http://icedtea.classpath.org/bugzilla/show_bug.cgi?id=1659
@@ -484,13 +500,19 @@ Java_sun_font_FreetypeFontScaler_getFontMetricsNative(
     /* max advance */
     mx = (jfloat) FT26Dot6ToFloat(
                      scalerInfo->face->size->metrics.max_advance +
-                     OBLIQUE_MODIFIER(scalerInfo->face->size->metrics.height));
+                     OBLIQUE_MODIFIER(scalerInfo->face->size->metrics.height) +
+                     BOLD_MODIFIER(scalerInfo->face->units_per_EM,
+                             scalerInfo->face->size->metrics.y_scale));
     my = 0;
 
     metrics = (*env)->NewObject(env,
-                                sunFontIDs.strikeMetricsClass,
-                                sunFontIDs.strikeMetricsCtr,
-                                ax, ay, dx, dy, bx, by, lx, ly, mx, my);
+        sunFontIDs.strikeMetricsClass,
+        sunFontIDs.strikeMetricsCtr,
+        contextAwareMetricsX(ax, ay), contextAwareMetricsY(ax, ay),
+        contextAwareMetricsX(dx, dy), contextAwareMetricsY(dx, dy),
+        bx, by,
+        contextAwareMetricsX(lx, ly), contextAwareMetricsY(lx, ly),
+        contextAwareMetricsX(mx, my), contextAwareMetricsY(mx, my));
 
     return metrics;
 }
@@ -680,7 +702,7 @@ Java_sun_font_FreetypeFontScaler_getGlyphImageNative(
     UInt16 width, height;
     GlyphInfo *glyphInfo;
     int glyph_index;
-    int renderFlags = FT_LOAD_RENDER, target;
+    int renderFlags = FT_LOAD_DEFAULT, target;
     FT_GlyphSlot ftglyph;
 
     FTScalerContext* context =
