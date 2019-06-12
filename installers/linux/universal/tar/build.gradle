@@ -88,7 +88,8 @@ task configureBuild(type: Exec) {
         "--with-vendor-bug-url=https://github.com/corretto/corretto-${version.major}/issues/",
         '--with-debug-level=release',
         '--with-native-debug-symbols=none',
-        '--with-stdc++lib=static'
+        '--with-stdc++lib=static',
+        "--with-cacerts-file=$buildRoot/cacerts"
 }
 
 task executeBuild(type: Exec) {
@@ -119,10 +120,6 @@ task packageBuildResults(type: Tar) {
         include 'lib/**'
         include 'man/man1/**'
         include 'release'
-    }
-    from(buildRoot) {
-        include 'cacerts'
-        into 'lib/security'
     }
     into "amazon-corretto-${project.version.full}-linux-${arch_alias}"
 }
