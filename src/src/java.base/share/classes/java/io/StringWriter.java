@@ -238,7 +238,7 @@ public class StringWriter extends Writer {
      * class can be called after the stream has been closed without generating
      * an {@code IOException}.
      */
-    public void close() throws IOException {
+    public void close() {
     }
 
 }
