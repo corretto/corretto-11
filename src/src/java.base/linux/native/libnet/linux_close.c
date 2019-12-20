@@ -60,7 +60,7 @@ typedef struct {
 /*
  * Signal to unblock thread
  */
-static int sigWakeup = (__SIGRTMAX - 2);
+static int sigWakeup;
 
 /*
  * fdTable holds one entry per file descriptor, up to a certain
@@ -149,6 +149,7 @@ static void __attribute((constructor)) init() {
     /*
      * Setup the signal handler
      */
+    sigWakeup = SIGRTMAX - 2;
     sa.sa_handler = sig_wakeup;
     sa.sa_flags   = 0;
     sigemptyset(&sa.sa_mask);
