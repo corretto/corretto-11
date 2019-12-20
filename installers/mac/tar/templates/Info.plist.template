@@ -21,7 +21,7 @@
         <key>CFBundleSignature</key>
         <string>????</string>
         <key>CFBundleVersion</key>
-        <string>@major@.@minor@.@security@</string>
+        <string>@full@</string>
         <key>JavaVM</key>
         <dict>
                 <key>JVMCapabilities</key>
