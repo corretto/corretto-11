@@ -396,8 +396,8 @@ public class Basic {
                 if (failed != 0) throw new Error("null PATH");
             } else if (action.equals("PATH search algorithm")) {
                 equal(System.getenv("PATH"), "dir1:dir2:");
-                check(new File("/bin/true").exists());
-                check(new File("/bin/false").exists());
+                check(new File(TrueExe.path()).exists());
+                check(new File(FalseExe.path()).exists());
                 String[] cmd = {"prog"};
                 ProcessBuilder pb1 = new ProcessBuilder(cmd);
                 ProcessBuilder pb2 = new ProcessBuilder(cmd);
@@ -438,13 +438,13 @@ public class Basic {
                         checkPermissionDenied(pb);
 
                         // continue searching if EACCES
-                        copy("/bin/true", "dir2/prog");
+                        copy(TrueExe.path(), "dir2/prog");
                         equal(run(pb).exitValue(), True.exitValue());
                         new File("dir1/prog").delete();
                         new File("dir2/prog").delete();
 
                         new File("dir2/prog").mkdirs();
-                        copy("/bin/true", "dir1/prog");
+                        copy(TrueExe.path(), "dir1/prog");
                         equal(run(pb).exitValue(), True.exitValue());
 
                         // Check empty PATH component means current directory.
@@ -460,10 +460,10 @@ public class Basic {
                             pb.command(command);
                             File prog = new File("./prog");
                             // "Normal" binaries
-                            copy("/bin/true", "./prog");
+                            copy(TrueExe.path(), "./prog");
                             equal(run(pb).exitValue(),
                                   True.exitValue());
-                            copy("/bin/false", "./prog");
+                            copy(FalseExe.path(), "./prog");
                             equal(run(pb).exitValue(),
                                   False.exitValue());
                             prog.delete();
@@ -518,12 +518,12 @@ public class Basic {
                         new File("dir2/prog").delete();
                         new File("prog").delete();
                         new File("dir3").mkdirs();
-                        copy("/bin/true", "dir1/prog");
-                        copy("/bin/false", "dir3/prog");
+                        copy(TrueExe.path(), "dir1/prog");
+                        copy(FalseExe.path(), "dir3/prog");
                         pb.environment().put("PATH","dir3");
                         equal(run(pb).exitValue(), True.exitValue());
-                        copy("/bin/true", "dir3/prog");
-                        copy("/bin/false", "dir1/prog");
+                        copy(TrueExe.path(), "dir3/prog");
+                        copy(FalseExe.path(), "dir1/prog");
                         equal(run(pb).exitValue(), False.exitValue());
 
                     } finally {
@@ -620,6 +620,13 @@ public class Basic {
              new File("/bin/false").exists());
     }
 
+    static class BusyBox {
+        public static boolean is() { return is; }
+        private static final boolean is =
+            (! Windows.is() &&
+             new File("/bin/busybox").exists());
+    }
+
     static class UnicodeOS {
         public static boolean is() { return is; }
         private static final String osName = System.getProperty("os.name");
@@ -655,6 +662,45 @@ public class Basic {
                     return rc;
                 }
             } catch (Throwable t) { unexpected(t); return -1; }
+        }
+    }
+
+    // On alpine linux, /bin/true and /bin/false are just links to /bin/busybox.
+    // Some tests copy /bin/true and /bin/false to files with a different filename.
+    // However, copying the busbox executable into a file with a different name
+    // won't result in the expected return codes. As workaround, we create
+    // executable files that can be copied and produce the exepected return
+    // values. We use this workaround, if we find the busybox executable.
+
+    private static class TrueExe {
+        public static String path() { return path; }
+        private static final String path = path0();
+        private static String path0(){
+            if (!BusyBox.is()) {
+                return "/bin/true";
+            }
+            else {
+                File trueExe = new File("true");
+                setFileContents(trueExe, "#!/bin/true\n");
+                trueExe.setExecutable(true);
+                return trueExe.getAbsolutePath();
+            }
+        }
+    }
+
+    private static class FalseExe {
+        public static String path() { return path; }
+        private static final String path = path0();
+        private static String path0(){
+            if (!BusyBox.is()) {
+                return "/bin/false";
+            }
+            else {
+                File falseExe = new File("false");
+                setFileContents(falseExe, "#!/bin/false\n");
+                falseExe.setExecutable(true);
+                return falseExe.getAbsolutePath();
+            }
         }
     }
 
@@ -1961,7 +2007,7 @@ public class Basic {
             //----------------------------------------------------------------
             try {
                 new File("suBdiR").mkdirs();
-                copy("/bin/true", "suBdiR/unliKely");
+                copy(TrueExe.path(), "suBdiR/unliKely");
                 final ProcessBuilder pb =
                     new ProcessBuilder(new String[]{"unliKely"});
                 pb.environment().put("PATH", "suBdiR");
