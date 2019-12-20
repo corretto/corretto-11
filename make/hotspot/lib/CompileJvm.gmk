@@ -72,6 +72,10 @@ else
   OPENJDK_TARGET_CPU_VM_VERSION := $(OPENJDK_TARGET_CPU)
 endif
 
+ifneq ($(HOTSPOT_TARGET_LIBC),)
+  LIBC_DEFINE := -DHOTSPOT_LIBC='"$(HOTSPOT_TARGET_LIBC)"'
+endif
+
 CFLAGS_VM_VERSION := \
     $(VERSION_CFLAGS) \
     -DHOTSPOT_VERSION_STRING='"$(VERSION_STRING)"' \
@@ -79,6 +83,7 @@ CFLAGS_VM_VERSION := \
     -DHOTSPOT_BUILD_USER='"$(USERNAME)"' \
     -DHOTSPOT_VM_DISTRO='"$(HOTSPOT_VM_DISTRO)"' \
     -DCPU='"$(OPENJDK_TARGET_CPU_VM_VERSION)"' \
+    $(LIBC_DEFINE) \
     #
 
 ################################################################################

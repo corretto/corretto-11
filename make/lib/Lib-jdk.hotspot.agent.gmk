@@ -53,6 +53,15 @@ else ifeq ($(OPENJDK_TARGET_OS), windows)
   endif
 endif
 
+ifeq ($(INCLUDE_SA_ATTACH), true)
+  SA_CFLAGS += -DINCLUDE_SA_ATTACH
+  ifeq ($(OPENJDK_TARGET_OS), linux)
+    SA_LIBS_linux := -lthread_db $(LIBDL)
+  endif
+endif
+
+SA_CFLAGS += -DLIBC=\"$(OPENJDK_TARGET_LIBC)\"
+
 ################################################################################
 
 $(eval $(call SetupJdkLibrary, BUILD_LIBSA, \
@@ -65,7 +74,7 @@ $(eval $(call SetupJdkLibrary, BUILD_LIBSA, \
     CXXFLAGS := $(CXXFLAGS_JDKLIB) $(SA_CFLAGS) $(SA_CXXFLAGS), \
     EXTRA_SRC := $(LIBSA_EXTRA_SRC), \
     LDFLAGS := $(LDFLAGS_JDKLIB) $(SA_LDFLAGS), \
-    LIBS_linux := -lthread_db $(LIBDL), \
+    LIBS_linux := $(SA_LIBS_linux), \
     LIBS_solaris := -ldl -ldemangle -lthread -lproc, \
     LIBS_macosx := -framework Foundation -framework JavaNativeFoundation \
         -framework JavaRuntimeSupport -framework Security -framework CoreFoundation, \
