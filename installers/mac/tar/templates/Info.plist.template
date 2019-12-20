@@ -17,11 +17,11 @@
         <key>CFBundlePackageType</key>
         <string>BNDL</string>
         <key>CFBundleShortVersionString</key>
-        <string>1.0</string>
+        <string>@major@.@minor@.@security@</string>
         <key>CFBundleSignature</key>
         <string>????</string>
         <key>CFBundleVersion</key>
-        <string>11.@minor@.@security@</string>
+        <string>@full@</string>
         <key>JavaVM</key>
         <dict>
                 <key>JVMCapabilities</key>
