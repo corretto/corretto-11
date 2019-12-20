@@ -132,7 +132,7 @@ task prepareArtifacts {
 
 task packaging(type: Exec) {
     dependsOn prepareArtifacts
-    String tarDir = "${distributionDir}/amazon-corretto-${project.version.full}-macosx-x64.tar.gz"
+    String tarDir = "${distributionDir}/amazon-corretto-${project.version.full}-macos-x64.tar.gz"
     workingDir buildDir
     commandLine "tar", "czf", tarDir, correttoMacDir
     outputs.file tarDir
