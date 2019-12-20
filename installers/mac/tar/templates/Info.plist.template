@@ -9,11 +9,11 @@
         <key>CFBundleGetInfoString</key>
         <string>Amazon Corretto @full@-LTS</string>
         <key>CFBundleIdentifier</key>
-        <string>com.amazon.corretto.11</string>
+        <string>com.amazon.corretto.@major@</string>
         <key>CFBundleInfoDictionaryVersion</key>
         <string>7.0</string>
         <key>CFBundleName</key>
-        <string>Amazon Corretto 11</string>
+        <string>Amazon Corretto @major@</string>
         <key>CFBundlePackageType</key>
         <string>BNDL</string>
         <key>CFBundleShortVersionString</key>
@@ -21,7 +21,7 @@
         <key>CFBundleSignature</key>
         <string>????</string>
         <key>CFBundleVersion</key>
-        <string>11.@minor@.@security@</string>
+        <string>@major@.@minor@.@security@</string>
         <key>JavaVM</key>
         <dict>
                 <key>JVMCapabilities</key>
@@ -33,11 +33,11 @@
                 <key>JVMMinimumSystemVersion</key>
                 <string>10.6.0</string>
                 <key>JVMPlatformVersion</key>
-                <string>11.0</string>
+                <string>@major@.@minor@</string>
                 <key>JVMVendor</key>
                 <string>Amazon.com Inc.</string>
                 <key>JVMVersion</key>
-                <string>11.@minor@.@security@</string>
+                <string>@major@.@minor@.@security@</string>
         </dict>
 </dict>
 </plist>
