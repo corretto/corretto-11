@@ -2,7 +2,22 @@
 
 The following sections describe the changes for each release of Amazon Corretto 11\.
 
-## Corretto version: 11\.0\.6\.10\.1\-1 \(macOS and Windows\)<a name="changes-2019-10-16"></a>
+## Corretto version: 11\.0\.6\.10\.1\-2 \(macOS\)<a name="changes-2020-01-23"></a>
+
+Release Date: Jan 23, 2020
+
+ The following platforms are updated in this release\. 
+
+**Target Platforms**
++  macOS 10\.13 and later, x86\_64 
+
+The following issue is addressed in 11\.0\.6\.10\.1\-2\.
+
+| Issue Name | Platform | Description | Link | 
+| --- | --- | --- | --- | 
+|  link fails with 'Invalid JMOD file' on macOS 10\.15\.2 |  macOS | Java module files in macOS builds were broken in previous release  |  [corretto\-11\#77](https://github.com/corretto/corretto-11/issues/77)  | 
+
+## Corretto version: 11\.0\.6\.10\.1\-1 \(macOS and Windows\)<a name="changes-2020-01-16"></a>
 
 Release Date: Jan 16, 2020
 
@@ -19,7 +34,7 @@ The following issue is addressed in 11\.0\.6\.10\.1\-1\.
 | --- | --- | --- | --- | 
 |  SSL handshake error with 11\.0\.6\.10\.1\(macOS and Windows Platforms\)  |  macOS, Windows  |  Fixed bad cacerts file on Windows and macOS that was causing SSL connection errors  |  [corretto\-11\#73](https://github.com/corretto/corretto-11/issues/73)  | 
 
-## January 2020 critical patch update: Corretto version 11\.0\.6\.10\.1<a name="changes-2019-10-15"></a>
+## January 2020 critical patch update: Corretto version 11\.0\.6\.10\.1<a name="changes-2020-01-15"></a>
 
 Release Date: Jan 15, 2020
 
@@ -41,6 +56,7 @@ The following issues and enhancements are addressed in 11\.0\.6\.10\.1\.
 |  Update Corretto to 11\.0\.6\.10\.1\.  |  All  |  Update Corretto 11 patch set to 11\.0\.6\.10\.1\.  |   | 
 |  Debian package doesn't provide java8\-runtime like openjdk\-11\-jre from debian does\.  |  Linux，Debian  |  Provides additional provide in corretto deb  |  [corretto\-11\#35](https://github.com/corretto/corretto-11/issues/35)  | 
 |  Backport JDK\-8215396  |  All  |  JTabbedPane preferred size calculation is wrong for SCROLL\_TAB\_LAYOUT\.  |  [corretto\-11\#63](https://github.com/corretto/corretto-11/issues/63)  | 
+|  GPG key used to sign debian repository changed | Linux | GPG key of the Corretto Apt repo was updated during the release  |  [corretto\-8\#209](https://github.com/corretto/corretto-8/issues/209)  |  
 
 The following CVEs are addressed in 11\.0\.6\.10\.1\.
 
