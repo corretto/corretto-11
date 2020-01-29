@@ -12,7 +12,7 @@ Documentation is available at [https://docs.aws.amazon.com/corretto](https://doc
 
 ### Licenses and Trademarks
 
-Please read these files: "LICENSE", "THIRD_PARTY_README", "ASSEMBLY_EXCEPTION", "TRADEMARKS.md".
+Please read these files: "LICENSE", "ADDITIONAL_LICENSE_INFO", "ASSEMBLY_EXCEPTION", "TRADEMARKS.md".
 
 ### Branches
 
