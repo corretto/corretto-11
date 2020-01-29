@@ -42,20 +42,9 @@ task copySource(type: Copy) {
     into buildRoot
 }
 
-task importAmazonCacerts(type: Exec) {
-    dependsOn copySource
-    workingDir buildRoot
-    // Default password for JSSE key store
-    def keystore_password = "changeit"
-    commandLine 'keytool', '-importkeystore', '-noprompt',
-            '-srckeystore', "amazon-cacerts",
-            '-srcstorepass', keystore_password,
-            '-destkeystore', 'src/src/java.base/share/lib/security/cacerts',
-            '-deststorepass', keystore_password
-}
 
 task configureBuild(type: Exec) {
-    dependsOn importAmazonCacerts
+    dependsOn copySource
     workingDir "$buildRoot/src"
 
     commandLine 'bash', 'configure',
@@ -77,8 +66,7 @@ task configureBuild(type: Exec) {
             "--with-debug-level=release",
             "--with-native-debug-symbols=none",
             "--with-stdc++lib=static",
-            "--with-msvcr-dll=${project.getProperty('vcruntime_dir')}/vcruntime140.dll",
-            "--with-cacerts-file=$buildRoot/src/src/java.base/share/lib/security/cacerts"
+            "--with-msvcr-dll=${project.getProperty('vcruntime_dir')}/vcruntime140.dll"
 }
 
 task executeBuild(type: Exec) {
@@ -88,8 +76,20 @@ task executeBuild(type: Exec) {
     commandLine 'make', 'clean', 'images'
 }
 
-task copyImage(type: Copy) {
+task importAmazonCacerts(type: Exec) {
     dependsOn executeBuild
+    workingDir "${executeBuild.workingDir}/build/windows-$folder_alias-normal-server-release/images/jdk"
+    // Default password for JSSE key store
+    def keystore_password = "changeit"
+    commandLine 'keytool', '-importkeystore', '-noprompt',
+            '-srckeystore', "${buildRoot}/amazon-cacerts",
+            '-srcstorepass', keystore_password,
+            '-destkeystore', 'lib/security/cacerts',
+            '-deststorepass', keystore_password
+}
+
+task copyImage(type: Copy) {
+    dependsOn importAmazonCacerts
 
     from "${executeBuild.workingDir}/build/windows-$folder_alias-normal-server-release/images"
     into "$buildRoot/build"
