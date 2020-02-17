@@ -41,6 +41,7 @@ ext {
 }
 
 def jdkResultingImage = "$buildRoot/src/build/linux-${arch}-normal-server-release/images/jdk"
+def testResultingImage = "$buildRoot/src/build/linux-${arch}-normal-server-release/images/test"
 
 /**
  * Create a local copy of the source tree in our
@@ -110,9 +111,27 @@ task importAmazonCacerts(type: Exec) {
                 '-deststorepass', keystore_password
 }
 
+task createTestImage(type: Exec) {
+    dependsOn executeBuild
+    workingDir "$buildRoot/src"
+    commandLine 'make','test-image-hotspot-jtreg-native','test-image-jdk-jtreg-native','test-image-hotspot-gtest'
+}
+
+task packageTestImage(type: Tar) {
+    dependsOn createTestImage
+    description 'Package test results'
+    archiveName "amazon-corretto-testimage-${project.version.full}-linux-${arch_alias}.tar.gz"
+    compression Compression.GZIP
+    from(testResultingImage) {
+        include '**'
+    }
+    into "amazon-corretto-testimage-${project.version.full}-linux-${arch_alias}"
+
+}
+
 task packageBuildResults(type: Tar) {
     description 'Compresses the JDK image and puts the results in build/distributions.'
-    dependsOn executeBuild
+    dependsOn packageTestImage
     dependsOn importAmazonCacerts
     archiveName "amazon-corretto-${project.version.full}-linux-${arch_alias}.tar.gz"
     compression Compression.GZIP
