@@ -1,0 +1,161 @@
+/*
+* Copyright (c) 2019, Amazon.com, Inc. or its affiliates. All Rights Reserved.
+* DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+*
+* This code is free software; you can redistribute it and/or modify it
+* under the terms of the GNU General Public License version 2 only, as
+* published by the Free Software Foundation. Amazon designates this
+* particular file as subject to the "Classpath" exception as provided
+* by Oracle in the LICENSE file that accompanied this code.
+*
+* This code is distributed in the hope that it will be useful, but WITHOUT
+* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+* FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
+* version 2 for more details (a copy is included in the LICENSE file that
+* accompanied this code).
+*
+* You should have received a copy of the GNU General Public License version
+* 2 along with this work; if not, write to the Free Software Foundation,
+* Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+*/
+
+
+dependencies {
+    compile project(path: ':openjdksrc', configuration: 'archives')
+}
+
+ext {
+    // all linux distros and macos support 'uname -m'
+    arch = ['uname', '-m'].execute().text.trim()
+
+	switch (arch) {
+	case 'aarch64':
+		arch_alias = arch
+		break;
+	case 'x86_64':
+		arch_alias = 'x64'
+		break;
+	default:
+		throw new GradleException("${arch} is not suported")
+    }
+}
+
+def jdkResultingImage = "$buildRoot/src/build/linux-${arch}-normal-server-release/images/jdk"
+def testResultingImage = "$buildRoot/src/build/linux-${arch}-normal-server-release/images/test"
+
+/**
+ * Create a local copy of the source tree in our
+ * build root -- this is required since OpenJDK's
+ * build wants to occur inside the source tree,
+ * and we don't want to tamper with someone
+ * else's tree.
+ */
+task copySource(type: Copy) {
+    dependsOn project.configurations.compile
+    from tarTree(project.configurations.compile.singleFile)
+    into buildRoot
+}
+
+/** 
+ * Scan the patches folder for any .patch that needs
+ * to be applied before start building.
+ */
+task applyPatches() {
+    dependsOn copySource
+    doLast {
+        fileTree('patches').matching {
+            include '*.patch'
+        }.each { f ->
+            ant.patch(patchfile: f, dir: "$buildRoot/src", strip: 0)
+        }
+    }
+}
+
+task configureBuild(type: Exec) {
+    dependsOn applyPatches
+    workingDir "$buildRoot/src"
+    commandLine 'bash', 'configure',
+        '--with-jvm-features=zgc',
+        "--with-version-feature=${version.major}",
+        '--with-freetype=bundled',
+        '--with-zlib=bundled',
+        '--with-version-opt=LTS',
+        "--with-version-string=${version.major}.${version.minor}.${version.security}",
+        "--with-version-build=${version.build}",
+        "--with-vendor-version-string=Corretto-${version.full}",
+        '--with-version-pre=',
+        '--with-vendor-name=Amazon.com Inc.',
+        '--with-vendor-url=https://aws.amazon.com/corretto/',
+        "--with-vendor-bug-url=https://github.com/corretto/corretto-${version.major}/issues/",
+        '--with-debug-level=release',
+        '--with-native-debug-symbols=none',
+        '--with-stdc++lib=static',
+	'--disable-warnings-as-errors'
+}
+
+task executeBuild(type: Exec) {
+    dependsOn configureBuild
+    workingDir "$buildRoot/src"
+    commandLine 'make', 'images'
+    outputs.dir jdkResultingImage
+}
+
+task importAmazonCacerts(type: Exec) {
+    dependsOn executeBuild
+    workingDir jdkResultingImage
+    // Default password for JSSE key store
+    def keystore_password = "changeit"
+    commandLine 'bin/keytool', '-importkeystore', '-noprompt',
+                '-srckeystore', "${buildRoot}/amazon-cacerts",
+                '-srcstorepass', keystore_password,
+                '-destkeystore', 'lib/security/cacerts',
+                '-deststorepass', keystore_password
+}
+
+task createTestImage(type: Exec) {
+    dependsOn executeBuild
+    workingDir "$buildRoot/src"
+    commandLine 'make','test-image-hotspot-jtreg-native','test-image-jdk-jtreg-native','test-image-hotspot-gtest'
+}
+
+task packageTestImage(type: Tar) {
+    dependsOn createTestImage
+    description 'Package test results'
+    archiveName "amazon-corretto-testimage-${project.version.full}-alpine-linux-${arch_alias}.tar.gz"
+    compression Compression.GZIP
+    from(testResultingImage) {
+        include '**'
+    }
+    into "amazon-corretto-testimage-${project.version.full}-alpine-linux-${arch_alias}"
+
+}
+
+task packageBuildResults(type: Tar) {
+    description 'Compresses the JDK image and puts the results in build/distributions.'
+    dependsOn packageTestImage
+    dependsOn importAmazonCacerts
+    archiveName "amazon-corretto-${project.version.full}-alpine-linux-${arch_alias}.tar.gz"
+    compression Compression.GZIP
+    from(buildRoot) {
+        include 'ADDITIONAL_LICENSE_INFO'
+        include 'ASSEMBLY_EXCEPTION'
+        include 'LICENSE'
+        include 'README.md'
+        include 'version.txt'
+    }
+    from(jdkResultingImage) {
+        include 'bin/**'
+        include 'conf/**'
+        include 'include/**'
+        include 'jmods/**'
+        include 'legal/**'
+        include 'lib/**'
+        include 'man/man1/**'
+        include 'release'
+    }
+    into "amazon-corretto-${project.version.full}-alpine-linux-${arch_alias}"
+}
+
+artifacts {
+    archives packageBuildResults
+}
