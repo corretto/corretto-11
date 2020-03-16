@@ -30,7 +30,14 @@ task retrieveArtifacts(type: Exec) {
     workingDir buildRoot
     if (artifactsPath == null) {
         dependsOn project.configurations.compile
-        commandLine "tar", "xf", "${project.configurations.compile.singleFile}"
+        // The tar module produces multiple tars. We only extract the JDK tgz
+        def artifacts = project.configurations.compile.getFiles()
+        for (File tgz in artifacts) {
+            if (tgz.getName().matches("amazon-corretto-${project.version.major}(.+)-macosx-x64\\.tar\\.gz")) {
+                commandLine "tar", "xf", tgz
+                break
+            }
+        }
     } else {
         commandLine "cp", "-Rf", "${artifactsPath}", buildRoot
     }

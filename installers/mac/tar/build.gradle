@@ -23,7 +23,9 @@ dependencies {
     compile project(path: ':openjdksrc', configuration: 'archives')
 }
 
-def jdkResultingImage = "$buildRoot/src/build/macosx-x86_64-normal-server-release/images/jdk-bundle"
+def imageDir= "${buildRoot}/src/build/macosx-x86_64-normal-server-release/images"
+def jdkResultingImage = "${imageDir}/jdk-bundle"
+def testResultingImage = "${imageDir}/test"
 def correttoMacDir = 'amazon-corretto-11.jdk'
 
 /**
@@ -60,11 +62,21 @@ task configureBuild(type: Exec) {
     commandLine commands.flatten()
 }
 
-task executeBuild(type: Exec) {
+task executeBuild {
     dependsOn configureBuild
-    workingDir "$buildRoot/src"
-    commandLine 'make', 'images'
-    outputs.dir jdkResultingImage
+    def workspace = "$buildRoot/src"
+    doLast {
+        // Build image
+        exec {
+            workingDir workspace
+            commandLine 'make', 'images'
+        }
+        // Build tests
+        exec {
+            workingDir workspace
+            commandLine 'make','test-image-hotspot-jtreg-native','test-image-jdk-jtreg-native','test-image-hotspot-gtest'
+        }
+    }
 }
 
 task importAmazonCacerts(type: Exec) {
@@ -131,12 +143,26 @@ task prepareArtifacts {
 
 task packaging(type: Exec) {
     dependsOn prepareArtifacts
-    String tarDir = "${distributionDir}/amazon-corretto-${project.version.full}-macosx-x64.tar.gz"
+    def tarDir = "${distributionDir}/amazon-corretto-${project.version.full}-macosx-x64.tar.gz"
     workingDir buildDir
     commandLine "tar", "czf", tarDir, correttoMacDir
     outputs.file tarDir
 }
 
+task packageTestResults(type: Tar) {
+    dependsOn executeBuild
+    def archive = "amazon-corretto-testimage-${project.version.full}-macosx-x64"
+    description 'Package test results'
+    archiveName "${archive}.tar.gz"
+    compression Compression.GZIP
+    from(testResultingImage) {
+        include '**'
+    }
+    into archive
+
+}
+
 artifacts {
     archives file: packaging.outputs.getFiles().getSingleFile(), builtBy: packaging
+    archives packageTestResults
 }
