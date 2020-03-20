@@ -61,6 +61,71 @@ allprojects {
         jdkTools = ['java', 'keytool', 'rmid', 'rmiregistry', 'jjs', 'pack200', 'unpack200', 'javac', 'jaotc', 'jlink',
             'jmod', 'jhsdb', 'jar', 'jarsigner', 'javadoc', 'javap', 'jcmd', 'jconsole', 'jdb', 'jdeps', 'jdeprscan',
             'jimage', 'jinfo', 'jmap', 'jps', 'jrunscript', 'jshell', 'jstack', 'jstat', 'jstatd', 'rmic', 'serialver']
+        // artifact names
+        caCerts = "cacerts"
+        sourceTar = "amazon-corretto-source-${project.version.full}.tar.gz"
+    }
+}
+
+project(':prebuild') {
+    apply plugin: 'java'
+
+    configurations {
+        cacerts
+    }
+
+    ext {
+        cacertDir = "$distributionDir/${project.caCerts}"
+    }
+
+    def preBuildSrc = "src"
+    def classPath = "classes"
+    def generateToolMain = "build.tools.generatecacerts.GenerateCacerts"
+
+    task copyToolSrc(type: Copy) {
+        description 'Copy utility tool source to the project root'
+        from fileTree("$rootDir/src/make/jdk/src/classes") {
+            include 'build/tools/generatecacerts/*'
+        }
+        into preBuildSrc
+    }
+
+    task buildTool(type: JavaCompile) {
+        dependsOn copyToolSrc
+        source = fileTree(dir: preBuildSrc, include: '**/*.java')
+        destinationDir = file(classPath)
+        classpath = files(classPath)
+    }
+
+    task generateJdkCacerts(type: JavaExec) {
+        dependsOn buildTool
+        def jdkCaDir = "$rootDir/src/make/data/cacerts"
+
+        description = 'Generate Cacerts from JDK source'
+        classpath = files(classPath)
+        main = generateToolMain
+        args = [jdkCaDir, project.caCerts]
+    }
+
+    task importAmazonCacerts(type: Exec) {
+        dependsOn generateJdkCacerts
+        // Default password for JSSE key store
+        def keystore_password = "changeit"
+        commandLine 'keytool', '-importkeystore', '-noprompt',
+                '-srckeystore', "$rootDir/amazon-cacerts",
+                '-srcstorepass', keystore_password,
+                '-destkeystore', caCerts,
+                '-deststorepass', keystore_password
+    }
+
+    task copyCacerts(type: Copy) {
+        dependsOn importAmazonCacerts
+        from caCerts
+        into distributionDir
+    }
+
+    artifacts {
+        cacerts file: file("$distributionDir/${caCerts}"), builtBy: copyCacerts
     }
 }
 
@@ -71,7 +136,7 @@ project(':openjdksrc') {
     task sourceDistributionTarball(type: Tar) {
         description 'Assemble source files required for building and distributing Corretto.'
         compression Compression.GZIP
-        archiveName "amazon-corretto-source-${project.version.full}.tar.gz"
+        archiveName sourceTar
         from fileTree(rootDir) {
             include 'src/**'
             exclude 'src/corretto-build/**'

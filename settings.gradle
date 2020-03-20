@@ -2,7 +2,7 @@ rootProject.name = 'corretto11'
 
 import org.apache.tools.ant.taskdefs.condition.Os
 
-def subProjects = [':openjdksrc']
+def subProjects = [':openjdksrc', ':prebuild']
 
 if (Os.isFamily(Os.FAMILY_MAC)) {
     subProjects += [':installers:mac:pkg',
@@ -20,3 +20,4 @@ if (Os.isFamily(Os.FAMILY_MAC)) {
 include subProjects as String[]
 
 project(':openjdksrc').projectDir = file('src')
+project(':prebuild').projectDir = file('pre-build')
