@@ -21,6 +21,7 @@
 
 dependencies {
     compile project(path: ':openjdksrc', configuration: 'archives')
+    compile project(path: ':prebuild', configuration: 'cacerts')
 }
 
 ext {
@@ -36,9 +37,13 @@ ext {
     }
 }
 
+// deps
+def depsMap = [:]
+project.configurations.compile.getFiles().each { depsMap[it.getName()] = it }
+
 task copySource(type: Copy) {
     dependsOn project.configurations.compile
-    from tarTree(project.configurations.compile.singleFile)
+    from tarTree(depsMap[sourceTar])
     into buildRoot
 }
 
@@ -66,7 +71,8 @@ task configureBuild(type: Exec) {
             "--with-debug-level=release",
             "--with-native-debug-symbols=none",
             "--with-stdc++lib=static",
-            "--with-msvcr-dll=${project.getProperty('vcruntime_dir')}/vcruntime140.dll"
+            "--with-msvcr-dll=${project.getProperty('vcruntime_dir')}/vcruntime140.dll",
+            "--with-cacerts-file=${depsMap[caCerts]}"
 }
 
 task executeBuild(type: Exec) {
@@ -76,20 +82,8 @@ task executeBuild(type: Exec) {
     commandLine 'make', 'clean', 'images'
 }
 
-task importAmazonCacerts(type: Exec) {
-    dependsOn executeBuild
-    workingDir "${executeBuild.workingDir}/build/windows-$folder_alias-normal-server-release/images/jdk"
-    // Default password for JSSE key store
-    def keystore_password = "changeit"
-    commandLine 'keytool', '-importkeystore', '-noprompt',
-            '-srckeystore', "${buildRoot}/amazon-cacerts",
-            '-srcstorepass', keystore_password,
-            '-destkeystore', 'lib/security/cacerts',
-            '-deststorepass', keystore_password
-}
-
 task copyImage(type: Copy) {
-    dependsOn importAmazonCacerts
+    dependsOn executeBuild
 
     from "${executeBuild.workingDir}/build/windows-$folder_alias-normal-server-release/images"
     into "$buildRoot/build"

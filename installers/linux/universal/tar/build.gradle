@@ -22,6 +22,7 @@
 
 dependencies {
     compile project(path: ':openjdksrc', configuration: 'archives')
+    compile project(path: ':prebuild', configuration: 'cacerts')
 }
 
 ext {
@@ -43,6 +44,9 @@ ext {
 def jdkResultingImage = "$buildRoot/src/build/linux-${arch}-normal-server-release/images/jdk"
 def testResultingImage = "$buildRoot/src/build/linux-${arch}-normal-server-release/images/test"
 
+// deps
+def depsMap = [:]
+project.configurations.compile.getFiles().each { depsMap[it.getName()] = it }
 /**
  * Create a local copy of the source tree in our
  * build root -- this is required since OpenJDK's
@@ -52,7 +56,7 @@ def testResultingImage = "$buildRoot/src/build/linux-${arch}-normal-server-relea
  */
 task copySource(type: Copy) {
     dependsOn project.configurations.compile
-    from tarTree(project.configurations.compile.singleFile)
+    from tarTree(depsMap[sourceTar])
     into buildRoot
 }
 
@@ -89,7 +93,8 @@ task configureBuild(type: Exec) {
         "--with-vendor-bug-url=https://github.com/corretto/corretto-${version.major}/issues/",
         '--with-debug-level=release',
         '--with-native-debug-symbols=none',
-        '--with-stdc++lib=static'
+        '--with-stdc++lib=static',
+        "--with-cacerts-file=${depsMap[caCerts]}"
 }
 
 task executeBuild(type: Exec) {
@@ -97,18 +102,6 @@ task executeBuild(type: Exec) {
     workingDir "$buildRoot/src"
     commandLine 'make', 'images'
     outputs.dir jdkResultingImage
-}
-
-task importAmazonCacerts(type: Exec) {
-    dependsOn executeBuild
-    workingDir jdkResultingImage
-    // Default password for JSSE key store
-    def keystore_password = "changeit"
-    commandLine 'bin/keytool', '-importkeystore', '-noprompt',
-                '-srckeystore', "${buildRoot}/amazon-cacerts",
-                '-srcstorepass', keystore_password,
-                '-destkeystore', 'lib/security/cacerts',
-                '-deststorepass', keystore_password
 }
 
 task createTestImage(type: Exec) {
@@ -132,7 +125,6 @@ task packageTestImage(type: Tar) {
 task packageBuildResults(type: Tar) {
     description 'Compresses the JDK image and puts the results in build/distributions.'
     dependsOn packageTestImage
-    dependsOn importAmazonCacerts
     archiveName "amazon-corretto-${project.version.full}-linux-${arch_alias}.tar.gz"
     compression Compression.GZIP
     from(buildRoot) {
