@@ -2,6 +2,29 @@
 
 The following sections describe the changes for each release of Amazon Corretto 11\.
 
+## April 2020 critical patch update: Corretto version 11\.0\.7\.10\.1<a name="changes-2020-04-14"></a>
+
+Release Date: Jan 23, 2020
+
+**Target Platforms**
++  RPM\-based Linux using glibc 2\.12 or later, x86\_64 
++  Debian\-based Linux using glibc 2\.12 or later, x86\_64 
++  RPM\-based Linux using glibc 2\.17 or later, aarch64 
++  Debian\-based Linux using glibc 2\.17 or later, aarch64 
++  Windows 7 or later, x86\_64 
++  macOS 10\.13 and later, x86\_64 
+
+The following issues and enhancements are addressed in 11\.0\.6\.10\.1\.
+
+
+| Issue Name | Platform | Description | Link | 
+| --- | --- | --- | --- | 
+|  Update Corretto to 11\.0\.7\.10\.1\.  |  All  |  Update Corretto 11 patch set to 11\.0\.7\.10\.1\.  |   | 
+|  Increase default value of maxInlineLevel  |  All  |  Backport from tip of JDK, performance improvement  |  [JDK-8234863](https://bugs.openjdk.java.net/browse/JDK-8234863)  | 
+|  Fix missing Amazon cacerts in java.base.jmod  |  All  |  Ensures Corretto runtimes generated with jlink uses the proper cacerts instead of a partial set of certificates  |  [corretto/corretto-11#88](https://github.com/corretto/corretto-11/issues/88)  | 
+|  Add support for test image on linux  |  Linux  |  Build process generates additional artifacts to support native jtreg tests  |   | 
+|  Add support for test image on macOS  |  macOS  |  Build process generates additional artifacts to support native jtreg tests  |   | 
+
 ## Corretto version: 11\.0\.6\.10\.1\-2 \(macOS\)<a name="changes-2020-01-23"></a>
 
 Release Date: Jan 23, 2020
