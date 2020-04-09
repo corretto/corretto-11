@@ -4,7 +4,7 @@ The following sections describe the changes for each release of Amazon Corretto 
 
 ## April 2020 critical patch update: Corretto version 11.0.7.10.1
 
-Release Date: Jan 23, 2020
+Release Date: April 14, 2020
 
 **Target Platforms**
 +  RPM-based Linux using glibc 2.12 or later, x86_64 
@@ -14,8 +14,7 @@ Release Date: Jan 23, 2020
 +  Windows 7 or later, x86_64 
 +  macOS 10.13 and later, x86_64 
 
-The following issues and enhancements are addressed in 11.0.6.10.1.
-
+The following issues and enhancements are addressed in 11.0.7.10.1.
 
 | Issue Name | Platform | Description | Link | 
 | --- | --- | --- | --- | 
@@ -24,6 +23,25 @@ The following issues and enhancements are addressed in 11.0.6.10.1.
 |  Fix missing Amazon cacerts in java.base.jmod  |  All  |  Ensures Corretto runtimes generated with jlink uses the proper cacerts instead of a partial set of certificates  |  [corretto/corretto-11#88](https://github.com/corretto/corretto-11/issues/88)  | 
 |  Add support for test image on linux  |  Linux  |  Build process generates additional artifacts to support native jtreg tests  |   | 
 |  Add support for test image on macOS  |  macOS  |  Build process generates additional artifacts to support native jtreg tests  |   | 
+
+The following CVE are addressed in 11.0.7.10.1.
+
+| CVE | CVSS | Component |
+| --- | --- | --- |
+| CVE-2020-2803 | 8.3 | core-libs/java.nio |
+| CVE-2020-2805 | 8.3 | core-libs/java.io |
+| CVE-2020-2816 | 7.5 | security-libs/javax.net.ssl |
+| CVE-2020-2781 | 5.3 | security-libs/java.security |
+| CVE-2020-2830 | 5.3 | core-libs/java.util |
+| CVE-2020-2767 | 4.8 | security-libs/javax.net.ssl |
+| CVE-2020-2800 | 4.8 | core-libs/java.net |
+| CVE-2020-2778 | 3.7 | security-libs/javax.net.ssl |
+| CVE-2020-2754 | 3.7 | core-libs/javax.script |
+| CVE-2020-2755 | 3.7 | core-libs/javax.script |
+| CVE-2020-2773 | 3.7 | security-libs/javax.xml.crypto |
+| CVE-2020-2756 | 3.7 | core-libs/java.io:serialization |
+| CVE-2020-2757 | 3.7 | core-libs/java.io:serialization |
+
 
 ## Corretto version: 11.0.6.10.1-2 (macOS)
 
