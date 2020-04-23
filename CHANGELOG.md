@@ -2,6 +2,20 @@
 
 The following sections describe the changes for each release of Amazon Corretto 11.
 
+## Corretto version: 11.0.7.10.1-1
+
+Release Date: April 22, 2020
+
+**Target Platforms**
++  macOS 10.13 and later, x86_64
+
+The following issues and enhancements are addressed in 11.0.7.10.1-1.
+
+| Issue Name | Platform | Description | Link |
+| --- | --- | --- | --- |
+|jlink error Hash of java.rmi differs to expected hash| macOS | java.base.jmod throws hash mismatch error when using jlink | [corretto-11#96](https://github.com/corretto/corretto-11/issues/96) |
+|macOS 11.0.7.10.1 tgz is not signed | macOS | Binaries in macOS tgz are not properly signed | |
+
 ## April 2020 critical patch update: Corretto version 11.0.7.10.1
 
 Release Date: April 14, 2020
