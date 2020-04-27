@@ -145,6 +145,14 @@ task generateJdkDeb(type: Deb) {
     provides('java7-jdk')
     provides('java8-jdk')
     provides('java11-sdk')
+    // TODO: Move this to the headless jdk when splittle the fat deb
+    provides('java-sdk-headless')
+    provides('java5-sdk-headless')
+    provides('java6-sdk-headless')
+    provides('java7-sdk-headless')
+    provides('java7-jdk-headless')
+    provides('java8-jdk-headless')
+    provides('java11-sdk-headless')
     // TODO: Move this to the jre when splitting the fat deb
     provides('java-runtime')
     provides('java5-runtime')

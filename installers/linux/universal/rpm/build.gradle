@@ -116,6 +116,14 @@ task generateJdkRpm(type: Rpm) {
     provides('java-sdk-11', "${epoch}:${version}", EQUAL)
     provides('java-sdk-11-openjdk ', "${epoch}:${version}-${release}", EQUAL)
 
+    // Provided to match OpenJDK - see JDK-3214
+    provides('java', "${epoch}:${version}-${release}", EQUAL)
+    provides('java-11', "${epoch}:${version}-${release}", EQUAL)
+    provides('java-11-headless', "${epoch}:${version}-${release}", EQUAL)
+    provides('java-devel', "${epoch}:${version}-${release}", EQUAL)
+    provides('java-openjdk', "${epoch}:${version}-${release}", EQUAL)
+    provides('java-11-openjdk', "${epoch}:${version}-${release}", EQUAL)
+
     from(jdkBinaryDir) {
         into jdkHome
     }
