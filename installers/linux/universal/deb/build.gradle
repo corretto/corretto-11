@@ -30,6 +30,10 @@ dependencies {
 ext {
     // all linux distros and macos support 'uname -m'
     arch = ['uname', '-m'].execute().text.trim()
+    is_x86 = false
+    if (project.hasProperty("x86")) {
+        is_x86 = Boolean.valueOf("${project.getProperty('x86')}")
+    }
 
     switch (arch) {
         case 'aarch64':
@@ -38,9 +42,15 @@ ext {
             arch_deb = 'arm64'
             break
         case 'x86_64':
-            arch_alias = 'x64'
-            // Ubuntu arch designation for AMD64 & Intel 64 is amd64
-            arch_deb = 'amd64'
+            if(is_x86) {
+                arch = 'x86'
+                arch_alias = 'x86'
+                arch_deb = "i386"
+            } else {
+                arch_alias = 'x64'
+                // Ubuntu arch designation for AMD64 & Intel 64 is amd64
+                arch_deb = 'amd64'
+            }
             break
         default:
             throw new GradleException("${arch} is not suported")

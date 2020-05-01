@@ -28,13 +28,24 @@ dependencies {
 ext {
     // all linux distros and macos support 'uname -m'
     arch = ['uname', '-m'].execute().text.trim()
+    is_x86 = false
+    if (project.hasProperty("x86")) {
+        is_x86 = Boolean.valueOf("${project.getProperty('x86')}")
+    }
 
 	switch (arch) {
 	case 'aarch64':
 		arch_alias = arch
 		break;
 	case 'x86_64':
-		arch_alias = 'x64'
+        if (is_x86) {
+            arch = 'x86'
+            arch_alias = 'x86'
+            with_target_bit = "--with-target-bits=32"
+        } else {
+		    arch_alias = 'x64'
+            with_target_bit = "--with-target-bits=64"
+        }
 		break;
 	default:
 		throw new GradleException("${arch} is not suported")
@@ -94,7 +105,8 @@ task configureBuild(type: Exec) {
         '--with-debug-level=release',
         '--with-native-debug-symbols=none',
         '--with-stdc++lib=static',
-        "--with-cacerts-file=${depsMap[caCerts]}"
+        "--with-cacerts-file=${depsMap[caCerts]}",
+        "${with_target_bit}"
 }
 
 task executeBuild(type: Exec) {

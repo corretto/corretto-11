@@ -61,6 +61,10 @@ apply plugin: "nebula.ospackage"
 ext {
     // all linux distros and macos support 'uname -m'
     arch = ['uname', '-m'].execute().text.trim()
+    is_x86 = false
+    if (project.hasProperty("x86")) {
+        is_x86 = Boolean.valueOf("${project.getProperty('x86')}")
+    }
 
     switch (arch) {
         case 'aarch64':
@@ -68,8 +72,14 @@ ext {
             arch_alias = arch
             break;
         case 'x86_64':
-            arch_redline = arch
-            arch_alias = 'x64'
+            if(is_x86) {
+                arch = 'x86'
+                arch_redline = "i386"
+                arch_alias = 'x86'
+            } else {
+                arch_redline = arch
+                arch_alias = 'x64'
+            }
             break;
         default:
             throw new GradleException("${arch} is not suported")
