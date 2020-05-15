@@ -37,6 +37,7 @@
 #include "jvm.h"
 #include "jni_util.h"
 #include <zlib.h>
+#include "dispatch.h"
 #include "java_util_zip_Inflater.h"
 
 #define ThrowDataFormatException(env, msg) \
@@ -64,7 +65,7 @@ Java_java_util_zip_Inflater_init(JNIEnv *env, jclass cls, jboolean nowrap)
         return jlong_zero;
     } else {
         const char *msg;
-        int ret = inflateInit2(strm, nowrap ? -MAX_WBITS : MAX_WBITS);
+        int ret = inflateInit2_func(strm, nowrap ? -MAX_WBITS : MAX_WBITS);
         switch (ret) {
           case Z_OK:
             return ptr_to_jlong(strm);
@@ -110,7 +111,7 @@ Java_java_util_zip_Inflater_setDictionary(JNIEnv *env, jclass cls, jlong addr,
     Bytef *buf = (*env)->GetPrimitiveArrayCritical(env, b, 0);
     if (buf == NULL) /* out of memory */
         return;
-    res = inflateSetDictionary(jlong_to_ptr(addr), buf + off, len);
+    res = inflateSetDictionary_func(jlong_to_ptr(addr), buf + off, len);
     (*env)->ReleasePrimitiveArrayCritical(env, b, buf, 0);
     checkSetDictionaryResult(env, addr, res);
 }
@@ -121,7 +122,7 @@ Java_java_util_zip_Inflater_setDictionaryBuffer(JNIEnv *env, jclass cls, jlong a
 {
     jint res;
     Bytef *buf = jlong_to_ptr(bufferAddr);
-    res = inflateSetDictionary(jlong_to_ptr(addr), buf, len);
+    res = inflateSetDictionary_func(jlong_to_ptr(addr), buf, len);
     checkSetDictionaryResult(env, addr, res);
 }
 
@@ -137,7 +138,7 @@ static jint doInflate(jlong addr,
     strm->avail_in  = inputLen;
     strm->avail_out = outputLen;
 
-    ret = inflate(strm, Z_PARTIAL_FLUSH);
+    ret = inflate_func(strm, Z_PARTIAL_FLUSH);
     return ret;
 }
 
@@ -289,7 +290,7 @@ Java_java_util_zip_Inflater_getAdler(JNIEnv *env, jclass cls, jlong addr)
 JNIEXPORT void JNICALL
 Java_java_util_zip_Inflater_reset(JNIEnv *env, jclass cls, jlong addr)
 {
-    if (inflateReset(jlong_to_ptr(addr)) != Z_OK) {
+    if (inflateReset_func(jlong_to_ptr(addr)) != Z_OK) {
         JNU_ThrowInternalError(env, 0);
     }
 }
@@ -297,7 +298,7 @@ Java_java_util_zip_Inflater_reset(JNIEnv *env, jclass cls, jlong addr)
 JNIEXPORT void JNICALL
 Java_java_util_zip_Inflater_end(JNIEnv *env, jclass cls, jlong addr)
 {
-    if (inflateEnd(jlong_to_ptr(addr)) == Z_STREAM_ERROR) {
+    if (inflateEnd_func(jlong_to_ptr(addr)) == Z_STREAM_ERROR) {
         JNU_ThrowInternalError(env, 0);
     } else {
         free(jlong_to_ptr(addr));

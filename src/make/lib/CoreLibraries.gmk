@@ -132,7 +132,107 @@ $(BUILD_LIBJAVA): $(BUILD_LIBFDLIBM)
 
 ##########################################################################################
 
-BUILD_LIBZIP_EXCLUDES :=
+ifeq ($(USE_ZLIB_CLOUDFLARE), true)
+  ifeq ($(OPENJDK_TARGET_OS), linux)
+    ifeq ($(OPENJDK_TARGET_CPU), x86_64)
+      # Availability of SSE4.2/PCLMUL will be checked at runtime in 'libzip/dispatch.c'
+      ZLIB_CLOUDFLARE_CFLAGS := -mpclmul -DHAS_SSE42 -msse4.2
+    endif
+    ifeq ($(OPENJDK_TARGET_CPU), aarch64)
+      # Availability of NEON/CRC support will be checked at runtime in 'libzip/dispatch.c'
+      ZLIB_CLOUDFLARE_CFLAGS := -march=armv8-a+crc
+    endif
+  endif
+  ifeq ($(OPENJDK_TARGET_OS), macosx)
+    ifeq ($(OPENJDK_TARGET_CPU), x86_64)
+      # Availability of SSE4.2/PCLMUL will be checked at runtime in 'libzip/dispatch.c'
+      ZLIB_CLOUDFLARE_CFLAGS := -mpclmul -DHAS_SSE42 -msse4.2
+    endif
+  endif
+
+  $(eval $(call SetupNativeCompilation,BUILD_ZLIB_CLOUDFLARE_STATIC, \
+      NAME := zlib-cloudflare, \
+      TYPE := STATIC_LIBRARY, \
+      OUTPUT_DIR := $(SUPPORT_OUTPUTDIR)/native/$(MODULE)/zlib-cloudflare, \
+      SRC := $(TOPDIR)/src/java.base/share/native/libzip/zlib-cloudflare, \
+      LANG := C, \
+      OPTIMIZATION := HIGH, \
+      CFLAGS := $(CFLAGS_JDKLIB) $(ZLIB_CLOUDFLARE_CFLAGS), \
+      CFLAGS_unix := -UDEBUG, \
+      CFLAGS_macosx := -DZ_HAVE_UNISTD_H, \
+      DISABLED_WARNINGS_microsoft := 4101 4244 4018, \
+      DISABLED_WARNINGS_gcc := sign-compare implicit-fallthrough format, \
+      ARFLAGS := $(ARFLAGS), \
+      OBJECT_DIR := $(SUPPORT_OUTPUTDIR)/native/$(MODULE)/zlib-cloudflare, \
+      DEBUG_SYMBOLS := $(DEBUG_ALL_BINARIES)))
+
+  BUILD_LIBRARIES += $(BUILD_ZLIB_CLOUDFLARE_STATIC)
+
+  ifeq ($(OPENJDK_TARGET_OS), windows)
+    ZLIB_CLOUDFLARE := $(SUPPORT_OUTPUTDIR)/native/$(MODULE)/zlib-cloudflare/zlib-cloudflare.lib
+  else
+    ZLIB_CLOUDFLARE := $(SUPPORT_OUTPUTDIR)/native/$(MODULE)/zlib-cloudflare/libzlib-cloudflare.a
+  endif
+  BUILD_ZLIB_CLOUDFLARE := -DZLIB_CLOUDFLARE
+endif
+
+ifeq ($(USE_ZLIB_CHROMIUM), true)
+  ifeq ($(OPENJDK_TARGET_OS), linux)
+    ifeq ($(OPENJDK_TARGET_CPU), x86_64)
+      # Availability of SSE4.2/PCLMUL will be checked at runtime in 'libzip/dispatch.c'
+      ZLIB_CHROMIUM_CFLAGS := -DX86_NOT_WINDOWS -msse4.2 -mpclmul \
+          -DCRC32_SIMD_SSE42_PCLMUL -DADLER32_SIMD_SSSE3 -DINFLATE_CHUNK_SIMD_SSE2
+    endif
+    ifeq ($(OPENJDK_TARGET_CPU), aarch64)
+      # Availability of NEON/CRC support will be checked at runtime in 'libzip/dispatch.c'
+      ZLIB_CHROMIUM_CFLAGS := -DARMV8_OS_LINUX -march=armv8-a+crc \
+          -DCRC32_ARMV8_CRC32 -DADLER32_SIMD_NEON -DINFLATE_CHUNK_SIMD_NEON
+      ZLIB_CHROMIUM_EXCLUDES := crc_folding.c fill_window_sse.c
+    endif
+  endif
+  ifeq ($(OPENJDK_TARGET_OS), windows)
+    ifeq ($(OPENJDK_TARGET_CPU), x86_64)
+      # Availability of SSE4.2/PCLMUL will be checked at runtime in 'java/util/zip/dispatch.c'
+      ZLIB_CHROMIUM_CFLAGS := -DX86_WINDOWS \
+          -DCRC32_SIMD_SSE42_PCLMUL -DADLER32_SIMD_SSSE3 -DINFLATE_CHUNK_SIMD_SSE2
+    endif
+  endif
+  ifeq ($(OPENJDK_TARGET_OS), macosx)
+    ifeq ($(OPENJDK_TARGET_CPU), x86_64)
+      # Availability of SSE4.2/PCLMUL will be checked at runtime in 'libzip/dispatch.c'
+      ZLIB_CHROMIUM_CFLAGS := -DX86_NOT_WINDOWS -msse4.2 -mpclmul \
+          -DCRC32_SIMD_SSE42_PCLMUL -DADLER32_SIMD_SSSE3 -DINFLATE_CHUNK_SIMD_SSE2
+    endif
+  endif
+
+  $(eval $(call SetupNativeCompilation,BUILD_ZLIB_CHROMIUM_STATIC, \
+      NAME := zlib-chromium, \
+      TYPE := STATIC_LIBRARY, \
+      OUTPUT_DIR := $(SUPPORT_OUTPUTDIR)/native/$(MODULE)/zlib-chromium, \
+      SRC := $(TOPDIR)/src/java.base/share/native/libzip/zlib-chromium, \
+      EXCLUDE_FILES := $(ZLIB_CHROMIUM_EXCLUDES), \
+      LANG := C, \
+      OPTIMIZATION := HIGH, \
+      CFLAGS := $(CFLAGS_JDKLIB) \
+          -I$(TOPDIR)/src/java.base/share/native/libzip/zlib-chromium \
+          -DINFLATE_CHUNK_READ_64LE -DUNALIGNED_OK $(ZLIB_CHROMIUM_CFLAGS), \
+      DISABLED_WARNINGS_microsoft := 4244 4267, \
+      DISABLED_WARNINGS_gcc := implicit-fallthrough parentheses, \
+      ARFLAGS := $(ARFLAGS), \
+      OBJECT_DIR := $(SUPPORT_OUTPUTDIR)/native/$(MODULE)/zlib-chromium, \
+      DEBUG_SYMBOLS := $(DEBUG_ALL_BINARIES)))
+
+  BUILD_LIBRARIES += $(BUILD_ZLIB_CHROMIUM_STATIC)
+
+  ifeq ($(OPENJDK_TARGET_OS), windows)
+      ZLIB_CHROMIUM := $(SUPPORT_OUTPUTDIR)/native/$(MODULE)/zlib-chromium/zlib-chromium.lib
+  else
+      ZLIB_CHROMIUM := $(SUPPORT_OUTPUTDIR)/native/$(MODULE)/zlib-chromium/libzlib-chromium.a -lpthread
+  endif
+  BUILD_ZLIB_CHROMIUM := -DZLIB_CHROMIUM
+endif
+
+LIBZIP_EXCLUDES := zlib-cloudflare zlib-chromium
 ifeq ($(USE_EXTERNAL_LIBZ), true)
   LIBZIP_EXCLUDES += zlib
 endif
@@ -146,16 +246,18 @@ $(eval $(call SetupJdkLibrary, BUILD_LIBZIP, \
     OPTIMIZATION := LOW, \
     EXCLUDES := $(LIBZIP_EXCLUDES), \
     CFLAGS := $(CFLAGS_JDKLIB) \
-        $(LIBZ_CFLAGS), \
+        $(LIBZ_CFLAGS) \
+        $(BUILD_ZLIB_CLOUDFLARE) \
+        $(BUILD_ZLIB_CHROMIUM), \
     CFLAGS_unix := $(BUILD_LIBZIP_MMAP) -UDEBUG, \
     DISABLED_WARNINGS_gcc := unused-function implicit-fallthrough, \
     LDFLAGS := $(LDFLAGS_JDKLIB) \
         $(call SET_SHARED_LIBRARY_ORIGIN), \
-    LIBS_unix := -ljvm -ljava $(LIBZ_LIBS), \
-    LIBS_windows := jvm.lib $(WIN_JAVA_LIB), \
+    LIBS_unix := -ljvm -ljava $(LIBZ_LIBS) $(ZLIB_CLOUDFLARE) $(ZLIB_CHROMIUM) $(LIBDL), \
+    LIBS_windows := jvm.lib $(WIN_JAVA_LIB) $(ZLIB_CLOUDFLARE) $(ZLIB_CHROMIUM), \
 ))
 
-$(BUILD_LIBZIP): $(BUILD_LIBJAVA)
+$(BUILD_LIBZIP): $(BUILD_LIBJAVA) $(BUILD_ZLIB_CLOUDFLARE_STATIC) $(BUILD_ZLIB_CHROMIUM_STATIC)
 
 TARGETS += $(BUILD_LIBZIP)
 
@@ -243,6 +345,7 @@ $(eval $(call SetupJdkLibrary, BUILD_LIBJLI, \
     DISABLED_WARNINGS_solstudio := \
         E_ASM_DISABLES_OPTIMIZATION \
         E_STATEMENT_NOT_REACHED, \
+    DISABLED_WARNINGS_gcc := implicit-fallthrough, \
     LDFLAGS := $(LDFLAGS_JDKLIB) \
         $(call SET_SHARED_LIBRARY_ORIGIN), \
     LDFLAGS_linux := $(call SET_SHARED_LIBRARY_ORIGIN,/..), \

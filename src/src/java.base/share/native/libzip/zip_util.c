@@ -45,6 +45,7 @@
 #include "io_util_md.h"
 #include "zip_util.h"
 #include <zlib.h>
+#include "dispatch.h"
 
 #ifdef _ALLBSD_SOURCE
 #define off64_t off_t
@@ -1416,7 +1417,7 @@ InflateFully(jzfile *zip, jzentry *entry, void *buf, char **msg)
     }
 
     memset(&strm, 0, sizeof(z_stream));
-    if (inflateInit2(&strm, -MAX_WBITS) != Z_OK) {
+    if (inflateInit2_func(&strm, -MAX_WBITS) != Z_OK) {
         *msg = strm.msg;
         return JNI_FALSE;
     }
@@ -1433,7 +1434,7 @@ InflateFully(jzfile *zip, jzentry *entry, void *buf, char **msg)
             if (n == 0) {
                 *msg = "inflateFully: Unexpected end of file";
             }
-            inflateEnd(&strm);
+            inflateEnd_func(&strm);
             return JNI_FALSE;
         }
         pos += n;
@@ -1441,13 +1442,13 @@ InflateFully(jzfile *zip, jzentry *entry, void *buf, char **msg)
         strm.next_in = (Bytef *)tmp;
         strm.avail_in = n;
         do {
-            switch (inflate(&strm, Z_PARTIAL_FLUSH)) {
+            switch (inflate_func(&strm, Z_PARTIAL_FLUSH)) {
             case Z_OK:
                 break;
             case Z_STREAM_END:
                 if (count != 0 || strm.total_out != (uInt)entry->size) {
                     *msg = "inflateFully: Unexpected end of stream";
-                    inflateEnd(&strm);
+                    inflateEnd_func(&strm);
                     return JNI_FALSE;
                 }
                 break;
@@ -1457,7 +1458,7 @@ InflateFully(jzfile *zip, jzentry *entry, void *buf, char **msg)
         } while (strm.avail_in > 0);
     }
 
-    inflateEnd(&strm);
+    inflateEnd_func(&strm);
     return JNI_TRUE;
 }
 
@@ -1550,7 +1551,7 @@ ZIP_InflateFully(void *inBuf, jlong inLen, void *outBuf, jlong outLen, char **pm
 
     *pmsg = 0; /* Reset error message */
 
-    if (inflateInit2(&strm, MAX_WBITS) != Z_OK) {
+    if (inflateInit2_func(&strm, MAX_WBITS) != Z_OK) {
         *pmsg = strm.msg;
         return JNI_FALSE;
     }
@@ -1561,31 +1562,31 @@ ZIP_InflateFully(void *inBuf, jlong inLen, void *outBuf, jlong outLen, char **pm
     strm.avail_in = (uInt)inLen;
 
     do {
-        switch (inflate(&strm, Z_PARTIAL_FLUSH)) {
+        switch (inflate_func(&strm, Z_PARTIAL_FLUSH)) {
             case Z_OK:
                 break;
             case Z_STREAM_END:
                 if (strm.total_out != (uInt)outLen) {
                     *pmsg = "INFLATER_inflateFully: Unexpected end of stream";
-                    inflateEnd(&strm);
+                    inflateEnd_func(&strm);
                     return JNI_FALSE;
                 }
                 break;
             case Z_DATA_ERROR:
                 *pmsg = "INFLATER_inflateFully: Compressed data corrupted";
-                inflateEnd(&strm);
+                inflateEnd_func(&strm);
                 return JNI_FALSE;
             case Z_MEM_ERROR:
                 *pmsg = "INFLATER_inflateFully: out of memory";
-                inflateEnd(&strm);
+                inflateEnd_func(&strm);
                 return JNI_FALSE;
             default:
                 *pmsg = "INFLATER_inflateFully: internal error";
-                inflateEnd(&strm);
+                inflateEnd_func(&strm);
                 return JNI_FALSE;
         }
     } while (strm.avail_in > 0);
 
-    inflateEnd(&strm);
+    inflateEnd_func(&strm);
     return JNI_TRUE;
 }
