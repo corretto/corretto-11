@@ -28,39 +28,23 @@ dependencies {
 }
 
 ext {
-    // all linux distros and macos support 'uname -m'
-    arch = ['uname', '-m'].execute().text.trim()
-    is_x86 = false
-    if (project.hasProperty("x86")) {
-        is_x86 = Boolean.valueOf("${project.getProperty('x86')}")
-    }
-
-    switch (arch) {
+    switch (project.correttoArch) {
         case 'aarch64':
-            arch_alias = arch
-            // Ubuntu arch designation for 64bit ARM is arm64
             arch_deb = 'arm64'
+            break;
+        case 'x86':
+            arch_deb = "i386"
             break
-        case 'x86_64':
-            if(is_x86) {
-                arch = 'x86'
-                arch_alias = 'x86'
-                arch_deb = "i386"
-            } else {
-                arch_alias = 'x64'
-                // Ubuntu arch designation for AMD64 & Intel 64 is amd64
-                arch_deb = 'amd64'
-            }
+        case 'x64':
+            arch_deb = 'amd64'
             break
-        default:
-            throw new GradleException("${arch} is not suported")
     }
 }
 
 def jvmDir = '/usr/lib/jvm'
 def jdkInstallationDirName = "java-${project.version.major}-amazon-corretto"
 def jdkHome = "${jvmDir}/${jdkInstallationDirName}".toString()
-def jdkBinaryDir = "${buildRoot}/amazon-corretto-${project.version.full}-linux-${arch_alias}"
+def jdkBinaryDir = "${buildRoot}/${project.correttoJdkArchiveName}"
 def jdkPackageName = "java-${project.version.major}-amazon-corretto-jdk"
 
 def alternativesPriority = String.format("1%2s%2s%3s", project.version.major, project.version.minor, project.version.security).replace(' ', '0')

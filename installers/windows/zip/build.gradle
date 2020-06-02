@@ -24,19 +24,6 @@ dependencies {
     compile project(path: ':prebuild', configuration: 'cacerts')
 }
 
-ext {
-    arch = System.getenv('PROCESSOR_ARCHITECTURE')
-
-    switch(arch) {
-        case 'AMD64':
-            arch_alias = 'x64'
-            folder_alias = 'x86_64'
-            break;
-        default:
-            throw new GradleException("${arch} is not suported")
-    }
-}
-
 // deps
 def depsMap = [:]
 project.configurations.compile.getFiles().each { depsMap[it.getName()] = it }
@@ -52,27 +39,18 @@ task configureBuild(type: Exec) {
     dependsOn copySource
     workingDir "$buildRoot/src"
 
-    commandLine 'bash', 'configure',
-            "--with-boot-jdk=${project.getProperty('bootjdk_dir')}",
-            "--with-ucrt-dll-dir=${project.getProperty('ucrt_dll_dir')}",
-            "--with-jtreg=${project.getProperty('jtreg_dir')}",
-            "--with-jvm-features=zgc",
-            "--with-freetype=bundled",
-            "--with-zlib=bundled",
-            "--with-version-opt=LTS",
-            "--with-version-feature=${project.version.major}",
-            "--with-version-string=${project.version.major}.${project.version.minor}.${project.version.security}",
-            "--with-version-build=${project.version.build}",
-            "--with-vendor-version-string=Corretto-${project.version.full}",
-            "--with-version-pre=",
-            "--with-vendor-name=Amazon.com Inc.",
-            "--with-vendor-url=https://aws.amazon.com/corretto/",
-            "--with-vendor-bug-url=https://github.com/corretto/corretto-11/issues/",
-            "--with-debug-level=release",
-            "--with-native-debug-symbols=none",
-            "--with-stdc++lib=static",
-            "--with-msvcr-dll=${project.getProperty('vcruntime_dir')}/vcruntime140.dll",
-            "--with-cacerts-file=${depsMap[caCerts]}"
+    // Platform specific flags
+    def command = ['bash', 'configure',
+           "--with-cacerts-file=${depsMap[caCerts]}",
+           "--with-boot-jdk=${project.getProperty('bootjdk_dir')}",
+           "--with-ucrt-dll-dir=${project.getProperty('ucrt_dll_dir')}",
+           "--with-jtreg=${project.getProperty('jtreg_dir')}",
+           "--with-msvcr-dll=${project.getProperty('vcruntime_dir')}/vcruntime140.dll",
+           "--with-zlib=bundled"
+    ]
+    // Common flags
+    command += project.correttoCommonFlags
+    commandLine command.flatten()
 }
 
 task executeBuild(type: Exec) {
@@ -85,7 +63,7 @@ task executeBuild(type: Exec) {
 task copyImage(type: Copy) {
     dependsOn executeBuild
 
-    from "${executeBuild.workingDir}/build/windows-$folder_alias-normal-server-release/images"
+    from "${executeBuild.workingDir}/build/${project.jdkImageName}/images"
     into "$buildRoot/build"
 }
 
