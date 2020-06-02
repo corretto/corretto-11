@@ -28,37 +28,23 @@ dependencies {
 }
 
 ext {
-    // all linux distros and macos support 'uname -m'
-    arch = ['uname', '-m'].execute().text.trim()
-    is_x86 = false
-    if (project.hasProperty("x86")) {
-        is_x86 = Boolean.valueOf("${project.getProperty('x86')}")
-    }
-
-    switch (arch) {
+    switch (project.correttoArch) {
         case 'aarch64':
             arch_redline = 'AARCH64'
-            arch_alias = arch
             break;
-        case 'x86_64':
-            if(is_x86) {
-                arch = 'x86'
-                arch_redline = "i386"
-                arch_alias = 'x86'
-            } else {
-                arch_redline = arch
-                arch_alias = 'x64'
-            }
-            break;
-        default:
-            throw new GradleException("${arch} is not suported")
+        case 'x86':
+            arch_redline = "i386"
+            break
+        case 'x64':
+            arch_redline = 'x86_64'
+            break
     }
 }
 
 def jvmDir = '/usr/lib/jvm'
 def jdkInstallationDirName = "java-${project.version.major}-amazon-corretto"
 def jdkHome = "${jvmDir}/${jdkInstallationDirName}"
-def jdkBinaryDir = "${buildRoot}/amazon-corretto-${project.version.full}-linux-${arch_alias}"
+def jdkBinaryDir = "${buildRoot}/${project.correttoJdkArchiveName}"
 def jdkPackageName = "java-${project.version.major}-amazon-corretto-devel"
 
 ospackage {
@@ -73,7 +59,7 @@ ospackage {
     user 'root'
     permissionGroup 'root'
     epoch 1
-    arch "${arch_redline}"
+    arch arch_redline
     os LINUX
     type BINARY
 }

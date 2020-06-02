@@ -22,6 +22,9 @@
 // Tasks can refer to version information using the project.version
 // property. For an example of its usage, see ':installers:linux:rpm:buildLogic'
 // where the version numbers are used to populate a templated RPM spec file.
+
+import org.apache.tools.ant.taskdefs.condition.Os
+
 allprojects {
     apply plugin: 'base'
 
@@ -64,6 +67,103 @@ allprojects {
         // artifact names
         caCerts = "cacerts"
         sourceTar = "amazon-corretto-source-${project.version.full}.tar.gz"
+
+        correttoCommonFlags = [
+                "--with-freetype=bundled",
+                '--with-jvm-features=zgc',
+                "--with-version-build=${project.version.build}",
+                '--with-version-opt=LTS',
+                '--with-version-pre=',
+                "--with-version-string=${version.major}.${version.minor}.${version.security}",
+                "--with-vendor-bug-url=https://github.com/corretto/corretto-${project.version.major}/issues/",
+                '--with-vendor-name=Amazon.com Inc.',
+                '--with-vendor-url=https://aws.amazon.com/corretto/',
+                "--with-vendor-version-string=Corretto-${project.version.full}"
+        ]
+
+        // Valid value: null, release, debug, fastdebug, slowdebug
+        def correttoDebugLevel = "release" // Default: release
+        switch(project.findProperty("corretto.debug_level")) {
+            case null:
+            case "release":
+                correttoCommonFlags += ['--with-debug-level=release', '--with-native-debug-symbols=none']
+                break
+            case "fastdebug":
+                correttoDebugLevel = "fastdebug"
+                correttoCommonFlags += ['--with-debug-level=fastdebug', '--with-native-debug-symbols=zipped']
+                break
+            case "debug":
+            case "slowdebug":
+                correttoDebugLevel = "slowdebug"
+                correttoCommonFlags += ['--with-debug-level=slowdebug', '--with-native-debug-symbols=external']
+                break
+            default:
+                throw new RuntimeException("Invalid corretto.debug_level")
+        }
+
+        // customized flags. Identify the index of double dashes as the start of a flag
+        String extraConfig = project.findProperty("corretto.extra_config")
+        def lastIndex = -1
+        if (extraConfig != null) {
+            for (int index = extraConfig.indexOf("--"); index >= 0; index = extraConfig.indexOf("--", index + 1)) {
+                if (lastIndex != -1) {
+                    correttoCommonFlags += extraConfig.substring(lastIndex, index).trim()
+                }
+                lastIndex = index
+            }
+            if (lastIndex != -1) {
+                correttoCommonFlags += extraConfig.substring(lastIndex).trim()
+            }
+        }
+
+        // Determine the system architecture
+        def jdkArch = ""
+        def os = ""
+        if (Os.isFamily(Os.FAMILY_MAC)) {
+            os = 'macosx'
+            jdkArch = "x86_64"
+        } else if (Os.isFamily(Os.FAMILY_UNIX)) {
+            os = 'linux'
+            jdkArch = ['uname', '-m'].execute().text.trim()
+            // `uname -m` returns the host arch in a linux x86 docker instance. Pass a flag
+            // to enable
+            if (project.hasProperty("x86") && Boolean.parseBoolean(project.getProperty('x86'))) {
+                jdkArch = "x86"
+            }
+        } else if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+            def arch = System.getenv('PROCESSOR_ARCHITECTURE')
+            if (arch == 'AMD64') {
+                jdkArch = "x86_64"
+            } else { //x86
+                throw new GradleException("${arch} is not suported")
+            }
+        } else {
+            throw new GradleException("OS is not supported")
+        }
+
+        // Ext property: correttoArch
+        switch (jdkArch) {
+            case 'x86':
+            case 'aarch64':
+                correttoArch = jdkArch
+                break
+            case 'x86_64':
+                correttoArch = 'x64'
+                break
+            default:
+                throw new GradleException("${jdkArch} is not supported")
+        }
+
+        // Call toString explicitly to avoid lazy evaluation
+        jdkImageName = "${os}-${jdkArch}-normal-server-${correttoDebugLevel}".toString()
+        // no debug level suffix for release build
+        if (correttoDebugLevel == "release") {
+            correttoJdkArchiveName = "amazon-corretto-${project.version.full}-${os}-${correttoArch}".toString()
+        } else {
+            correttoJdkArchiveName =
+                    "amazon-corretto-${project.version.full}-${os}-${correttoArch}-${correttoDebugLevel}".toString()
+        }
+        correttoTestImageArchiveName = "amazon-corretto-testimage-${project.version.full}-${os}-${correttoArch}".toString()
     }
 }
 
