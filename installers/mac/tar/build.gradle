@@ -48,13 +48,16 @@ project.configurations.compile.getFiles().each { depsMap[it.getName()] = it }
  * and we don't want to tamper with someone
  * else's tree.
  */
-task copySource(type: Copy) {
-    dependsOn project.configurations.compile
-    from tarTree(depsMap[sourceTar])
-    into buildRoot
+task copySource(type: Exec) {
+    if (!file(buildRoot).exists()) {
+        file(buildRoot).mkdirs()
+    }
+    workingDir '/usr/bin'
+    commandLine 'rsync', '-a', sourceDir, buildRoot
 }
 
 task configureBuild(type: Exec) {
+    dependsOn project.configurations.compile
     dependsOn copySource
     workingDir "$buildRoot/src"
 
