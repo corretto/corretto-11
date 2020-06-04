@@ -53,7 +53,11 @@ task copySource(type: Exec) {
         file(buildRoot).mkdirs()
     }
     workingDir '/usr/bin'
-    commandLine 'rsync', '-a', sourceDir, buildRoot
+    commandLine 'rsync', '-am',
+            '--exclude=pre-build',
+            '--exclude=installers',
+            '--exclude=src/corretto-build',
+            "${project.rootDir}/", buildRoot
 }
 
 task configureBuild(type: Exec) {
