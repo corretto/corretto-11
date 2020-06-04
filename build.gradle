@@ -67,7 +67,6 @@ allprojects {
         // artifact names
         caCerts = "cacerts"
         sourceTar = "amazon-corretto-source-${project.version.full}.tar.gz"
-        sourceDir = project(':openjdksrc').projectDir
 
         correttoCommonFlags = [
                 "--with-freetype=bundled",
