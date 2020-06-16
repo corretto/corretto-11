@@ -131,6 +131,7 @@ allprojects {
                 jdkArch = "x86"
             }
         } else if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+            os = 'windows'
             def arch = System.getenv('PROCESSOR_ARCHITECTURE')
             if (arch == 'AMD64') {
                 jdkArch = "x86_64"
