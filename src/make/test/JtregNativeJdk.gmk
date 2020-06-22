@@ -62,9 +62,11 @@ ifeq ($(OPENJDK_TARGET_OS), windows)
   BUILD_JDK_JTREG_LIBRARIES_LIBS_libstringPlatformChars := $(WIN_LIB_JAVA)
   WIN_LIB_JLI := $(SUPPORT_OUTPUTDIR)/native/java.base/libjli/jli.lib
   BUILD_JDK_JTREG_EXECUTABLES_LIBS_exeJliLaunchTest := $(WIN_LIB_JLI)
+  BUILD_JDK_JTREG_EXECUTABLES_LIBS_exerevokeall := advapi32.lib
 else
   BUILD_JDK_JTREG_LIBRARIES_LIBS_libstringPlatformChars := -ljava
   BUILD_JDK_JTREG_LIBRARIES_LIBS_libDirectIO := -ljava
+  BUILD_JDK_JTREG_EXCLUDE += exerevokeall.c
   ifeq ($(OPENJDK_TARGET_OS), linux)
     BUILD_JDK_JTREG_LIBRARIES_LIBS_libInheritedChannel := -ljava
   else ifeq ($(OPENJDK_TARGET_OS), solaris)
