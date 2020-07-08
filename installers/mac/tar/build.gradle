@@ -74,43 +74,38 @@ task configureBuild(type: Exec) {
     commandLine command.flatten()
 }
 
-task executeBuild {
+task executeBuild(type: Exec) {
     dependsOn configureBuild
-    def workspace = "$buildRoot/src"
-    doLast {
-        // Build image
-        exec {
-            workingDir workspace
-            commandLine 'make', 'images'
-        }
-        // Build tests
-        exec {
-            workingDir workspace
-            commandLine 'make','test-image-hotspot-jtreg-native','test-image-jdk-jtreg-native','test-image-hotspot-gtest'
-        }
-    }
+    workingDir "$buildRoot/src"
+    commandLine 'make', 'images'
 }
 
-task renameBuildArtifacts {
+task executeTestBuild(type: Exec) {
     dependsOn executeBuild
-    doLast {
-        file("${jdkResultingImage}/jdk-${version.major}.${version.minor}.${version.security}.jdk").
-                renameTo(file("${jdkResultingImage}/${correttoMacDir}"))
-    }
-}
-
-task inflatePlistTemplate(type: Copy) {
-    dependsOn renameBuildArtifacts
-    from('templates/Info.plist.template') {
-        rename { file -> file.replace('.template', '') }
-        filter(org.apache.tools.ant.filters.ReplaceTokens, tokens: project.version)
-    }
-    into "${jdkResultingImage}/${correttoMacDir}/Contents"
+    workingDir "$buildRoot/src"
+    commandLine 'make','test-image-hotspot-jtreg-native','test-image-jdk-jtreg-native','test-image-hotspot-gtest'
 }
 
 task prepareArtifacts {
-    dependsOn inflatePlistTemplate
+    dependsOn executeBuild
     doLast {
+        if(file("${jdkResultingImage}/${correttoMacDir}").exists()) {
+            delete "${jdkResultingImage}/${correttoMacDir}"
+        }
+        // Rename bundle
+        exec {
+            workingDir jdkResultingImage
+            commandLine 'mv', "jdk-${version.major}.${version.minor}.${version.security}.jdk", correttoMacDir
+        }
+        // Replace Info.plist
+        copy {
+            from('templates/Info.plist.template') {
+                rename { file -> file.replace('.template', '') }
+                filter(org.apache.tools.ant.filters.ReplaceTokens, tokens: project.version)
+            }
+            into "${jdkResultingImage}/${correttoMacDir}/Contents"
+        }
+        // Filter files
         if(file("${buildDir}/${correttoMacDir}").exists()) {
             delete "${buildDir}/${correttoMacDir}"
         }
@@ -150,7 +145,7 @@ task packaging(type: Exec) {
 }
 
 task packageTestResults(type: Tar) {
-    dependsOn executeBuild
+    dependsOn executeTestBuild
     description 'Package test results'
     archiveName "${project.correttoTestImageArchiveName}.tar.gz"
     compression Compression.GZIP
