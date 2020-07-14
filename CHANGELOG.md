@@ -2,6 +2,46 @@
 
 The following sections describe the changes for each release of Amazon Corretto 11.
 
+## July 2020 critical patch update: Corretto version 11.0.8.10.1
+
+Release Date: July 14, 2020
+
+**Target Platforms**
+
++  RPM-based Linux using glibc 2.12 or later, x86, x86_64
++  Debian-based Linux using glibc 2.12 or later, x86, x86_64
++  RPM-based Linux using glibc 2.17 or later, aarch64
++  Debian-based Linux using glibc 2.17 or later, aarch64
++  Alpine-based Linux, x86_64
++  Windows 7 or later, x86_64
++  macOS 10.13 and later, x86_64
+
+The following issues and enhancements are addressed in 11.0.8.10.1.
+
+| Issue Name | Platform | Description | Link |
+| --- | --- | --- | --- |
+| Update Corretto to 11.0.8.10.1.  |  All  |  Update Corretto 11 patch set to 11.0.8.10.1.  |   |
+| Add Corretto 11 x86 | Linux | Added Linux x86 32-bit as a supported platform | |
+| Add Corretto 11 alpine | Linux | Added Linux Alpine x86_64 as a supported platform | [corretto/corretto-11#99](https://github.com/corretto/corretto-11/pull/99) |
+| Backport JDK-8247408 | All | 8247408: IdealGraph bit check expression canonicalization | [JDK-8247408](https://bugs.openjdk.java.net/browse/JDK-8247408)
+| Update Amazon linux cacerts	| All | Updates the set of certificates from Amazon Linux bundled with Corretto | |
+| Add provides to match openjdk | Linux | Update the provides clause for generic linux rpm and deb files | |
+| Remove expired certificates | All | Removed three expired CA certificates present in upstream
+
+The following CVE are addressed in 11.0.8.10.1.
+
+| CVE | CVSS | Component |
+| --- | --- | --- |
+| CVE-2020-14583 | 8.3 | core-libs/java.io |
+| CVE-2020-14593 | 7.4 | client-libs/2d |
+| CVE-2020-14562 | 5.3 | client-libs/javax.imageio |
+| CVE-2020-14621 | 5.3 | xml/jaxp |
+| CVE-2020-14556 | 4.8 | core-libs/java.util.concurrent |
+| CVE-2020-14573 | 3.7 | hotspot/compiler |
+| CVE-2020-14581 | 3.7 | client-libs/2d |
+| CVE-2020-14577 | 3.7 | security-libs/javax.net.ssl |
+
+
 ## Corretto version: 11.0.7.10.1-1
 
 Release Date: April 22, 2020
