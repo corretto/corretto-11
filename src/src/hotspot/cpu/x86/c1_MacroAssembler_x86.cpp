@@ -325,9 +325,9 @@ void C1_MacroAssembler::build_frame(int frame_size_in_bytes, int bang_size_in_by
   }
 #ifdef TIERED
   // c2 leaves fpu stack dirty. Clean it on entry
-  if (UseSSE < 2 ) {
-    empty_FPU_stack();
-  }
+  //if (UseSSE < 2 ) {
+  //  empty_FPU_stack();
+  //}
 #endif // TIERED
   decrement(rsp, frame_size_in_bytes); // does not emit code for frame_size == 0
 }

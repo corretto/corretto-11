@@ -209,7 +209,7 @@ address TemplateInterpreterGenerator::generate_CRC32C_updateBytes_entry(Abstract
  *    java.lang.Float.intBitsToFloat(int bits)
  */
 address TemplateInterpreterGenerator::generate_Float_intBitsToFloat_entry() {
-  if (UseSSE >= 1) {
+  //if (UseSSE >= 1) {
     address entry = __ pc();
 
     // rsi: the sender's SP
@@ -225,9 +225,9 @@ address TemplateInterpreterGenerator::generate_Float_intBitsToFloat_entry() {
     __ mov(rsp, rsi); // set rsp to the sender's SP
     __ jmp(rdi);
     return entry;
-  }
+  //}
 
-  return NULL;
+  //return NULL;
 }
 
 /**
@@ -235,7 +235,7 @@ address TemplateInterpreterGenerator::generate_Float_intBitsToFloat_entry() {
  *    java.lang.Float.floatToRawIntBits(float value)
  */
 address TemplateInterpreterGenerator::generate_Float_floatToRawIntBits_entry() {
-  if (UseSSE >= 1) {
+  //if (UseSSE >= 1) {
     address entry = __ pc();
 
     // rsi: the sender's SP
@@ -251,9 +251,9 @@ address TemplateInterpreterGenerator::generate_Float_floatToRawIntBits_entry() {
     __ mov(rsp, rsi); // set rsp to the sender's SP
     __ jmp(rdi);
     return entry;
-  }
+  //}
 
-  return NULL;
+  //return NULL;
 }
 
 

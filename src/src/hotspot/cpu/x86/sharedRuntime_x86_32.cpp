@@ -196,19 +196,11 @@ OopMap* RegisterSaver::save_live_registers(MacroAssembler* masm, int additional_
 
   off = xmm0_off;
   delta = xmm1_off - off;
-  if(UseSSE == 1) {
-    // Save the XMM state
-    for (int n = 0; n < num_xmm_regs; n++) {
-      __ movflt(Address(rsp, off*wordSize), as_XMMRegister(n));
-      off += delta;
-    }
-  } else if(UseSSE >= 2) {
     // Save whole 128bit (16 bytes) XMM registers
     for (int n = 0; n < num_xmm_regs; n++) {
       __ movdqu(Address(rsp, off*wordSize), as_XMMRegister(n));
       off += delta;
     }
-  }
 
   if (save_vectors) {
     __ subptr(rsp, ymm_bytes);
@@ -537,11 +529,11 @@ static void patch_callers_callsite(MacroAssembler *masm) {
   }
 #ifdef COMPILER2
   // C2 may leave the stack dirty if not in SSE2+ mode
-  if (UseSSE >= 2) {
+  //if (UseSSE >= 2) {
     __ verify_FPU(0, "c2i transition should have clean FPU stack");
-  } else {
-    __ empty_FPU_stack();
-  }
+  //} else {
+  //  __ empty_FPU_stack();
+  //}
 #endif /* COMPILER2 */
 
   // VM needs caller's callsite
@@ -590,11 +582,11 @@ static void gen_c2i_adapter(MacroAssembler *masm,
 
 #ifdef COMPILER2
   // C2 may leave the stack dirty if not in SSE2+ mode
-  if (UseSSE >= 2) {
+  //if (UseSSE >= 2) {
     __ verify_FPU(0, "c2i transition should have clean FPU stack");
-  } else {
-    __ empty_FPU_stack();
-  }
+  //} else {
+  //  __ empty_FPU_stack();
+  //}
 #endif /* COMPILER2 */
 
   // Since all args are passed on the stack, total_args_passed * interpreter_

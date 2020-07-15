@@ -178,13 +178,13 @@ address TemplateInterpreterGenerator::generate_return_entry_for(TosState state, 
 #ifndef _LP64
 #ifdef COMPILER2
   // The FPU stack is clean if UseSSE >= 2 but must be cleaned in other cases
-  if ((state == ftos && UseSSE < 1) || (state == dtos && UseSSE < 2)) {
-    for (int i = 1; i < 8; i++) {
-        __ ffree(i);
-    }
-  } else if (UseSSE < 2) {
-    __ empty_FPU_stack();
-  }
+  //if ((state == ftos && UseSSE < 1) || (state == dtos && UseSSE < 2)) {
+  //  for (int i = 1; i < 8; i++) {
+  //      __ ffree(i);
+  //  }
+  //} else if (UseSSE < 2) {
+  //  __ empty_FPU_stack();
+  //}
 #endif // COMPILER2
   if ((state == ftos && UseSSE < 1) || (state == dtos && UseSSE < 2)) {
     __ MacroAssembler::verify_FPU(1, "generate_return_entry_for compiled");

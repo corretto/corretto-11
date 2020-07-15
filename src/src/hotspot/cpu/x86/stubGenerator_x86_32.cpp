@@ -222,24 +222,9 @@ class StubGenerator: public StubCodeGenerator {
 #ifdef COMPILER2
     {
       Label L_skip;
-      if (UseSSE >= 2) {
-        __ verify_FPU(0, "call_stub_return");
-      } else {
-        for (int i = 1; i < 8; i++) {
-          __ ffree(i);
-        }
-
-        // UseSSE <= 1 so double result should be left on TOS
-        __ movl(rsi, result_type);
-        __ cmpl(rsi, T_DOUBLE);
-        __ jcc(Assembler::equal, L_skip);
-        if (UseSSE == 0) {
-          // UseSSE == 0 so float result should be left on TOS
-          __ cmpl(rsi, T_FLOAT);
-          __ jcc(Assembler::equal, L_skip);
-        }
-        __ ffree(0);
-      }
+    
+      __ verify_FPU(0, "call_stub_return");
+      
       __ BIND(L_skip);
     }
 #endif // COMPILER2

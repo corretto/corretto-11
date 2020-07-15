@@ -606,13 +606,8 @@ void MethodHandles::trace_method_handle(MacroAssembler* _masm, const char* adapt
 
   // save FP result, valid at some call sites (adapter_opt_return_float, ...)
   __ increment(rsp, -2 * wordSize);
-  if  (UseSSE >= 2) {
-    __ movdbl(Address(rsp, 0), xmm0);
-  } else if (UseSSE == 1) {
-    __ movflt(Address(rsp, 0), xmm0);
-  } else {
-    __ fst_d(Address(rsp, 0));
-  }
+  __ movdbl(Address(rsp, 0), xmm0);
+  
 
   // Incoming state:
   // rcx: method handle

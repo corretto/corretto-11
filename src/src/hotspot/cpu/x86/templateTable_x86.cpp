@@ -283,59 +283,36 @@ void TemplateTable::lconst(int value) {
 
 void TemplateTable::fconst(int value) {
   transition(vtos, ftos);
-  if (UseSSE >= 1) {
-    static float one = 1.0f, two = 2.0f;
-    switch (value) {
-    case 0:
-      __ xorps(xmm0, xmm0);
-      break;
-    case 1:
-      __ movflt(xmm0, ExternalAddress((address) &one));
-      break;
-    case 2:
-      __ movflt(xmm0, ExternalAddress((address) &two));
-      break;
-    default:
-      ShouldNotReachHere();
-      break;
-    }
-  } else {
-#ifdef _LP64
+  static float one = 1.0f, two = 2.0f;
+  switch (value) {
+  case 0:
+    __ xorps(xmm0, xmm0);
+    break;
+  case 1:
+    __ movflt(xmm0, ExternalAddress((address) &one));
+    break;
+  case 2:
+    __ movflt(xmm0, ExternalAddress((address) &two));
+    break;
+  default:
     ShouldNotReachHere();
-#else
-           if (value == 0) { __ fldz();
-    } else if (value == 1) { __ fld1();
-    } else if (value == 2) { __ fld1(); __ fld1(); __ faddp(); // should do a better solution here
-    } else                 { ShouldNotReachHere();
-    }
-#endif // _LP64
+    break;
   }
 }
 
 void TemplateTable::dconst(int value) {
   transition(vtos, dtos);
-  if (UseSSE >= 2) {
-    static double one = 1.0;
-    switch (value) {
-    case 0:
-      __ xorpd(xmm0, xmm0);
-      break;
-    case 1:
-      __ movdbl(xmm0, ExternalAddress((address) &one));
-      break;
-    default:
-      ShouldNotReachHere();
-      break;
-    }
-  } else {
-#ifdef _LP64
+  static double one = 1.0;
+  switch (value) {
+  case 0:
+    __ xorpd(xmm0, xmm0);
+    break;
+  case 1:
+    __ movdbl(xmm0, ExternalAddress((address) &one));
+    break;
+  default:
     ShouldNotReachHere();
-#else
-           if (value == 0) { __ fldz();
-    } else if (value == 1) { __ fld1();
-    } else                 { ShouldNotReachHere();
-    }
-#endif
+    break;
   }
 }
 

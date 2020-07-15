@@ -4281,67 +4281,67 @@ operand cmpOpUCF2() %{
 // Operands for bound floating pointer register arguments
 operand rxmm0() %{
   constraint(ALLOC_IN_RC(xmm0_reg));  match(VecX);
-  predicate((UseSSE > 0) && (UseAVX<= 2));  format%{%}  interface(REG_INTER);
+  predicate(UseAVX<= 2);  format%{%}  interface(REG_INTER);
 %}
 operand rxmm1() %{
   constraint(ALLOC_IN_RC(xmm1_reg));  match(VecX);
-  predicate((UseSSE > 0) && (UseAVX <= 2));  format%{%}  interface(REG_INTER);
+  predicate(UseAVX <= 2);  format%{%}  interface(REG_INTER);
 %}
 operand rxmm2() %{
   constraint(ALLOC_IN_RC(xmm2_reg));  match(VecX);
-  predicate((UseSSE > 0) && (UseAVX <= 2));  format%{%}  interface(REG_INTER);
+  predicate(UseAVX <= 2);  format%{%}  interface(REG_INTER);
 %}
 operand rxmm3() %{
   constraint(ALLOC_IN_RC(xmm3_reg));  match(VecX);
-  predicate((UseSSE > 0) && (UseAVX <= 2));  format%{%}  interface(REG_INTER);
+  predicate(UseAVX <= 2);  format%{%}  interface(REG_INTER);
 %}
 operand rxmm4() %{
   constraint(ALLOC_IN_RC(xmm4_reg));  match(VecX);
-  predicate((UseSSE > 0) && (UseAVX <= 2));  format%{%}  interface(REG_INTER);
+  predicate(UseAVX <= 2);  format%{%}  interface(REG_INTER);
 %}
 operand rxmm5() %{
   constraint(ALLOC_IN_RC(xmm5_reg));  match(VecX);
-  predicate((UseSSE > 0) && (UseAVX <= 2));  format%{%}  interface(REG_INTER);
+  predicate(UseAVX <= 2);  format%{%}  interface(REG_INTER);
 %}
 operand rxmm6() %{
   constraint(ALLOC_IN_RC(xmm6_reg));  match(VecX);
-  predicate((UseSSE > 0) && (UseAVX <= 2));  format%{%}  interface(REG_INTER);
+  predicate(UseAVX <= 2);  format%{%}  interface(REG_INTER);
 %}
 operand rxmm7() %{
   constraint(ALLOC_IN_RC(xmm7_reg));  match(VecX);
-  predicate((UseSSE > 0) && (UseAVX <= 2));  format%{%}  interface(REG_INTER);
+  predicate(UseAVX <= 2);  format%{%}  interface(REG_INTER);
 %}
 operand rxmm8() %{
   constraint(ALLOC_IN_RC(xmm8_reg));  match(VecX);
-  predicate((UseSSE > 0) && (UseAVX <= 2));  format%{%}  interface(REG_INTER);
+  predicate(UseAVX <= 2);  format%{%}  interface(REG_INTER);
 %}
 operand rxmm9() %{
   constraint(ALLOC_IN_RC(xmm9_reg));  match(VecX);
-  predicate((UseSSE > 0) && (UseAVX <= 2));  format%{%}  interface(REG_INTER);
+  predicate(UseAVX <= 2);  format%{%}  interface(REG_INTER);
 %}
 operand rxmm10() %{
   constraint(ALLOC_IN_RC(xmm10_reg));  match(VecX);
-  predicate((UseSSE > 0) && (UseAVX <= 2));  format%{%}  interface(REG_INTER);
+  predicate(UseAVX <= 2);  format%{%}  interface(REG_INTER);
 %}
 operand rxmm11() %{
   constraint(ALLOC_IN_RC(xmm11_reg));  match(VecX);
-  predicate((UseSSE > 0) && (UseAVX <= 2));  format%{%}  interface(REG_INTER);
+  predicate(UseAVX <= 2);  format%{%}  interface(REG_INTER);
 %}
 operand rxmm12() %{
   constraint(ALLOC_IN_RC(xmm12_reg));  match(VecX);
-  predicate((UseSSE > 0) && (UseAVX <= 2));  format%{%}  interface(REG_INTER);
+  predicate(UseAVX <= 2);  format%{%}  interface(REG_INTER);
 %}
 operand rxmm13() %{
   constraint(ALLOC_IN_RC(xmm13_reg));  match(VecX);
-  predicate((UseSSE > 0) && (UseAVX <= 2));  format%{%}  interface(REG_INTER);
+  predicate(UseAVX <= 2);  format%{%}  interface(REG_INTER);
 %}
 operand rxmm14() %{
   constraint(ALLOC_IN_RC(xmm14_reg));  match(VecX);
-  predicate((UseSSE > 0) && (UseAVX <= 2));  format%{%}  interface(REG_INTER);
+  predicate(UseAVX <= 2);  format%{%}  interface(REG_INTER);
 %}
 operand rxmm15() %{
   constraint(ALLOC_IN_RC(xmm15_reg));  match(VecX);
-  predicate((UseSSE > 0) && (UseAVX <= 2));  format%{%}  interface(REG_INTER);
+  predicate(UseAVX <= 2);  format%{%}  interface(REG_INTER);
 %}
 operand rxmm16() %{
   constraint(ALLOC_IN_RC(xmm16_reg));  match(VecX);

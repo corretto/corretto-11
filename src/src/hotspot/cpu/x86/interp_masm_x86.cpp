@@ -684,20 +684,8 @@ void InterpreterMacroAssembler::pop(TosState state) {
     case stos:                                               // fall through
     case itos: pop_i(rax);                                   break;
     case ltos: pop_l(rax, rdx);                              break;
-    case ftos:
-      if (UseSSE >= 1) {
-        pop_f(xmm0);
-      } else {
-        pop_f();
-      }
-      break;
-    case dtos:
-      if (UseSSE >= 2) {
-        pop_d(xmm0);
-      } else {
-        pop_d();
-      }
-      break;
+    case ftos: pop_f(xmm0);                                  break;
+    case dtos: pop_d(xmm0);                                  break;
     case vtos: /* nothing to do */                           break;
     default  : ShouldNotReachHere();
   }

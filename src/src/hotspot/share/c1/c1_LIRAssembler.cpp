@@ -482,14 +482,12 @@ void LIR_Assembler::emit_call(LIR_OpJavaCall* op) {
 
 #if defined(X86) && defined(TIERED)
   // C2 leave fpu stack dirty clean it
-  if (UseSSE < 2) {
-    int i;
-    for ( i = 1; i <= 7 ; i++ ) {
-      ffree(i);
-    }
-    if (!op->result_opr()->is_float_kind()) {
-      ffree(0);
-    }
+  int i;
+  for ( i = 1; i <= 7 ; i++ ) {
+    ffree(i);
+  }
+  if (!op->result_opr()->is_float_kind()) {
+    ffree(0);
   }
 #endif // X86 && TIERED
 }

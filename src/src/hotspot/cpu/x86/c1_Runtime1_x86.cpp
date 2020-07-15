@@ -366,44 +366,19 @@ static OopMap* generate_oop_map(StubAssembler* sasm, int num_rt_args,
 #endif
 
   if (save_fpu_registers) {
-    if (UseSSE < 2) {
-      int fpu_off = float_regs_as_doubles_off;
-      for (int n = 0; n < FrameMap::nof_fpu_regs; n++) {
-        VMReg fpu_name_0 = FrameMap::fpu_regname(n);
-        map->set_callee_saved(VMRegImpl::stack2reg(fpu_off +     num_rt_args), fpu_name_0);
-        // %%% This is really a waste but we'll keep things as they were for now
-        if (true) {
-          map->set_callee_saved(VMRegImpl::stack2reg(fpu_off + 1 + num_rt_args), fpu_name_0->next());
-        }
-        fpu_off += 2;
-      }
-      assert(fpu_off == fpu_state_off, "incorrect number of fpu stack slots");
-    }
-
-    if (UseSSE >= 2) {
-      int xmm_off = xmm_regs_as_doubles_off;
-      for (int n = 0; n < FrameMap::nof_xmm_regs; n++) {
-        if (n < xmm_bypass_limit) {
-          VMReg xmm_name_0 = as_XMMRegister(n)->as_VMReg();
-          map->set_callee_saved(VMRegImpl::stack2reg(xmm_off + num_rt_args), xmm_name_0);
-          // %%% This is really a waste but we'll keep things as they were for now
-          if (true) {
-            map->set_callee_saved(VMRegImpl::stack2reg(xmm_off + 1 + num_rt_args), xmm_name_0->next());
-          }
-        }
-        xmm_off += 2;
-      }
-      assert(xmm_off == float_regs_as_doubles_off, "incorrect number of xmm registers");
-
-    } else if (UseSSE == 1) {
-      int xmm_off = xmm_regs_as_doubles_off;
-      for (int n = 0; n < FrameMap::nof_fpu_regs; n++) {
+    int xmm_off = xmm_regs_as_doubles_off;
+    for (int n = 0; n < FrameMap::nof_xmm_regs; n++) {
+    if (n < xmm_bypass_limit) {
         VMReg xmm_name_0 = as_XMMRegister(n)->as_VMReg();
         map->set_callee_saved(VMRegImpl::stack2reg(xmm_off + num_rt_args), xmm_name_0);
-        xmm_off += 2;
-      }
-      assert(xmm_off == float_regs_as_doubles_off, "incorrect number of xmm registers");
+        // %%% This is really a waste but we'll keep things as they were for now
+        if (true) {
+            map->set_callee_saved(VMRegImpl::stack2reg(xmm_off + 1 + num_rt_args), xmm_name_0->next());
+        }
     }
+    xmm_off += 2;
+    }
+    assert(xmm_off == float_regs_as_doubles_off, "incorrect number of xmm registers");
   }
 
   return map;
@@ -700,9 +675,9 @@ OopMapSet* Runtime1::generate_handle_exception(StubID id, StubAssembler *sasm) {
 
 #ifdef TIERED
   // C2 can leave the fpu stack dirty
-  if (UseSSE < 2) {
-    __ empty_FPU_stack();
-  }
+  //if (UseSSE < 2) {
+  //  __ empty_FPU_stack();
+  //}
 #endif // TIERED
 
   // verify that only rax, and rdx is valid at this time
