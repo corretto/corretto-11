@@ -700,9 +700,6 @@ OopMapSet* Runtime1::generate_handle_exception(StubID id, StubAssembler *sasm) {
 
 #ifdef TIERED
   // C2 can leave the fpu stack dirty
-  if (UseSSE < 2) {
-    __ empty_FPU_stack();
-  }
 #endif // TIERED
 
   // verify that only rax, and rdx is valid at this time

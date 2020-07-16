@@ -539,8 +539,6 @@ static void patch_callers_callsite(MacroAssembler *masm) {
   // C2 may leave the stack dirty if not in SSE2+ mode
   if (UseSSE >= 2) {
     __ verify_FPU(0, "c2i transition should have clean FPU stack");
-  } else {
-    __ empty_FPU_stack();
   }
 #endif /* COMPILER2 */
 
@@ -592,8 +590,6 @@ static void gen_c2i_adapter(MacroAssembler *masm,
   // C2 may leave the stack dirty if not in SSE2+ mode
   if (UseSSE >= 2) {
     __ verify_FPU(0, "c2i transition should have clean FPU stack");
-  } else {
-    __ empty_FPU_stack();
   }
 #endif /* COMPILER2 */
 
