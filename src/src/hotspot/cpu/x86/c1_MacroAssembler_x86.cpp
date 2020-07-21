@@ -323,9 +323,7 @@ void C1_MacroAssembler::build_frame(int frame_size_in_bytes, int bang_size_in_by
   if (PreserveFramePointer) {
     mov(rbp, rsp);
   }
-#ifdef TIERED
-  // c2 leaves fpu stack dirty. Clean it on entry
-#endif // TIERED
+
   decrement(rsp, frame_size_in_bytes); // does not emit code for frame_size == 0
 }
 

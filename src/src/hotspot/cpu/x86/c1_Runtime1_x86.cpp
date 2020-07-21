@@ -698,10 +698,6 @@ OopMapSet* Runtime1::generate_handle_exception(StubID id, StubAssembler *sasm) {
   default:  ShouldNotReachHere();
   }
 
-#ifdef TIERED
-  // C2 can leave the fpu stack dirty
-#endif // TIERED
-
   // verify that only rax, and rdx is valid at this time
   __ invalidate_registers(false, true, true, false, true, true);
   // verify that rax, contains a valid exception
