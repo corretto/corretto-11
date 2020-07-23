@@ -105,6 +105,7 @@ static double zero = 0.0;       /* used as const */
 #endif
         exc.arg1 = x;
         exc.arg2 = y;
+        exc.retval = zero;
         switch(type) {
             case 1:
                 /* acos(|x|>1) */
