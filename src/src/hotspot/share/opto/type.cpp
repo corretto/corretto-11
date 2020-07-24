@@ -3041,7 +3041,7 @@ const Type *TypeOopPtr::cast_to_ptr_type(PTR ptr) const {
 }
 
 //-----------------------------cast_to_instance_id----------------------------
-const TypeOopPtr *TypeOopPtr::cast_to_instance_id(int instance_id) const {
+const TypeOopPtr *TypeOopPtr::cast_to_instance_id(uint instance_id) const {
   // There are no instances of a general oop.
   // Return self unchanged.
   return this;
@@ -3544,8 +3544,8 @@ const Type *TypeInstPtr::cast_to_exactness(bool klass_is_exact) const {
 }
 
 //-----------------------------cast_to_instance_id----------------------------
-const TypeOopPtr *TypeInstPtr::cast_to_instance_id(int instance_id) const {
-  if( instance_id == _instance_id ) return this;
+const TypeOopPtr *TypeInstPtr::cast_to_instance_id(uint instance_id) const {
+  if( instance_id == (uint)_instance_id ) return this;
   return make(_ptr, klass(), _klass_is_exact, const_oop(), _offset, instance_id, _speculative, _inline_depth);
 }
 
@@ -4071,8 +4071,8 @@ const Type *TypeAryPtr::cast_to_exactness(bool klass_is_exact) const {
 }
 
 //-----------------------------cast_to_instance_id----------------------------
-const TypeOopPtr *TypeAryPtr::cast_to_instance_id(int instance_id) const {
-  if( instance_id == _instance_id ) return this;
+const TypeOopPtr *TypeAryPtr::cast_to_instance_id(uint instance_id) const {
+  if( instance_id == (uint)_instance_id ) return this;
   return make(_ptr, const_oop(), _ary, klass(), _klass_is_exact, _offset, instance_id, _speculative, _inline_depth);
 }
 
