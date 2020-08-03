@@ -705,42 +705,174 @@ void VM_Version::get_processor_features() {
       _features &= ~CPU_VZEROUPPER;
     }
   }
-
+  enum features { cmov, cx8, fxsr, mmx, sse, sse2, sse3, ssse3, sse41, sse42, popcnt, avx, avx2, aes, clmul, erms, rtm, mmxext, dnowperf3, lzcnt, sse4a, ht, tsc, tscinvbit, tscinv, bmi1, bmi2, adx, evex, sha, fma};
+  char result[256];
   char buf[256];
-  jio_snprintf(buf, sizeof(buf), "(%u cores per cpu, %u threads per core) family %d model %d stepping %d%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s",
+  for(features fea=cmov ; fea<=fma; fea=(features)(fea+1)){
+        switch (fea)
+        {
+            case cmov: 
+                if(supports_cmov()){
+                  strcat(result,"cmov");
+                }
+                break;
+            case cx8: 
+                if(supports_cmpxchg8()){
+                  strcat(result,", cx8");
+                }
+                break;
+            case fxsr: 
+                if(supports_fxsr()){
+                  strcat(result,", fxsr");
+                }
+                
+                break;
+            case mmx: 
+                if(supports_mmx()){
+                  strcat(result,", mmx");
+                }
+                break;
+            case sse: 
+                if(supports_sse()){
+                  strcat(result,", sse");
+                }
+                break;
+            case sse2: 
+                if(supports_sse2()){
+                  strcat(result,", sse2");
+                }
+                break;
+            case sse3: 
+                if(supports_sse3()){
+                  strcat(result,", sse3");
+                }
+                break;
+            case ssse3: 
+                if(supports_ssse3()){
+                  strcat(result,", ssse3");
+                }
+                break;
+            case sse41: 
+                if(supports_sse4_1()){
+                  strcat(result,", sse4.1");
+                }
+                break;
+            case sse42: 
+                if(supports_sse4_2()){
+                  strcat(result,", sse4.2");
+                }
+                break;
+            case popcnt: 
+                if(supports_popcnt()){
+                  strcat(result,", popcnt");
+                }
+                break;
+            case avx: 
+                if(supports_avx()){
+                  strcat(result,", avx");
+                }
+                break;
+            case avx2: 
+                if(supports_avx2()){
+                  strcat(result,", avx2");
+                }
+                break;
+            case aes: 
+                if(supports_aes()){
+                  strcat(result,", aes");
+                }
+                break;
+            case clmul: 
+                if(supports_clmul()){
+                  strcat(result,", clmul");
+                }
+                break;
+            case erms: 
+                if(supports_erms()){
+                  strcat(result,", erms");
+                }
+                break;
+            case rtm: 
+                if(supports_rtm()){
+                  strcat(result,", rtm");
+                }
+                break;
+            case mmxext: 
+                if(supports_mmx_ext()){
+                  strcat(result,", mmxext");
+                }
+                break;
+            case dnowperf3: 
+                if(supports_3dnow_prefetch()){
+                  strcat(result,", 3dnowpref");
+                }
+                break;
+            case lzcnt: 
+                if(supports_lzcnt()){
+                  strcat(result,", lzcnt");
+                }
+                break;
+            case sse4a: 
+                if(supports_sse4a()){
+                  strcat(result,", sse4a");
+                }
+                break;
+            case ht: 
+                if(supports_ht()){
+                  strcat(result,", ht");
+                }
+                break;
+            case tsc: 
+                if(supports_tsc()){
+                  strcat(result,", tsc");
+                }
+                break;
+            case tscinvbit: 
+                if(supports_tscinv_bit()){
+                  strcat(result,", tscinvbitux");
+                }
+                break;
+            case tscinv: 
+                if(supports_tscinv()){
+                  strcat(result,", tscinv");
+                }
+                break;
+            case bmi1: 
+                if(supports_bmi1()){
+                  strcat(result,", bmi1");
+                }
+                break;
+            case bmi2: 
+                if(supports_bmi2()){
+                  strcat(result,", bmi2");
+                }
+                break;
+            case adx: 
+                if(supports_adx()){
+                  strcat(result,", adx");
+                }
+                break;
+            case evex: 
+                if(supports_evex()){
+                  strcat(result,", evex");
+                }
+                break;
+            case sha: 
+                if(supports_sha()){
+                  strcat(result,", sha");
+                }
+                break;
+            case fma: 
+                if(supports_fma()){
+                  strcat(result,", fma");
+                }
+                break;
+        }
+  }
+  jio_snprintf(buf, sizeof(buf), "(%u cores per cpu, %u threads per core) family %d model %d stepping %d%s",
                cores_per_cpu(), threads_per_core(),
                cpu_family(), _model, _stepping,
-               (supports_cmov() ? ", cmov" : ""),
-               (supports_cmpxchg8() ? ", cx8" : ""),
-               (supports_fxsr() ? ", fxsr" : ""),
-               (supports_mmx()  ? ", mmx"  : ""),
-               (supports_sse()  ? ", sse"  : ""),
-               (supports_sse2() ? ", sse2" : ""),
-               (supports_sse3() ? ", sse3" : ""),
-               (supports_ssse3()? ", ssse3": ""),
-               (supports_sse4_1() ? ", sse4.1" : ""),
-               (supports_sse4_2() ? ", sse4.2" : ""),
-               (supports_popcnt() ? ", popcnt" : ""),
-               (supports_avx()    ? ", avx" : ""),
-               (supports_avx2()   ? ", avx2" : ""),
-               (supports_aes()    ? ", aes" : ""),
-               (supports_clmul()  ? ", clmul" : ""),
-               (supports_erms()   ? ", erms" : ""),
-               (supports_rtm()    ? ", rtm" : ""),
-               (supports_mmx_ext() ? ", mmxext" : ""),
-               (supports_3dnow_prefetch() ? ", 3dnowpref" : ""),
-               (supports_lzcnt()   ? ", lzcnt": ""),
-               (supports_sse4a()   ? ", sse4a": ""),
-               (supports_ht() ? ", ht": ""),
-               (supports_tsc() ? ", tsc": ""),
-               (supports_tscinv_bit() ? ", tscinvbit": ""),
-               (supports_tscinv() ? ", tscinv": ""),
-               (supports_bmi1() ? ", bmi1" : ""),
-               (supports_bmi2() ? ", bmi2" : ""),
-               (supports_adx() ? ", adx" : ""),
-               (supports_evex() ? ", evex" : ""),
-               (supports_sha() ? ", sha" : ""),
-               (supports_fma() ? ", fma" : ""));
+               result);
   _features_string = os::strdup(buf);
 
   // UseSSE is set to the smaller of what hardware supports and what
