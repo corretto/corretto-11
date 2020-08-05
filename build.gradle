@@ -70,7 +70,7 @@ allprojects {
 
         correttoCommonFlags = [
                 "--with-freetype=bundled",
-                '--with-jvm-features=zgc',
+                '--with-jvm-features=zgc shenandoahgc',
                 "--with-version-build=${project.version.build}",
                 '--with-version-opt=LTS',
                 '--with-version-pre=',
