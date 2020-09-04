@@ -25,8 +25,15 @@ dependencies {
     compile project(path: ':prebuild', configuration: 'cacerts')
 }
 
+def archSpecificFlags = []
 if (project.correttoArch == 'x86') {
-    project.correttoCommonFlags += '--with-target-bits=32'
+    archSpecificFlags += '--with-target-bits=32'
+}
+if (project.correttoArch == 'aarch64') {
+    archSpecificFlags += [
+            '--with-extra-cflags=-moutline-atomics',
+            '--with-extra-cxxflags=-moutline-atomics'
+        ]
 }
 
 def imageDir= "$buildRoot/src/build/${project.jdkImageName}/images"
@@ -82,6 +89,7 @@ task configureBuild(type: Exec) {
     ]
     // Common flags
     command += project.correttoCommonFlags
+    command += archSpecificFlags
     commandLine command.flatten()
 
 }
