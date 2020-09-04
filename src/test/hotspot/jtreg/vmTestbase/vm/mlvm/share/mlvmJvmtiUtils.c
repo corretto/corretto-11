@@ -65,7 +65,21 @@ struct MethodName * getMethodName(jvmtiEnv * pJvmtiEnv, jmethodID method) {
         return NULL;
     }
 
+    if (strlen(szName) + 1 > sizeof(mn->methodName) ||
+        strlen(szSignature) + 1 > sizeof(mn->classSig)) {
+      NSK_JVMTI_VERIFY(NSK_CPP_STUB2(Deallocate, pJvmtiEnv, (void *) szName));
+      NSK_JVMTI_VERIFY(NSK_CPP_STUB2(Deallocate, pJvmtiEnv, (void *) szName));
+      return NULL;
+    }
+
     mn = malloc(sizeof(MethodNameStruct));
+
+    if (mn == NULL) {
+      NSK_JVMTI_VERIFY(NSK_CPP_STUB2(Deallocate, pJvmtiEnv, (void *) szName));
+      NSK_JVMTI_VERIFY(NSK_CPP_STUB2(Deallocate, pJvmtiEnv, (void *) szName));
+      return NULL;
+    }
+
     strncpy(mn->methodName, szName, sizeof(mn->methodName));
     strncpy(mn->classSig, szSignature, sizeof(mn->classSig));
 
