@@ -620,7 +620,8 @@ $(eval $(call SetupJdkLibrary, BUILD_LIBFONTMANAGER, \
     DISABLED_WARNINGS_gcc := sign-compare int-to-pointer-cast \
         type-limits missing-field-initializers implicit-fallthrough strict-aliasing, \
     DISABLED_WARNINGS_CXX_gcc := reorder delete-non-virtual-dtor strict-overflow \
-        maybe-uninitialized, \
+        maybe-uninitialized \
+        missing-attributes class-memaccess, \
     DISABLED_WARNINGS_clang := unused-value incompatible-pointer-types \
         tautological-constant-out-of-range-compare int-to-pointer-cast, \
     DISABLED_WARNINGS_C_solstudio = \
