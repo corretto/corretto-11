@@ -128,12 +128,19 @@ task packageBuildResults(type: Tar) {
         include 'conf/**'
         include 'include/**'
         include 'jmods/**'
-        include 'legal/**'
         include 'lib/**'
         include 'man/man1/**'
         include 'release'
+        into project.correttoJdkArchiveName
     }
-    into project.correttoJdkArchiveName
+
+    // Copy legal directory specifically to set permission correctly.
+    // See https://github.com/corretto/corretto-11/issues/129
+    from("${jdkResultingImage}/legal") {
+        include '**'
+        fileMode 0444
+        into "${project.correttoJdkArchiveName}/legal"
+    }
 }
 
 artifacts {
