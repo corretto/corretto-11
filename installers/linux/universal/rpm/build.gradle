@@ -126,6 +126,14 @@ task generateJdkRpm(type: Rpm) {
 
     from(jdkBinaryDir) {
         into jdkHome
+        exclude 'legal'
+    }
+
+    // Copy legal directory specifically to set permission correctly.
+    // See https://github.com/corretto/corretto-11/issues/129
+    from("${jdkBinaryDir}/legal") {
+        into "${jdkHome}/legal"
+        fileMode 0444
     }
 }
 
