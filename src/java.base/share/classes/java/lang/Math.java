@@ -1901,6 +1901,7 @@ public final class Math {
      * @author Joseph D. Darcy
      * @since 1.5
      */
+    @HotSpotIntrinsicCandidate
     public static double signum(double d) {
         return (d == 0.0 || Double.isNaN(d))?d:copySign(1.0, d);
     }
@@ -1922,6 +1923,7 @@ public final class Math {
      * @author Joseph D. Darcy
      * @since 1.5
      */
+    @HotSpotIntrinsicCandidate
     public static float signum(float f) {
         return (f == 0.0f || Float.isNaN(f))?f:copySign(1.0f, f);
     }
@@ -2142,6 +2144,7 @@ public final class Math {
      * and the sign of {@code sign}.
      * @since 1.6
      */
+    @HotSpotIntrinsicCandidate
     public static double copySign(double magnitude, double sign) {
         return Double.longBitsToDouble((Double.doubleToRawLongBits(sign) &
                                         (DoubleConsts.SIGN_BIT_MASK)) |
@@ -2165,6 +2168,7 @@ public final class Math {
      * and the sign of {@code sign}.
      * @since 1.6
      */
+    @HotSpotIntrinsicCandidate
     public static float copySign(float magnitude, float sign) {
         return Float.intBitsToFloat((Float.floatToRawIntBits(sign) &
                                      (FloatConsts.SIGN_BIT_MASK)) |
