@@ -27,6 +27,8 @@
 
 #include "code/vmreg.hpp"
 #include "opto/optoreg.hpp"
+#include "utilities/count_leading_zeros.hpp"
+#include "utilities/count_trailing_zeros.hpp"
 
 // Some fun naming (textual) substitutions:
 //
@@ -45,10 +47,14 @@
 // numregs in chaitin      ==> proper degree in chaitin
 
 //-------------Non-zero bit search methods used by RegMask---------------------
-// Find lowest 1, or return 32 if empty
-int find_lowest_bit( uint32_t mask );
-// Find highest 1, or return 32 if empty
-int find_hihghest_bit( uint32_t mask );
+// Find lowest 1, undefined if empty/0
+static int find_lowest_bit(uint32_t mask) {
+  return count_trailing_zeros(mask);
+}
+// Find highest 1, undefined if empty/0
+static int find_highest_bit(uint32_t mask) {
+  return count_leading_zeros(mask) ^ 31;
+}
 
 //------------------------------RegMask----------------------------------------
 // The ADL file describes how to print the machine-specific registers, as well
@@ -170,7 +176,7 @@ public:
     FORALL_BODY
 #   undef BODY
       { base = OptoReg::Bad; bits = 1<<0; }
-    return OptoReg::Name(base + find_hihghest_bit(bits));
+    return OptoReg::Name(base + find_highest_bit(bits));
   }
 
   // Find the lowest-numbered register pair in the mask.  Return the
