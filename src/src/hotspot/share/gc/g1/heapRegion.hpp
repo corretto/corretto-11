@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2001, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2001, 2020, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -337,7 +337,7 @@ class HeapRegion: public G1ContiguousSpace {
   // CardsPerRegion). All those fields are considered constant
   // throughout the JVM's execution, therefore they should only be set
   // up once during initialization time.
-  static void setup_heap_region_size(size_t initial_heap_size, size_t max_heap_size);
+  static void setup_heap_region_size(size_t max_heap_size);
 
   // All allocated blocks are occupied by objects in a HeapRegion
   bool block_is_obj(const HeapWord* p) const;
