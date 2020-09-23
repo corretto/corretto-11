@@ -50,6 +50,7 @@ const DecoratorSet C2_WRITE_ACCESS           = DECORATOR_LAST << 7;
 // This denotes that the access reads state.
 const DecoratorSet C2_READ_ACCESS            = DECORATOR_LAST << 8;
 
+class Compile;
 class GraphKit;
 class IdealKit;
 class Node;
@@ -216,7 +217,13 @@ public:
   // If the BarrierSetC2 state has kept macro nodes in its compilation unit state to be
   // expanded later, then now is the time to do so.
   virtual bool expand_macro_nodes(PhaseMacroExpand* macro) const { return false; }
-  virtual void verify_gc_barriers(bool post_parse) const {}
+
+  enum CompilePhase {
+    BeforeOptimize, /* post_parse = true */
+    BeforeExpand, /* post_parse = false */
+    BeforeCodeGen
+  };
+  virtual void verify_gc_barriers(Compile* compile, CompilePhase phase) const {}
 };
 
 #endif // SHARE_GC_SHARED_C2_BARRIERSETC2_HPP
