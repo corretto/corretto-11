@@ -4790,10 +4790,14 @@ void MacroAssembler::string_compare(Register str1, Register str2,
       DIFFERENCE, NEXT_WORD, SHORT_LOOP_TAIL, SHORT_LAST2, SHORT_LAST_INIT,
       SHORT_LOOP_START, TAIL_CHECK;
 
-  const int STUB_THRESHOLD = 64 + 8;
   bool isLL = ae == StrIntrinsicNode::LL;
   bool isLU = ae == StrIntrinsicNode::LU;
   bool isUL = ae == StrIntrinsicNode::UL;
+
+  // The stub threshold for LL strings is: 72 (64 + 8) chars
+  // UU: 36 chars, or 72 bytes (valid for the 64-byte large loop with prefetch)
+  // LU/UL: 24 chars, or 48 bytes (valid for the 16-character loop at least)
+  const u1 stub_threshold = isLL ? 72 : ((isLU || isUL) ? 24 : 36);
 
   bool str1_isL = isLL || isLU;
   bool str2_isL = isLL || isUL;
@@ -4835,7 +4839,7 @@ void MacroAssembler::string_compare(Register str1, Register str2,
       cmp(str1, str2);
       br(Assembler::EQ, DONE);
       ldr(tmp2, Address(str2));
-      cmp(cnt2, STUB_THRESHOLD);
+      cmp(cnt2, stub_threshold);
       br(GE, STUB);
       subsw(cnt2, cnt2, minCharsInWord);
       br(EQ, TAIL_CHECK);
@@ -4847,7 +4851,7 @@ void MacroAssembler::string_compare(Register str1, Register str2,
       cmp(str1, str2);
       br(Assembler::EQ, DONE);
       ldr(tmp2, Address(str2));
-      cmp(cnt2, STUB_THRESHOLD);
+      cmp(cnt2, stub_threshold);
       br(GE, STUB);
       subw(cnt2, cnt2, 4);
       eor(vtmpZ, T16B, vtmpZ, vtmpZ);
@@ -4863,7 +4867,7 @@ void MacroAssembler::string_compare(Register str1, Register str2,
       cmp(str1, str2);
       br(Assembler::EQ, DONE);
       ldrs(vtmp, Address(str2));
-      cmp(cnt2, STUB_THRESHOLD);
+      cmp(cnt2, stub_threshold);
       br(GE, STUB);
       subw(cnt2, cnt2, 4);
       lea(str1, Address(str1, cnt2, Address::uxtw(str1_chr_shift)));
