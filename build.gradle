@@ -81,6 +81,16 @@ allprojects {
                 "--with-vendor-version-string=Corretto-${project.version.full}"
         ]
 
+        is_x86 = false
+        if (project.hasProperty("x86")) {
+            is_x86 = Boolean.valueOf("${project.getProperty('x86')}")
+        }
+        if (is_x86) {
+            correttoCommonFlags += ["--with-target-bits=32"]
+        } else {
+            correttoCommonFlags += ["--with-target-bits=64"]
+        }
+
         // Valid value: null, release, debug, fastdebug, slowdebug
         def correttoDebugLevel = "release" // Default: release
         switch(project.findProperty("corretto.debug_level")) {
@@ -136,7 +146,7 @@ allprojects {
             if (arch == 'AMD64') {
                 jdkArch = "x86_64"
             } else { //x86
-                throw new GradleException("${arch} is not suported")
+                jdkArch = arch
             }
         } else {
             throw new GradleException("OS is not supported")
