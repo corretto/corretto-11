@@ -441,18 +441,6 @@ bool C2Compiler::is_intrinsic_supported(const methodHandle& method, bool is_virt
   case vmIntrinsics::_isWhitespace:
     if (!Matcher::match_rule_supported(Op_Whitespace)) return false;
     break;
-  case vmIntrinsics::_dcopySign:
-    if (!Matcher::match_rule_supported(Op_CopySignD)) return false;
-    break;
-  case vmIntrinsics::_fcopySign:
-    if (!Matcher::match_rule_supported(Op_CopySignF)) return false;
-    break;
-  case vmIntrinsics::_dsignum:
-    if (!Matcher::match_rule_supported(Op_SignumD)) return false;
-    break;
-  case vmIntrinsics::_fsignum:
-    if (!Matcher::match_rule_supported(Op_SignumF)) return false;
-    break;
   case vmIntrinsics::_hashCode:
   case vmIntrinsics::_identityHashCode:
   case vmIntrinsics::_getClass:
