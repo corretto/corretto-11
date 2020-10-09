@@ -226,7 +226,6 @@ class LibraryCallKit : public GraphKit {
   Node* round_double_node(Node* n);
   bool runtime_math(const TypeFunc* call_type, address funcAddr, const char* funcName);
   bool inline_math_native(vmIntrinsics::ID id);
-  bool inline_double_math(vmIntrinsics::ID id);
   bool inline_math(vmIntrinsics::ID id);
   template <typename OverflowOp>
   bool inline_math_overflow(Node* arg1, Node* arg2);
@@ -538,11 +537,7 @@ bool LibraryCallKit::try_to_inline(int predicate) {
   case vmIntrinsics::_dexp:
   case vmIntrinsics::_dlog:
   case vmIntrinsics::_dlog10:
-  case vmIntrinsics::_dpow:
-  case vmIntrinsics::_dcopySign:
-  case vmIntrinsics::_fcopySign:
-  case vmIntrinsics::_dsignum:
-  case vmIntrinsics::_fsignum:                  return inline_math_native(intrinsic_id());
+  case vmIntrinsics::_dpow:                     return inline_math_native(intrinsic_id());
 
   case vmIntrinsics::_min:
   case vmIntrinsics::_max:                      return inline_min_max(intrinsic_id());
@@ -1771,27 +1766,12 @@ Node* LibraryCallKit::round_double_node(Node* n) {
 // public static double Math.sqrt(double)
 // public static double Math.log(double)
 // public static double Math.log10(double)
-bool LibraryCallKit::inline_double_math(vmIntrinsics::ID id) {
+bool LibraryCallKit::inline_math(vmIntrinsics::ID id) {
   Node* arg = round_double_node(argument(0));
   Node* n = NULL;
   switch (id) {
   case vmIntrinsics::_dabs:   n = new AbsDNode(                arg);  break;
   case vmIntrinsics::_dsqrt:  n = new SqrtDNode(C, control(),  arg);  break;
-  case vmIntrinsics::_dcopySign: n = CopySignDNode::make(_gvn, arg, round_double_node(argument(2))); break;
-  case vmIntrinsics::_dsignum: n = SignumDNode::make(_gvn, arg); break;
-  default:  fatal_unexpected_iid(id);  break;
-  }
-  set_result(_gvn.transform(n));
-  return true;
-}
-
-//------------------------------inline_math-----------------------------------
-bool LibraryCallKit::inline_math(vmIntrinsics::ID id) {
-  Node* arg = argument(0);
-  Node* n = NULL;
-  switch (id) {
-  case vmIntrinsics::_fcopySign: n = new CopySignFNode(arg, argument(1)); break;
-  case vmIntrinsics::_fsignum: n = SignumFNode::make(_gvn, arg); break;
   default:  fatal_unexpected_iid(id);  break;
   }
   set_result(_gvn.transform(n));
@@ -1848,8 +1828,8 @@ bool LibraryCallKit::inline_math_native(vmIntrinsics::ID id) {
       runtime_math(OptoRuntime::Math_D_D_Type(), FN_PTR(SharedRuntime::dlog10), "LOG10");
 
     // These intrinsics are supported on all hardware
-  case vmIntrinsics::_dsqrt:  return Matcher::match_rule_supported(Op_SqrtD) ? inline_double_math(id) : false;
-  case vmIntrinsics::_dabs:   return Matcher::has_match_rule(Op_AbsD)   ? inline_double_math(id) : false;
+  case vmIntrinsics::_dsqrt:  return Matcher::match_rule_supported(Op_SqrtD) ? inline_math(id) : false;
+  case vmIntrinsics::_dabs:   return Matcher::has_match_rule(Op_AbsD)   ? inline_math(id) : false;
 
   case vmIntrinsics::_dexp:
     return StubRoutines::dexp() != NULL ?
@@ -1869,11 +1849,6 @@ bool LibraryCallKit::inline_math_native(vmIntrinsics::ID id) {
       runtime_math(OptoRuntime::Math_DD_D_Type(), FN_PTR(SharedRuntime::dpow),  "POW");
   }
 #undef FN_PTR
-
-  case vmIntrinsics::_dcopySign: return inline_double_math(id);
-  case vmIntrinsics::_fcopySign: return inline_math(id);
-  case vmIntrinsics::_dsignum: return inline_double_math(id);
-  case vmIntrinsics::_fsignum: return inline_math(id);
 
    // These intrinsics are not yet correctly implemented
   case vmIntrinsics::_datan2:
