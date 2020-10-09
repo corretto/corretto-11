@@ -710,7 +710,6 @@ javax/swing/JComponent/7154030/bug7154030.java 7190978 generic-all
 javax/swing/JComboBox/ConsumedKeyTest/ConsumedKeyTest.java 8067986 generic-all
 javax/swing/JComponent/6683775/bug6683775.java 8172337 generic-all
 javax/swing/JComboBox/6236162/bug6236162.java 8028707 windows-all,macosx-all
-javax/swing/text/html/parser/Test8017492.java 8022535 generic-all
 javax/swing/JButton/8151303/PressedIconTest.java 8198689 macosx-all
 javax/swing/JWindow/ShapedAndTranslucentWindows/PerPixelTranslucentCanvas.java 8081476 windows-all,macosx-all
 javax/swing/JWindow/ShapedAndTranslucentWindows/PerPixelTranslucentSwing.java 8194128 macosx-all
@@ -872,15 +871,7 @@ tools/pack200/CommandLineTests.java                             8059906 generic-
 
 com/sun/jdi/BasicJDWPConnectionTest.java                        8195703 generic-all
 
-com/sun/jdi/RedefineImplementor.sh                              8004127 generic-all
-
-com/sun/jdi/JdbExprTest.sh                                      8203393 solaris-all
-
-com/sun/jdi/JdbMethodExitTest.sh                                8203393 solaris-all
-
 com/sun/jdi/RepStep.java                                        8043571 generic-all
-
-com/sun/jdi/GetLocalVariables4Test.sh                           8067354 windows-all
 
 com/sun/jdi/sde/SourceDebugExtensionTest.java                   8158066 windows-all
 
@@ -912,8 +903,6 @@ sun/tools/jhsdb/HeapDumpTest.java                               8193639 solaris-
 # jdk_other
 
 com/sun/jndi/ldap/DeadSSLLdapTimeoutTest.java                   8169942 linux-i586,macosx-all,windows-x64
-
-com/sun/jndi/ldap/LdapTimeoutTest.java                          8151678 linux-all
 
 javax/rmi/ssl/SSLSocketParametersTest.sh                        8162906 generic-all
 

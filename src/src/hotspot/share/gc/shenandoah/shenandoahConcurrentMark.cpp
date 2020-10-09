@@ -214,7 +214,8 @@ class ShenandoahFinalMarkingTask : public AbstractGangTask {
 private:
   ShenandoahConcurrentMark* _cm;
   ShenandoahTaskTerminator* _terminator;
-  bool _dedup_string;
+  bool                      _dedup_string;
+  ShenandoahSharedFlag      _claimed_syncroots;
 
 public:
   ShenandoahFinalMarkingTask(ShenandoahConcurrentMark* cm, ShenandoahTaskTerminator* terminator, bool dedup_string) :
@@ -250,14 +251,20 @@ public:
         ShenandoahSATBAndRemarkCodeRootsThreadsClosure tc(&cl,
                                                           ShenandoahStoreValEnqueueBarrier ? &resolve_mark_cl : NULL,
                                                           do_nmethods ? &blobsCl : NULL);
-          Threads::threads_do(&tc);
+        Threads::threads_do(&tc);
+        if (ShenandoahStoreValEnqueueBarrier && _claimed_syncroots.try_set()) {
+          ObjectSynchronizer::oops_do(&resolve_mark_cl);
+        }
       } else {
         ShenandoahMarkRefsClosure mark_cl(q, rp);
         MarkingCodeBlobClosure blobsCl(&mark_cl, !CodeBlobToOopClosure::FixRelocations);
         ShenandoahSATBAndRemarkCodeRootsThreadsClosure tc(&cl,
                                                           ShenandoahStoreValEnqueueBarrier ? &mark_cl : NULL,
                                                           do_nmethods ? &blobsCl : NULL);
-         Threads::threads_do(&tc);
+        Threads::threads_do(&tc);
+        if (ShenandoahStoreValEnqueueBarrier && _claimed_syncroots.try_set()) {
+          ObjectSynchronizer::oops_do(&mark_cl);
+        }
       }
     }
 
@@ -396,21 +403,23 @@ void ShenandoahConcurrentMark::initialize(uint workers) {
 }
 
 void ShenandoahConcurrentMark::concurrent_scan_code_roots(uint worker_id, ReferenceProcessor* rp) {
+  if (_heap->unload_classes()) {
+    return;
+  }
+
   if (claim_codecache()) {
     ShenandoahObjToScanQueue* q = task_queues()->queue(worker_id);
-    if (!_heap->unload_classes()) {
-      MutexLockerEx mu(CodeCache_lock, Mutex::_no_safepoint_check_flag);
-      // TODO: We can not honor StringDeduplication here, due to lock ranking
-      // inversion. So, we may miss some deduplication candidates.
-      if (_heap->has_forwarded_objects()) {
-        ShenandoahMarkResolveRefsClosure cl(q, rp);
-        CodeBlobToOopClosure blobs(&cl, !CodeBlobToOopClosure::FixRelocations);
-        CodeCache::blobs_do(&blobs);
-      } else {
-        ShenandoahMarkRefsClosure cl(q, rp);
-        CodeBlobToOopClosure blobs(&cl, !CodeBlobToOopClosure::FixRelocations);
-        CodeCache::blobs_do(&blobs);
-      }
+    MutexLockerEx mu(CodeCache_lock, Mutex::_no_safepoint_check_flag);
+    // TODO: We can not honor StringDeduplication here, due to lock ranking
+    // inversion. So, we may miss some deduplication candidates.
+    if (_heap->has_forwarded_objects()) {
+      ShenandoahMarkResolveRefsClosure cl(q, rp);
+      CodeBlobToOopClosure blobs(&cl, !CodeBlobToOopClosure::FixRelocations);
+      CodeCache::blobs_do(&blobs);
+    } else {
+      ShenandoahMarkRefsClosure cl(q, rp);
+      CodeBlobToOopClosure blobs(&cl, !CodeBlobToOopClosure::FixRelocations);
+      CodeCache::blobs_do(&blobs);
     }
   }
 }
