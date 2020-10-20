@@ -737,7 +737,7 @@ void SplashFreeLibrary() {
  */
 static void* ThreadJavaMain(void* args) {
    return (void*)(intptr_t)JavaMain(args);
-
+}
 /*
  * Block current thread and continue execution in a new thread
  */
