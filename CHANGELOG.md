@@ -2,6 +2,53 @@
 
 The following sections describe the changes for each release of Amazon Corretto 11.
 
+## October 2020 critical patch update: Corretto version 11.0.9.11.1
+
+Release Date: October 20, 2020
+
+**Target Platforms**
+
++  RPM-based Linux using glibc 2.12 or later, x86, x86_64
++  Debian-based Linux using glibc 2.12 or later, x86, x86_64
++  RPM-based Linux using glibc 2.17 or later, aarch64
++  Debian-based Linux using glibc 2.17 or later, aarch64
++  Alpine-based Linux, x86_64
++  Windows 7 or later, x86_64
++  macOS 10.13 and later, x86_64
+
+The following issues and enhancements are addressed in 11.0.9.11.1.
+
+| Issue Name | Platform | Description | Link |
+| --- | --- | --- | --- |
+| Update Corretto to 11.0.9.11.1.  |  All  |  Update Corretto 11 patch set to 11.0.9.11.1.  |   |
+| Enable Shenandoah on build time | All | Corretto builds include the Shenandoah garbage collector |  |
+| Add -moutline-atomics for linux aarch64 builds | Linux aarch64 | Improves performance on aarch64 systems |  |
+| Need to eliminate excessive i2l conversions | Linux aarch64 | Improves performance on aarch64 systems | [JDK-8248043](https://bugs.openjdk.java.net/browse/JDK-8248043) |
+| AARCH64: I2L/L2I conversions can be skipped for masked positive values | Linux aarch64 | Improves performance on aarch64 systems | [JDK-8248870](https://bugs.openjdk.java.net/browse/JDK-8248870) |
+| AARCH64: Faster Math.signum(fp) | Linux aarch64 | Improves performance on aarch64 systems | [JDK-8251525](https://bugs.openjdk.java.net/browse/JDK-8251525) |
+| ARM64: save some words in itable stub | Linux aarch64 | Improves performance on aarch64 systems | [JDK-8252311](https://bugs.openjdk.java.net/browse/JDK-8252311) |
+| C2: Excessive RemoveUseless passes during incremental inlining | All | | [JDK-8059241](https://bugs.openjdk.java.net/browse/JDK-8059241) |
+| Remove unnecessary caching of Parker object in java.lang.Thread | All | | [JDK-8222518](https://bugs.openjdk.java.net/browse/JDK-8222518) |
+| AArch64: the const STUB_THRESHOLD in macroAssembler_aarch64.cpp needs to be tuned | Linux aarch64 | Optimize the stub thresholds of string_compare intrinsics | [JDK-8229351](https://bugs.openjdk.java.net/browse/JDK-8229351) |
+| Improve performance of InflaterOutputStream.write() | All | | [JDK-8242848](https://bugs.openjdk.java.net/browse/JDK-8242848) | 
+| Set legal directory file permissions. | Linux | Ensures files under the legal folder are marked as read only | 
+| Fix GCC8 and GCC9 warnings | All | Multiple changes, including [JDK-8215009](https://bugs.openjdk.java.net/browse/JDK-8215009), [JDK-8214854](https://bugs.openjdk.java.net/browse/JDK-8214854), [JDK-8220074](https://bugs.openjdk.java.net/browse/JDK-8220074), [JDK-8219675](https://bugs.openjdk.java.net/browse/JDK-8219675), [JDK-8244653](https://bugs.openjdk.java.net/browse/JDK-8244653), to eliminate newer GCC related warnings | [JDK-8215009](https://bugs.openjdk.java.net/browse/JDK-8215009), [JDK-8214854](https://bugs.openjdk.java.net/browse/JDK-8214854), [JDK-8220074](https://bugs.openjdk.java.net/browse/JDK-8220074), [JDK-8219675](https://bugs.openjdk.java.net/browse/JDK-8219675), [JDK-8244653](https://bugs.openjdk.java.net/browse/JDK-8244653)
+
+
+The following CVEs are addressed in 11.0.9.11.1
+
+| CVE | CVSS | Component |
+| --- | --- | --- |
+| CVE-2020-14803  | 5.3 | core-libs/java.io
+| CVE-2020-14792  | 4.2 | hotspot/compiler
+| CVE-2020-14782  | 3.7 | security-libs/java.security
+| CVE-2020-14797  | 3.7 | core-libs/java.nio
+| CVE-2020-14781  | 3.7 | core-libs/javax.naming
+| CVE-2020-14779  | 3.7 | core-libs/java.io:serialization
+| CVE-2020-14796  | 3.1 | core-libs/java.io
+| CVE-2020-14798  | 3.1 | core-libs/java.io
+
+
 ## July 2020 critical patch update: Corretto version 11.0.8.10.1
 
 Release Date: July 14, 2020
