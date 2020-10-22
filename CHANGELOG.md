@@ -2,6 +2,20 @@
 
 The following sections describe the changes for each release of Amazon Corretto 11.
 
+## Corretto version: 11.0.9.11.2
+
+Release Date: October 22, 2020
+
+**Target Platforms**
+
++  Windows 7 or later, x86_64
+
+The following issue is addressed in 11.0.9.11.2.
+
+| Issue Name | Platform | Description | Link |
+| --- | --- | --- | --- |
+| jlink error hash of java.rmi differs to expected hash | Windows | The jlink failed to work due to wrong module hashes in java.base.jmod | [corretto-11#144](https://github.com/corretto/corretto-11/issues/144) |
+
 ## October 2020 critical patch update: Corretto version 11.0.9.11.1
 
 Release Date: October 20, 2020
