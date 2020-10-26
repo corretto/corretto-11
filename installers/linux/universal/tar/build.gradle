@@ -130,6 +130,7 @@ task packageBuildResults(type: Tar) {
         include 'LICENSE'
         include 'README.md'
         include 'version.txt'
+        into project.correttoJdkArchiveName
     }
     from(jdkResultingImage) {
         include 'bin/**'
