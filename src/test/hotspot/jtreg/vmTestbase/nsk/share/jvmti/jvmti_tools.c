@@ -230,7 +230,7 @@ int nsk_jvmti_parseOptions(const char options[]) {
             nsk_complain("nsk_jvmti_parseOptions(): out of memory\n");
             return NSK_FALSE;
     }
-    strncpy(context.options.string, options, len);
+    strncpy(context.options.string, options, len-1);
     context.options.string[len] = '\0';
     context.options.string[len+1] = '\0';
 
