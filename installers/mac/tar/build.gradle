@@ -95,7 +95,7 @@ task prepareArtifacts {
         // Rename bundle
         exec {
             workingDir jdkResultingImage
-            commandLine 'mv', "jdk-${version.major}.${version.minor}.${version.security}.jdk", correttoMacDir
+            commandLine 'bash', "-c", "mv jdk-*.jdk ${correttoMacDir}"
         }
         // Replace Info.plist
         copy {
