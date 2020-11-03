@@ -74,7 +74,6 @@ allprojects {
                 "--with-version-build=${project.version.build}",
                 '--with-version-opt=LTS',
                 '--with-version-pre=',
-                "--with-version-string=${version.major}.${version.minor}.${version.security}",
                 "--with-vendor-bug-url=https://github.com/corretto/corretto-${project.version.major}/issues/",
                 '--with-vendor-name=Amazon.com Inc.',
                 '--with-vendor-url=https://aws.amazon.com/corretto/',
