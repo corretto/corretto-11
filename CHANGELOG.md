@@ -2,6 +2,32 @@
 
 The following sections describe the changes for each release of Amazon Corretto 11.
 
+## Corretto version: 11.0.9.12.1
+
+Release Date: November 4, 2020
+
+**Target Platforms**
+
++  RPM-based Linux using glibc 2.12 or later, x86, x86_64
++  Debian-based Linux using glibc 2.12 or later, x86, x86_64
++  RPM-based Linux using glibc 2.17 or later, aarch64
++  Debian-based Linux using glibc 2.17 or later, aarch64
++  Alpine-based Linux, x86_64
++  Windows 7 or later, x86_64
++  macOS 10.13 and later, x86_64
+
+The following issues are addressed in 11.0.9.12.1.
+
+| Issue Name | Platform | Description | Link |
+| --- | --- | --- | --- |
+| Import jdk-11.0.9.1+1 | all | Updates Corretto baseline to OpenJDK 11.0.9.1+1 | [jdk-11.0.9.1+1](http://hg.openjdk.java.net/jdk-updates/jdk11u/rev/27723943c0dd) |
+| 8255603: Memory/Performance regression after JDK-8210985| all | Fixes a problem with the initial size of SSLSessionCache being too big | [JDK-8255603](https://bugs.openjdk.java.net/browse/JDK-8255603) |
+|  Move files in root of tar.gz to subfolder | linux | Fixes an issue in some generic linux artifacts where some of the text included files were in the root directory or missing | |
+| Use default values for java.version | all | Stop overriding the java.version value (build only) | |
+| [mac] Use wildcard to match the JDK version number when renaming the artifacts | mac | Non-permanent fix to support building with a PATCH element in the java version (build only) | |
+| [mac] Temporarily update JVMVersion in Info.plist template to include the patch number for 11.0.9.1 | mac | Non-permanent fix to support generating a .pkg with a PATCH element in the java version (build only) | |
+
+
 ## Corretto version: 11.0.9.11.2
 
 Release Date: October 22, 2020
