@@ -37,7 +37,7 @@
                 <key>JVMVendor</key>
                 <string>Amazon.com Inc.</string>
                 <key>JVMVersion</key>
-                <string>@major@.@minor@.@security@</string>
+                <string>@major@.@minor@.@security@.1</string>
         </dict>
 </dict>
 </plist>
