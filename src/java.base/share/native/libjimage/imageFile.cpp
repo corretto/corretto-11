@@ -499,14 +499,7 @@ void ImageFileReader::location_path(ImageLocation& location, char* path, size_t 
         assert(next - path + length + 2 < max && "buffer overflow");
         // Append '/module/'.
         *next++ = '/';
-        // Disabling warning for stringop-truncation. Null termination is added later.
-        #if defined(__GNUC__)
-        #pragma GCC diagnostic push
-        #pragma GCC diagnostic ignored "-Wpragmas"
-        #pragma GCC diagnostic ignored "-Wstringop-truncation"
         strncpy(next, module, length); next += length;
-        #pragma GCC diagnostic pop
-        #endif // __GNUC__
         *next++ = '/';
     }
     // Get parent (package) string.
@@ -518,15 +511,7 @@ void ImageFileReader::location_path(ImageLocation& location, char* path, size_t 
         // Make sure there is no buffer overflow.
         assert(next - path + length + 1 < max && "buffer overflow");
         // Append 'patent/' .
-        // Disabling warning for stringop-truncation. Null termination is added later.
-        #if defined(__GNUC__)
-        #pragma GCC diagnostic push
-        #pragma GCC diagnostic ignored "-Wpragmas"
-        #pragma GCC diagnostic ignored "-Wstringop-truncation"
-        #pragma GCC diagnostic ignored "-Wstringop-overflow"
         strncpy(next, parent, length); next += length;
-        #pragma GCC diagnostic pop
-        #endif // __GNUC__
         *next++ = '/';
     }
     // Get base name string.
@@ -536,15 +521,7 @@ void ImageFileReader::location_path(ImageLocation& location, char* path, size_t 
     // Make sure there is no buffer overflow.
     assert(next - path + length < max && "buffer overflow");
     // Append base name.
-    // Disabling warning for stringop-truncation. Null termination is added later.
-    #if defined(__GNUC__)
-    #pragma GCC diagnostic push
-    #pragma GCC diagnostic ignored "-Wpragmas"
-    #pragma GCC diagnostic ignored "-Wstringop-truncation"
-    #pragma GCC diagnostic ignored "-Wstringop-overflow"
     strncpy(next, base, length); next += length;
-    #pragma GCC diagnostic pop
-    #endif // __GNUC__
     // Get extension string.
     const char* extension = location.get_attribute(ImageLocation::ATTRIBUTE_EXTENSION, strings);
     // If extension string is not empty string.
@@ -555,14 +532,7 @@ void ImageFileReader::location_path(ImageLocation& location, char* path, size_t 
         assert(next - path + length + 1 < max && "buffer overflow");
         // Append '.extension' .
         *next++ = '.';
-        // Disabling warning for stringop-truncation. Null termination is added later.
-        #if defined(__GNUC__)
-        #pragma GCC diagnostic push
-        #pragma GCC diagnostic ignored "-Wpragmas"
-        #pragma GCC diagnostic ignored "-Wstringop-truncation"
         strncpy(next, extension, length); next += length;
-        #pragma GCC diagnostic pop
-        #endif // __GNUC__
     }
     // Make sure there is no buffer overflow.
     assert((size_t)(next - path) < max && "buffer overflow");
