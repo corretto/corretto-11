@@ -99,11 +99,13 @@ task prepareArtifacts {
         }
         // Replace Info.plist
         copy {
-            from('templates/Info.plist.template') {
-                rename { file -> file.replace('.template', '') }
-                filter(org.apache.tools.ant.filters.ReplaceTokens, tokens: project.version)
+            from("templates/Info.plist.template") {
+                rename { file -> file.replace(".template", "") }
+                project.version.each {
+                    prop -> filter(org.apache.tools.ant.filters.ReplaceTokens, tokens: [ (prop.key): String.valueOf(prop.value)])
+                }
             }
-            into "${jdkResultingImage}/${correttoMacDir}/Contents"
+            into "${jdkResultingImage}/${correttoMacDir}/Contents".toString()
         }
         // Filter files
         if(file("${buildDir}/${correttoMacDir}").exists()) {

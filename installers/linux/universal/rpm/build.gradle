@@ -89,8 +89,9 @@ task inflateRpmScriptTemplate(type: Copy) {
     from('scripts') {
         include '**/*.template'
         rename { file -> file.replace('.template', '') }
-        filter(org.apache.tools.ant.filters.ReplaceTokens,
-                tokens: project.version + [alternatives_priority: priority])
+        (project.version + [alternatives_priority: priority]).each {
+            prop -> filter(org.apache.tools.ant.filters.ReplaceTokens, tokens: [ (prop.key): String.valueOf(prop.value)])
+        }
     }
     into "${buildRoot}/scripts"
 }
