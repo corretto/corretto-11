@@ -74,13 +74,17 @@ task applyPatches() {
 task configureBuild(type: Exec) {
     dependsOn applyPatches
     workingDir "$buildRoot/src"
-    commandLine 'bash', 'configure',
+
+    def versionOpt = project.findProperty("corretto.versionOpt") ?: "LTS"
+
+    def configureCmd = [
+        'bash',
+        'configure',
         '--with-jvm-features=zgc',
         "--with-version-feature=${version.major}",
         '--with-freetype=bundled',
         '--with-zlib=bundled',
-        '--with-version-opt=LTS',
-        "--with-version-string=${version.major}.${version.minor}.${version.security}",
+        "--with-version-opt=${versionOpt}",
         "--with-version-build=${version.build}",
         "--with-vendor-version-string=Corretto-${version.full}",
         '--with-version-pre=',
@@ -90,7 +94,15 @@ task configureBuild(type: Exec) {
         '--with-debug-level=release',
         '--with-native-debug-symbols=none',
         '--with-stdc++lib=static',
-	'--disable-warnings-as-errors'
+        '--disable-warnings-as-errors'
+    ]
+
+    def versionDate = project.findProperty("corretto.versionDate")
+    if (versionDate) {
+        configureCmd += ["--with-version-date=${versionDate}"]
+    }
+    commandLine configureCmd
+
 }
 
 task executeBuild(type: Exec) {
