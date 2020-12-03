@@ -31,12 +31,15 @@ ext {
     switch (project.correttoArch) {
         case 'aarch64':
             arch_redline = 'AARCH64'
-            break;
+            break
         case 'x86':
             arch_redline = "i386"
             break
         case 'x64':
             arch_redline = 'x86_64'
+            break
+        case 'armv7':
+            arch_redline = 'ARM'
             break
     }
 }

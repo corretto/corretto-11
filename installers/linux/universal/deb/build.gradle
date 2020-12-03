@@ -31,12 +31,15 @@ ext {
     switch (project.correttoArch) {
         case 'aarch64':
             arch_deb = 'arm64'
-            break;
+            break
         case 'x86':
             arch_deb = "i386"
             break
         case 'x64':
             arch_deb = 'amd64'
+            break
+        case 'armv7':
+            arch_deb = 'armhf'
             break
     }
 }
