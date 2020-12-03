@@ -35,6 +35,14 @@ if (project.correttoArch == 'aarch64') {
             '--with-extra-cxxflags=-moutline-atomics'
         ]
 }
+if (project.correttoArch == 'armv7') {
+    archSpecificFlags += [
+            '--with-sysroot=/opt/sysroot/',
+            '--with-toolchain-path=/opt/sysroot/',
+            '--openjdk-target=arm-linux-gnueabihf',
+            '--disable-warnings-as-errors'
+        ]
+}
 
 def imageDir= "$buildRoot/src/build/${project.jdkImageName}/images"
 def jdkResultingImage = "${imageDir}/jdk"

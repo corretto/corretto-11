@@ -86,12 +86,18 @@ allprojects {
         }
 
         is_x86 = false
+        is_armv7 = false
         if (project.hasProperty("x86")) {
             is_x86 = Boolean.valueOf("${project.getProperty('x86')}")
         }
+        if (project.hasProperty("armv7")) {
+            is_armv7 = Boolean.valueOf("${project.getProperty('armv7')}")
+        }
         if (is_x86) {
             correttoCommonFlags += ["--with-target-bits=32"]
-        } else {
+        } else if (!is_armv7) {
+            // ARMV7 is built from cross-platform compilation with '--openjdk-target'
+            // flag, which is in conflict with '--with-target-bits'.
             correttoCommonFlags += ["--with-target-bits=64"]
         }
 
@@ -141,8 +147,10 @@ allprojects {
             jdkArch = ['uname', '-m'].execute().text.trim()
             // `uname -m` returns the host arch in a linux x86 docker instance. Pass a flag
             // to enable
-            if (project.hasProperty("x86") && Boolean.parseBoolean(project.getProperty('x86'))) {
+            if (is_x86) {
                 jdkArch = "x86"
+            } else if (is_armv7) {
+                jdkArch = "armv7"
             }
         } else if (Os.isFamily(Os.FAMILY_WINDOWS)) {
             os = 'windows'
@@ -164,6 +172,10 @@ allprojects {
                 break
             case 'x86_64':
                 correttoArch = 'x64'
+                break
+            case 'armv7':
+                correttoArch = jdkArch
+                jdkArch = 'arm'
                 break
             default:
                 throw new GradleException("${jdkArch} is not supported")
