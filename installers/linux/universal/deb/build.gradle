@@ -20,7 +20,7 @@
  */
 
 plugins {
-    id 'nebula.ospackage' version '8.2.0'
+    id 'nebula.ospackage' version '8.4.1'
 }
 
 dependencies {
@@ -115,7 +115,7 @@ task inflateJinfoTemplate(type: Copy) {
     from('jinfo') {
         include '**/*.template'
         rename('jinfo.template', jinfoName)
-        (project.version + [java_home: jdkHome, alternatives_priority: alternativesPriority, directory_name: jdkInstallationDirName.toString()]))
+        (project.version + [java_home: jdkHome, alternatives_priority: alternativesPriority, directory_name: jdkInstallationDirName.toString()])
         .each {
                     prop -> filter(org.apache.tools.ant.filters.ReplaceTokens, tokens: [ (prop.key): String.valueOf(prop.value)])
         }
