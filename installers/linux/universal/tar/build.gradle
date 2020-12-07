@@ -137,6 +137,7 @@ task packageBuildResults(type: Tar) {
         include 'ASSEMBLY_EXCEPTION'
         include 'LICENSE'
         include 'README.md'
+        include 'commitId.txt'
         include 'version.txt'
         into project.correttoJdkArchiveName
     }

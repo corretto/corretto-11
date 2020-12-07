@@ -78,6 +78,7 @@ task packageJdk(type: Zip) {
         include 'ASSEMBLY_EXCEPTION'
         include 'LICENSE'
         include 'THIRD_PARTY_README'
+        include 'commitId.txt'
         include 'version.txt'
         include 'ADDITIONAL_LICENSE_INFO'
         include 'README.md'
