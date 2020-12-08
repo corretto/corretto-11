@@ -1200,7 +1200,7 @@ void PhaseIdealLoop::duplicate_predicates(CountedLoopNode* pre_head, Node* casti
     Node* predicate = NULL;
     predicate = find_predicate_insertion_point(entry, Deoptimization::Reason_loop_limit_check);
     if (predicate != NULL) {
-      entry = entry->in(0)->in(0);
+      entry = skip_loop_predicates(entry);
     }
     Node* profile_predicate = NULL;
     if (UseProfiledLoopPredicate) {
@@ -2289,9 +2289,9 @@ Node* PhaseIdealLoop::add_range_check_predicate(IdealLoopTree* loop, CountedLoop
   register_new_node(opaque_bol, predicate_proj);
   IfNode* new_iff = NULL;
   if (overflow) {
-    new_iff = new IfNode(predicate_proj, bol, PROB_MAX, COUNT_UNKNOWN);
+    new_iff = new IfNode(predicate_proj, opaque_bol, PROB_MAX, COUNT_UNKNOWN);
   } else {
-    new_iff = new RangeCheckNode(predicate_proj, bol, PROB_MAX, COUNT_UNKNOWN);
+    new_iff = new RangeCheckNode(predicate_proj, opaque_bol, PROB_MAX, COUNT_UNKNOWN);
   }
   register_control(new_iff, loop->_parent, predicate_proj);
   Node* iffalse = new IfFalseNode(new_iff);
