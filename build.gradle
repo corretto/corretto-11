@@ -212,7 +212,7 @@ project(':prebuild') {
 
     task copyToolSrc(type: Copy) {
         description 'Copy utility tool source to the project root'
-        from fileTree("$rootDir/src/make/jdk/src/classes") {
+        from fileTree("$rootDir/make/jdk/src/classes") {
             include 'build/tools/generatecacerts/*'
         }
         into preBuildSrc
@@ -227,7 +227,7 @@ project(':prebuild') {
 
     task generateJdkCacerts(type: JavaExec) {
         dependsOn buildTool
-        def jdkCaDir = "$rootDir/src/make/data/cacerts"
+        def jdkCaDir = "$rootDir/make/data/cacerts"
 
         description = 'Generate Cacerts from JDK source'
         classpath = files(classPath)
@@ -266,14 +266,19 @@ project(':openjdksrc') {
         compression Compression.GZIP
         archiveName sourceTar
         from fileTree(rootDir) {
-            include 'src/**'
-            exclude 'src/corretto-build/**'
             include 'LICENSE',
                     'ADDITIONAL_LICENSE_INFO',
-                    'README.md',
+                    'README',
                     'ASSEMBLY_EXCEPTION',
                     'version.txt',
-                    'amazon-cacerts'
+                    'amazon-cacerts',
+                    'configure',
+                    'Makefile',
+                    'bin/**',
+                    'doc/**',
+                    'make/**',
+                    'src/**',
+                    'test/**'
         }
     }
 

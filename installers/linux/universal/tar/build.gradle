@@ -44,7 +44,7 @@ if (project.correttoArch == 'armv7') {
         ]
 }
 
-def imageDir= "$buildRoot/src/build/${project.jdkImageName}/images"
+def imageDir= "$buildRoot/build/${project.jdkImageName}/images"
 def jdkResultingImage = "${imageDir}/jdk"
 def testResultingImage = "${imageDir}/test"
 
@@ -80,7 +80,7 @@ task applyPatches() {
         fileTree('patches').matching {
             include '*.patch'
         }.each { f ->
-            ant.patch(patchfile: f, dir: "$buildRoot/src", strip: 0)
+            ant.patch(patchfile: f, dir: "$buildRoot", strip: 0)
         }
     }
 }
@@ -88,7 +88,7 @@ task applyPatches() {
 task configureBuild(type: Exec) {
     dependsOn project.configurations.compile
     dependsOn applyPatches
-    workingDir "$buildRoot/src"
+    workingDir "$buildRoot"
 
     // Platform specific flags
     def command = ['bash', 'configure',
@@ -104,14 +104,14 @@ task configureBuild(type: Exec) {
 
 task executeBuild(type: Exec) {
     dependsOn configureBuild
-    workingDir "$buildRoot/src"
+    workingDir "$buildRoot"
     commandLine 'make', 'images'
     outputs.dir jdkResultingImage
 }
 
 task createTestImage(type: Exec) {
     dependsOn executeBuild
-    workingDir "$buildRoot/src"
+    workingDir "$buildRoot"
     commandLine 'make','test-image-hotspot-jtreg-native','test-image-jdk-jtreg-native','test-image-hotspot-gtest'
 }
 

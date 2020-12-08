@@ -40,8 +40,8 @@ ext {
     }
 }
 
-def jdkResultingImage = "$buildRoot/src/build/linux-${arch}-normal-server-release/images/jdk"
-def testResultingImage = "$buildRoot/src/build/linux-${arch}-normal-server-release/images/test"
+def jdkResultingImage = "$buildRoot/build/linux-${arch}-normal-server-release/images/jdk"
+def testResultingImage = "$buildRoot/build/linux-${arch}-normal-server-release/images/test"
 
 /**
  * Create a local copy of the source tree in our
@@ -66,14 +66,14 @@ task applyPatches() {
         fileTree('patches').matching {
             include '*.patch'
         }.each { f ->
-            ant.patch(patchfile: f, dir: "$buildRoot/src", strip: 0)
+            ant.patch(patchfile: f, dir: "$buildRoot", strip: 0)
         }
     }
 }
 
 task configureBuild(type: Exec) {
     dependsOn applyPatches
-    workingDir "$buildRoot/src"
+    workingDir "$buildRoot"
 
     def versionOpt = project.findProperty("corretto.versionOpt") ?: "LTS"
 
@@ -107,7 +107,7 @@ task configureBuild(type: Exec) {
 
 task executeBuild(type: Exec) {
     dependsOn configureBuild
-    workingDir "$buildRoot/src"
+    workingDir "$buildRoot"
     commandLine 'make', 'images'
     outputs.dir jdkResultingImage
 }
@@ -126,7 +126,7 @@ task importAmazonCacerts(type: Exec) {
 
 task createTestImage(type: Exec) {
     dependsOn executeBuild
-    workingDir "$buildRoot/src"
+    workingDir "$buildRoot"
     commandLine 'make','test-image-hotspot-jtreg-native','test-image-jdk-jtreg-native','test-image-hotspot-gtest'
 }
 
