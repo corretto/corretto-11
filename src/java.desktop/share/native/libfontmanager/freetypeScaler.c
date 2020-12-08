@@ -266,7 +266,7 @@ static void setInterpreterVersion(FT_Library library) {
     const char* property = "interpreter-version";
 
     /* If some one is setting this, don't override it */
-    if (props != NULL && strstr(property, props)) {
+    if (props != NULL && strstr(props, property)) {
         return;
     }
     /*
@@ -836,8 +836,9 @@ static jlong
         jlong pScalerContext, jlong pScaler, jint glyphCode,
         jboolean renderImage) {
 
+    static int PADBYTES = 3;
     int error, imageSize;
-    UInt16 width, height;
+    UInt16 width, height, rowBytes;
     GlyphInfo *glyphInfo;
     int glyph_index;
     int renderFlags = FT_LOAD_DEFAULT, target;
@@ -857,6 +858,17 @@ static jlong
         invalidateJavaScaler(env, scaler, scalerInfo);
         return ptr_to_jlong(getNullGlyphImage());
     }
+
+    /*
+     * When using Fractional metrics (linearly scaling advances) and
+     * greyscale antialiasing, disable hinting so that the glyph shapes
+     * are constant as size increases. This is good for animation as well
+     * as being compatible with what happened in earlier JDK versions
+     * which did not use freetype.
+     */
+    if (context->aaType == TEXT_AA_ON && context->fmType == TEXT_FM_ON) {
+         renderFlags |= FT_LOAD_NO_HINTING;
+     }
 
     if (!context->useSbits) {
         renderFlags |= FT_LOAD_NO_BITMAP;
@@ -915,6 +927,10 @@ static jlong
 
     if (renderImage) {
         width  = (UInt16) ftglyph->bitmap.width;
+        rowBytes = width;
+        if (ftglyph->bitmap.pixel_mode == FT_PIXEL_MODE_LCD) {
+           rowBytes = PADBYTES + width + PADBYTES;
+        }
         height = (UInt16) ftglyph->bitmap.rows;
             if (width > MAX_GLYPH_DIM || height > MAX_GLYPH_DIM) {
               glyphInfo = getNullGlyphImage();
@@ -922,19 +938,20 @@ static jlong
             }
      } else {
         width = 0;
+        rowBytes = 0;
         height = 0;
      }
 
 
-    imageSize = width*height;
-    glyphInfo = (GlyphInfo*) malloc(sizeof(GlyphInfo) + imageSize);
+    imageSize = rowBytes*height;
+    glyphInfo = (GlyphInfo*) calloc(sizeof(GlyphInfo) + imageSize, 1);
     if (glyphInfo == NULL) {
         glyphInfo = getNullGlyphImage();
         return ptr_to_jlong(glyphInfo);
     }
     glyphInfo->cellInfo  = NULL;
     glyphInfo->managed   = UNMANAGED_GLYPH;
-    glyphInfo->rowBytes  = width;
+    glyphInfo->rowBytes  = rowBytes;
     glyphInfo->width     = width;
     glyphInfo->height    = height;
 
@@ -942,19 +959,21 @@ static jlong
         glyphInfo->topLeftX  = (float)  ftglyph->bitmap_left;
         glyphInfo->topLeftY  = (float) -ftglyph->bitmap_top;
 
-        if (ftglyph->bitmap.pixel_mode ==  FT_PIXEL_MODE_LCD) {
+        if (ftglyph->bitmap.pixel_mode ==  FT_PIXEL_MODE_LCD && width > 0) {
             glyphInfo->width = width/3;
+            glyphInfo->topLeftX -= 1;
+            glyphInfo->width += 1;
         } else if (ftglyph->bitmap.pixel_mode ==  FT_PIXEL_MODE_LCD_V) {
             glyphInfo->height = glyphInfo->height/3;
         }
     }
 
     if (context->fmType == TEXT_FM_ON) {
-        double advh = FTFixedToFloat(ftglyph->linearHoriAdvance);
+        float advh = FTFixedToFloat(ftglyph->linearHoriAdvance);
         glyphInfo->advanceX =
             (float) (advh * FTFixedToFloat(context->transform.xx));
         glyphInfo->advanceY =
-            (float) (advh * FTFixedToFloat(context->transform.xy));
+            (float) - (advh * FTFixedToFloat(context->transform.yx));
     } else {
         if (!ftglyph->advance.y) {
             glyphInfo->advanceX =
@@ -1000,8 +1019,8 @@ static jlong
             /* 3 bytes per pixel to 3 bytes per pixel */
             CopyFTSubpixelToSubpixel(ftglyph->bitmap.buffer,
                                      ftglyph->bitmap.pitch,
-                                     (void *) glyphInfo->image,
-                                     width,
+                                     (void *) (glyphInfo->image+PADBYTES),
+                                     rowBytes,
                                      width,
                                      height);
         } else if (ftglyph->bitmap.pixel_mode ==  FT_PIXEL_MODE_LCD_V) {
