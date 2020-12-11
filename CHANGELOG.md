@@ -12,6 +12,7 @@ Release Date: November 4, 2020
 +  Debian-based Linux using glibc 2.12 or later, x86, x86_64
 +  RPM-based Linux using glibc 2.17 or later, aarch64
 +  Debian-based Linux using glibc 2.17 or later, aarch64
++  Linux using glibc 2.25 or later, Arm (Preview)
 +  Alpine-based Linux, x86_64
 +  Windows 7 or later, x86_64
 +  macOS 10.13 and later, x86_64
