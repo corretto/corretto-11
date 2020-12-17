@@ -1,0 +1,26 @@
+name: "Refresh from Upstream"
+on: 
+  schedule:
+    - cron: '0 7 * * *'
+  workflow_dispatch:
+
+jobs:
+    refresh-jdk11:
+        runs-on: ubuntu-latest
+        name: "Update Corretto-11"
+        if: github.repository_owner == 'corretto'
+        steps:
+            - name: "Checkout code"
+              uses: actions/checkout@v2
+              with:
+                fetch-depth: 0
+            - name: "Fetch Corretto-11"
+              uses: ./.github/actions/fetch-repo
+              with:
+                upstream: 'https://github.com/openjdk/jdk11u.git'
+                local-branch: 'upstream'
+            - name: "Merge Corretto-11"
+              uses: ./.github/actions/merge-repo
+              with: 
+                upstream: 'upstream'
+                merge-branch: 'develop'
