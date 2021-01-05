@@ -269,6 +269,7 @@ project(':openjdksrc') {
             include 'LICENSE',
                     'ADDITIONAL_LICENSE_INFO',
                     'README',
+                    'README.md',
                     'ASSEMBLY_EXCEPTION',
                     'version.txt',
                     'amazon-cacerts',
