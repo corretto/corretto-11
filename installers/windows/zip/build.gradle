@@ -57,7 +57,7 @@ task executeBuild(type: Exec) {
     dependsOn configureBuild
     workingDir "$buildRoot"
 
-    commandLine 'make', 'clean', 'images'
+    commandLine 'make', 'clean', 'images', 'test-image-hotspot-jtreg-native', 'test-image-jdk-jtreg-native'
 }
 
 task copyImage(type: Copy) {
@@ -67,8 +67,18 @@ task copyImage(type: Copy) {
     into "$buildRoot/build"
 }
 
-task packageJdk(type: Zip) {
+task packageTestImage(type: Zip) {
     dependsOn copyImage
+    description 'Package test results'
+    archiveName "${project.correttoTestImageArchiveName}.zip"
+    from("${copyImage.destinationDir}/test") {
+        include '**'
+    }
+    into project.correttoTestImageArchiveName
+}
+
+task packageJdk(type: Zip) {
+    dependsOn packageTestImage
     archiveName  = "unsigned-jdk-image.zip"
 
     from("${copyImage.destinationDir}/jdk") {
