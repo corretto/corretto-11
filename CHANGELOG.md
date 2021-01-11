@@ -2,6 +2,32 @@
 
 The following sections describe the changes for each release of Amazon Corretto 11.
 
+## Corretto version: 11.0.10.9.1
+
+Release Date: January xx, 2021
+
+**Target Platforms**
+
++  RPM-based Linux using glibc 2.12 or later, x86, x86_64
++  Debian-based Linux using glibc 2.12 or later, x86, x86_64
++  RPM-based Linux using glibc 2.17 or later, aarch64
++  Debian-based Linux using glibc 2.17 or later, aarch64
++  Linux using glibc 2.25 or later, Arm (Preview)
++  Alpine-based Linux, x86_64
++  Windows 7 or later, x86_64
++  macOS 10.13 and later, x86_64
+
+The following issues are addressed in 11.0.10.9.1.
+
+| Issue Name | Platform | Description | Link |
+| --- | --- | --- | --- |
+| Import jdk-11.0.10+9 | all | Updates Corretto baseline to OpenJDK 11.0.10+9 | [jdk-11.0.10+9](http://hg.openjdk.java.net/jdk-updates/jdk11u/rev/405102e26a62) |
+| Change directory structure of Corretto 11 repository | All | Move the contents of the `src` directory up one level. This enables simpler merges from upstream and better history tracking | [Move content of src one level up](https://github.com/corretto/corretto-11/commit/926668219e0a135e48638ba2d4b66230ec7a0195)
+| Proper Detection of Graviton 2 CPUs | linux aarch64 | Includes [JDK-8256488](https://bugs.openjdk.java.net/browse/JDK-8256488), [JDK-8233912](https://bugs.openjdk.java.net/browse/JDK-8233912), [JDK-8257436](https://bugs.openjdk.java.net/browse/JDK-8257436), [JDK-8255351](https://bugs.openjdk.java.net/browse/JDK-8255351) | [Add detection for Graviton 2 CPUs](https://bugs.openjdk.java.net/browse/JDK-8255351)
+| Support adaptive heuristic for Shenandoah Garbage Collector | all | Includes [JDK-8255984](https://bugs.openjdk.java.net/browse/JDK-8255984) and [JDK-8256912](https://bugs.openjdk.java.net/browse/JDK-8256912) | [Shenandoah: "adaptive" heuristic is prone to missing load spikes](https://bugs.openjdk.java.net/browse/JDK-8255984)
+
+This version addresses a number of security vulnerabilities that do not have an associated CVE.
+
 ## Corretto version: 11.0.9.12.1
 
 Release Date: November 4, 2020
