@@ -17,7 +17,7 @@ jobs:
             - name: "Fetch Corretto-11"
               uses: ./.github/actions/fetch-repo
               with:
-                upstream: 'https://github.com/openjdk/jdk11u.git'
+                upstream: 'https://github.com/openjdk/jdk11u-dev.git'
                 local-branch: 'upstream'
             - name: "Merge Corretto-11"
               uses: ./.github/actions/merge-repo
