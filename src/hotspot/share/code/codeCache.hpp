@@ -325,7 +325,7 @@ template <class T, class Filter> class CodeBlobIterator : public StackObj {
   GrowableArrayIterator<CodeHeap*> _end;
 
  public:
-  CodeBlobIterator(T* nm = NULL) : _code_blob(NULL) {
+  CodeBlobIterator(T* nm = NULL) {
     if (Filter::heaps() == NULL) {
       return;
     }
