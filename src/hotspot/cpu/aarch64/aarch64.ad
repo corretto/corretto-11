@@ -996,6 +996,7 @@ definitions %{
 source_hpp %{
 
 #include "asm/macroAssembler.hpp"
+#include "gc/shared/barrierSetAssembler.hpp"
 #include "gc/shared/cardTable.hpp"
 #include "gc/shared/cardTableBarrierSet.hpp"
 #include "gc/shared/collectedHeap.hpp"
@@ -1494,7 +1495,9 @@ int MachCallDynamicJavaNode::ret_addr_offset()
 
 int MachCallRuntimeNode::ret_addr_offset() {
   // for generated stubs the call will be
-  //   far_call(addr)
+  //   bl(addr)
+  // or with far branches
+  //   bl(trampoline_stub)
   // for real runtime callouts it will be six instructions
   // see aarch64_enc_java_to_runtime
   //   adr(rscratch2, retaddr)
@@ -1503,7 +1506,7 @@ int MachCallRuntimeNode::ret_addr_offset() {
   //   blr(rscratch1)
   CodeBlob *cb = CodeCache::find_blob(_entry_point);
   if (cb) {
-    return MacroAssembler::far_branch_size();
+    return 1 * NativeInstruction::instruction_size;
   } else {
     return 6 * NativeInstruction::instruction_size;
   }
@@ -1932,16 +1935,20 @@ void BoxLockNode::emit(CodeBuffer &cbuf, PhaseRegAlloc *ra_) const {
   int offset = ra_->reg2offset(in_RegMask(0).find_first_elem());
   int reg    = ra_->get_encode(this);
 
-  if (Assembler::operand_valid_for_add_sub_immediate(offset)) {
-    __ add(as_Register(reg), sp, offset);
-  } else {
-    ShouldNotReachHere();
-  }
+  // This add will handle any 24-bit signed offset. 24 bits allows an
+  // 8 megabyte stack frame.
+  __ add(as_Register(reg), sp, offset);
 }
 
 uint BoxLockNode::size(PhaseRegAlloc *ra_) const {
   // BoxLockNode is not a MachNode, so we can't just call MachNode::size(ra_).
-  return 4;
+  int offset = ra_->reg2offset(in_RegMask(0).find_first_elem());
+
+  if (Assembler::operand_valid_for_add_sub_immediate(offset)) {
+    return NativeInstruction::instruction_size;
+  } else {
+    return 2 * NativeInstruction::instruction_size;
+  }
 }
 
 //=============================================================================
@@ -11271,14 +11278,11 @@ instruct SubL_reg_LShift_reg(iRegLNoSp dst,
 instruct sbfmL(iRegLNoSp dst, iRegL src, immI lshift_count, immI rshift_count)
 %{
   match(Set dst (RShiftL (LShiftL src lshift_count) rshift_count));
-  // Make sure we are not going to exceed what sbfm can do.
-  predicate((unsigned int)n->in(2)->get_int() <= 63
-            && (unsigned int)n->in(1)->in(2)->get_int() <= 63);
-
   ins_cost(INSN_COST * 2);
   format %{ "sbfm  $dst, $src, $rshift_count - $lshift_count, #63 - $lshift_count" %}
   ins_encode %{
-    int lshift = $lshift_count$$constant, rshift = $rshift_count$$constant;
+    int lshift = $lshift_count$$constant & 63;
+    int rshift = $rshift_count$$constant & 63;
     int s = 63 - lshift;
     int r = (rshift - lshift) & 63;
     __ sbfm(as_Register($dst$$reg),
@@ -11294,14 +11298,11 @@ instruct sbfmL(iRegLNoSp dst, iRegL src, immI lshift_count, immI rshift_count)
 instruct sbfmwI(iRegINoSp dst, iRegIorL2I src, immI lshift_count, immI rshift_count)
 %{
   match(Set dst (RShiftI (LShiftI src lshift_count) rshift_count));
-  // Make sure we are not going to exceed what sbfmw can do.
-  predicate((unsigned int)n->in(2)->get_int() <= 31
-            && (unsigned int)n->in(1)->in(2)->get_int() <= 31);
-
   ins_cost(INSN_COST * 2);
   format %{ "sbfmw  $dst, $src, $rshift_count - $lshift_count, #31 - $lshift_count" %}
   ins_encode %{
-    int lshift = $lshift_count$$constant, rshift = $rshift_count$$constant;
+    int lshift = $lshift_count$$constant & 31;
+    int rshift = $rshift_count$$constant & 31;
     int s = 31 - lshift;
     int r = (rshift - lshift) & 31;
     __ sbfmw(as_Register($dst$$reg),
@@ -11317,14 +11318,11 @@ instruct sbfmwI(iRegINoSp dst, iRegIorL2I src, immI lshift_count, immI rshift_co
 instruct ubfmL(iRegLNoSp dst, iRegL src, immI lshift_count, immI rshift_count)
 %{
   match(Set dst (URShiftL (LShiftL src lshift_count) rshift_count));
-  // Make sure we are not going to exceed what ubfm can do.
-  predicate((unsigned int)n->in(2)->get_int() <= 63
-            && (unsigned int)n->in(1)->in(2)->get_int() <= 63);
-
   ins_cost(INSN_COST * 2);
   format %{ "ubfm  $dst, $src, $rshift_count - $lshift_count, #63 - $lshift_count" %}
   ins_encode %{
-    int lshift = $lshift_count$$constant, rshift = $rshift_count$$constant;
+    int lshift = $lshift_count$$constant & 63;
+    int rshift = $rshift_count$$constant & 63;
     int s = 63 - lshift;
     int r = (rshift - lshift) & 63;
     __ ubfm(as_Register($dst$$reg),
@@ -11340,14 +11338,11 @@ instruct ubfmL(iRegLNoSp dst, iRegL src, immI lshift_count, immI rshift_count)
 instruct ubfmwI(iRegINoSp dst, iRegIorL2I src, immI lshift_count, immI rshift_count)
 %{
   match(Set dst (URShiftI (LShiftI src lshift_count) rshift_count));
-  // Make sure we are not going to exceed what ubfmw can do.
-  predicate((unsigned int)n->in(2)->get_int() <= 31
-            && (unsigned int)n->in(1)->in(2)->get_int() <= 31);
-
   ins_cost(INSN_COST * 2);
   format %{ "ubfmw  $dst, $src, $rshift_count - $lshift_count, #31 - $lshift_count" %}
   ins_encode %{
-    int lshift = $lshift_count$$constant, rshift = $rshift_count$$constant;
+    int lshift = $lshift_count$$constant & 31;
+    int rshift = $rshift_count$$constant & 31;
     int s = 31 - lshift;
     int r = (rshift - lshift) & 31;
     __ ubfmw(as_Register($dst$$reg),
@@ -11419,13 +11414,12 @@ instruct ubfxIConvI2L(iRegLNoSp dst, iRegIorL2I src, immI rshift, immI_bitmask m
 instruct ubfizwI(iRegINoSp dst, iRegIorL2I src, immI lshift, immI_bitmask mask)
 %{
   match(Set dst (LShiftI (AndI src mask) lshift));
-  predicate((unsigned int)n->in(2)->get_int() <= 31 &&
-    (exact_log2(n->in(1)->in(2)->get_int()+1) + (unsigned int)n->in(2)->get_int()) <= (31+1));
+  predicate((exact_log2(n->in(1)->in(2)->get_int() + 1) + (n->in(2)->get_int() & 31)) <= (31 + 1));
 
   ins_cost(INSN_COST);
   format %{ "ubfizw $dst, $src, $lshift, $mask" %}
   ins_encode %{
-    int lshift = $lshift$$constant;
+    int lshift = $lshift$$constant & 31;
     long mask = $mask$$constant;
     int width = exact_log2(mask+1);
     __ ubfizw(as_Register($dst$$reg),
@@ -11438,13 +11432,12 @@ instruct ubfizwI(iRegINoSp dst, iRegIorL2I src, immI lshift, immI_bitmask mask)
 instruct ubfizL(iRegLNoSp dst, iRegL src, immI lshift, immL_bitmask mask)
 %{
   match(Set dst (LShiftL (AndL src mask) lshift));
-  predicate((unsigned int)n->in(2)->get_int() <= 63 &&
-    (exact_log2_long(n->in(1)->in(2)->get_long()+1) + (unsigned int)n->in(2)->get_int()) <= (63+1));
+  predicate((exact_log2_long(n->in(1)->in(2)->get_long() + 1) + (n->in(2)->get_int() & 63)) <= (63 + 1));
 
   ins_cost(INSN_COST);
   format %{ "ubfiz $dst, $src, $lshift, $mask" %}
   ins_encode %{
-    int lshift = $lshift$$constant;
+    int lshift = $lshift$$constant & 63;
     long mask = $mask$$constant;
     int width = exact_log2_long(mask+1);
     __ ubfiz(as_Register($dst$$reg),
@@ -11456,14 +11449,13 @@ instruct ubfizL(iRegLNoSp dst, iRegL src, immI lshift, immL_bitmask mask)
 // If there is a convert I to L block between and AndI and a LShiftL, we can also match ubfiz
 instruct ubfizIConvI2L(iRegLNoSp dst, iRegIorL2I src, immI lshift, immI_bitmask mask)
 %{
-  match(Set dst (LShiftL (ConvI2L(AndI src mask)) lshift));
-  predicate((unsigned int)n->in(2)->get_int() <= 31 &&
-    (exact_log2((unsigned int)n->in(1)->in(1)->in(2)->get_int()+1) + (unsigned int)n->in(2)->get_int()) <= 32);
+  match(Set dst (LShiftL (ConvI2L (AndI src mask)) lshift));
+  predicate((exact_log2(n->in(1)->in(1)->in(2)->get_int() + 1) + (n->in(2)->get_int() & 63)) <= (63 + 1));
 
   ins_cost(INSN_COST);
   format %{ "ubfiz $dst, $src, $lshift, $mask" %}
   ins_encode %{
-    int lshift = $lshift$$constant;
+    int lshift = $lshift$$constant & 63;
     long mask = $mask$$constant;
     int width = exact_log2(mask+1);
     __ ubfiz(as_Register($dst$$reg),
@@ -11477,7 +11469,7 @@ instruct ubfizIConvI2L(iRegLNoSp dst, iRegIorL2I src, immI lshift, immI_bitmask 
 instruct extrOrL(iRegLNoSp dst, iRegL src1, iRegL src2, immI lshift, immI rshift, rFlagsReg cr)
 %{
   match(Set dst (OrL (LShiftL src1 lshift) (URShiftL src2 rshift)));
-  predicate(0 == ((n->in(1)->in(2)->get_int() + n->in(2)->in(2)->get_int()) & 63));
+  predicate(0 == (((n->in(1)->in(2)->get_int() & 63) + (n->in(2)->in(2)->get_int() & 63)) & 63));
 
   ins_cost(INSN_COST);
   format %{ "extr $dst, $src1, $src2, #$rshift" %}
@@ -11492,7 +11484,7 @@ instruct extrOrL(iRegLNoSp dst, iRegL src1, iRegL src2, immI lshift, immI rshift
 instruct extrOrI(iRegINoSp dst, iRegIorL2I src1, iRegIorL2I src2, immI lshift, immI rshift, rFlagsReg cr)
 %{
   match(Set dst (OrI (LShiftI src1 lshift) (URShiftI src2 rshift)));
-  predicate(0 == ((n->in(1)->in(2)->get_int() + n->in(2)->in(2)->get_int()) & 31));
+  predicate(0 == (((n->in(1)->in(2)->get_int() & 31) + (n->in(2)->in(2)->get_int() & 31)) & 31));
 
   ins_cost(INSN_COST);
   format %{ "extr $dst, $src1, $src2, #$rshift" %}
@@ -11507,7 +11499,7 @@ instruct extrOrI(iRegINoSp dst, iRegIorL2I src1, iRegIorL2I src2, immI lshift, i
 instruct extrAddL(iRegLNoSp dst, iRegL src1, iRegL src2, immI lshift, immI rshift, rFlagsReg cr)
 %{
   match(Set dst (AddL (LShiftL src1 lshift) (URShiftL src2 rshift)));
-  predicate(0 == ((n->in(1)->in(2)->get_int() + n->in(2)->in(2)->get_int()) & 63));
+  predicate(0 == (((n->in(1)->in(2)->get_int() & 63) + (n->in(2)->in(2)->get_int() & 63)) & 63));
 
   ins_cost(INSN_COST);
   format %{ "extr $dst, $src1, $src2, #$rshift" %}
@@ -11522,7 +11514,7 @@ instruct extrAddL(iRegLNoSp dst, iRegL src1, iRegL src2, immI lshift, immI rshif
 instruct extrAddI(iRegINoSp dst, iRegIorL2I src1, iRegIorL2I src2, immI lshift, immI rshift, rFlagsReg cr)
 %{
   match(Set dst (AddI (LShiftI src1 lshift) (URShiftI src2 rshift)));
-  predicate(0 == ((n->in(1)->in(2)->get_int() + n->in(2)->in(2)->get_int()) & 31));
+  predicate(0 == (((n->in(1)->in(2)->get_int() & 31) + (n->in(2)->in(2)->get_int() & 31)) & 31));
 
   ins_cost(INSN_COST);
   format %{ "extr $dst, $src1, $src2, #$rshift" %}
@@ -15337,14 +15329,14 @@ instruct reduce_add2I(iRegINoSp dst, iRegIorL2I src1, vecD src2, iRegINoSp tmp, 
   effect(TEMP tmp, TEMP tmp2);
   format %{ "umov  $tmp, $src2, S, 0\n\t"
             "umov  $tmp2, $src2, S, 1\n\t"
-            "addw  $dst, $src1, $tmp\n\t"
-            "addw  $dst, $dst, $tmp2\t add reduction2i"
+            "addw  $tmp, $src1, $tmp\n\t"
+            "addw  $dst, $tmp, $tmp2\t# add reduction2I"
   %}
   ins_encode %{
     __ umov($tmp$$Register, as_FloatRegister($src2$$reg), __ S, 0);
     __ umov($tmp2$$Register, as_FloatRegister($src2$$reg), __ S, 1);
-    __ addw($dst$$Register, $src1$$Register, $tmp$$Register);
-    __ addw($dst$$Register, $dst$$Register, $tmp2$$Register);
+    __ addw($tmp$$Register, $src1$$Register, $tmp$$Register);
+    __ addw($dst$$Register, $tmp$$Register, $tmp2$$Register);
   %}
   ins_pipe(pipe_class_default);
 %}
@@ -15356,7 +15348,7 @@ instruct reduce_add4I(iRegINoSp dst, iRegIorL2I src1, vecX src2, vecX tmp, iRegI
   effect(TEMP tmp, TEMP tmp2);
   format %{ "addv  $tmp, T4S, $src2\n\t"
             "umov  $tmp2, $tmp, S, 0\n\t"
-            "addw  $dst, $tmp2, $src1\t add reduction4i"
+            "addw  $dst, $tmp2, $src1\t# add reduction4I"
   %}
   ins_encode %{
     __ addv(as_FloatRegister($tmp$$reg), __ T4S,
@@ -15375,7 +15367,7 @@ instruct reduce_mul2I(iRegINoSp dst, iRegIorL2I src1, vecD src2, iRegINoSp tmp)
   format %{ "umov  $tmp, $src2, S, 0\n\t"
             "mul   $dst, $tmp, $src1\n\t"
             "umov  $tmp, $src2, S, 1\n\t"
-            "mul   $dst, $tmp, $dst\t mul reduction2i\n\t"
+            "mul   $dst, $tmp, $dst\t# mul reduction2I"
   %}
   ins_encode %{
     __ umov($tmp$$Register, as_FloatRegister($src2$$reg), __ S, 0);
@@ -15396,7 +15388,7 @@ instruct reduce_mul4I(iRegINoSp dst, iRegIorL2I src1, vecX src2, vecX tmp, iRegI
             "umov  $tmp2, $tmp, S, 0\n\t"
             "mul   $dst, $tmp2, $src1\n\t"
             "umov  $tmp2, $tmp, S, 1\n\t"
-            "mul   $dst, $tmp2, $dst\t mul reduction4i\n\t"
+            "mul   $dst, $tmp2, $dst\t# mul reduction4I"
   %}
   ins_encode %{
     __ ins(as_FloatRegister($tmp$$reg), __ D,
@@ -15418,7 +15410,7 @@ instruct reduce_add2F(vRegF dst, vRegF src1, vecD src2, vecD tmp)
   effect(TEMP tmp, TEMP dst);
   format %{ "fadds $dst, $src1, $src2\n\t"
             "ins   $tmp, S, $src2, 0, 1\n\t"
-            "fadds $dst, $dst, $tmp\t add reduction2f"
+            "fadds $dst, $dst, $tmp\t# add reduction2F"
   %}
   ins_encode %{
     __ fadds(as_FloatRegister($dst$$reg),
@@ -15442,7 +15434,7 @@ instruct reduce_add4F(vRegF dst, vRegF src1, vecX src2, vecX tmp)
             "ins   $tmp, S, $src2, 0, 2\n\t"
             "fadds $dst, $dst, $tmp\n\t"
             "ins   $tmp, S, $src2, 0, 3\n\t"
-            "fadds $dst, $dst, $tmp\t add reduction4f"
+            "fadds $dst, $dst, $tmp\t# add reduction4F"
   %}
   ins_encode %{
     __ fadds(as_FloatRegister($dst$$reg),
@@ -15470,7 +15462,7 @@ instruct reduce_mul2F(vRegF dst, vRegF src1, vecD src2, vecD tmp)
   effect(TEMP tmp, TEMP dst);
   format %{ "fmuls $dst, $src1, $src2\n\t"
             "ins   $tmp, S, $src2, 0, 1\n\t"
-            "fmuls $dst, $dst, $tmp\t add reduction4f"
+            "fmuls $dst, $dst, $tmp\t# mul reduction2F"
   %}
   ins_encode %{
     __ fmuls(as_FloatRegister($dst$$reg),
@@ -15494,7 +15486,7 @@ instruct reduce_mul4F(vRegF dst, vRegF src1, vecX src2, vecX tmp)
             "ins   $tmp, S, $src2, 0, 2\n\t"
             "fmuls $dst, $dst, $tmp\n\t"
             "ins   $tmp, S, $src2, 0, 3\n\t"
-            "fmuls $dst, $dst, $tmp\t add reduction4f"
+            "fmuls $dst, $dst, $tmp\t# mul reduction4F"
   %}
   ins_encode %{
     __ fmuls(as_FloatRegister($dst$$reg),
@@ -15522,7 +15514,7 @@ instruct reduce_add2D(vRegD dst, vRegD src1, vecX src2, vecX tmp)
   effect(TEMP tmp, TEMP dst);
   format %{ "faddd $dst, $src1, $src2\n\t"
             "ins   $tmp, D, $src2, 0, 1\n\t"
-            "faddd $dst, $dst, $tmp\t add reduction2d"
+            "faddd $dst, $dst, $tmp\t# add reduction2D"
   %}
   ins_encode %{
     __ faddd(as_FloatRegister($dst$$reg),
@@ -15542,7 +15534,7 @@ instruct reduce_mul2D(vRegD dst, vRegD src1, vecX src2, vecX tmp)
   effect(TEMP tmp, TEMP dst);
   format %{ "fmuld $dst, $src1, $src2\n\t"
             "ins   $tmp, D, $src2, 0, 1\n\t"
-            "fmuld $dst, $dst, $tmp\t add reduction2d"
+            "fmuld $dst, $dst, $tmp\t# mul reduction2D"
   %}
   ins_encode %{
     __ fmuld(as_FloatRegister($dst$$reg),

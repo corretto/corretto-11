@@ -568,10 +568,13 @@ void Node::setup_is_top() {
 //------------------------------~Node------------------------------------------
 // Fancy destructor; eagerly attempt to reclaim Node numberings and storage
 void Node::destruct() {
-  // Eagerly reclaim unique Node numberings
   Compile* compile = Compile::current();
+  // If this is the most recently created node, reclaim its index. Otherwise,
+  // record the node as dead to keep liveness information accurate.
   if ((uint)_idx+1 == compile->unique()) {
     compile->set_unique(compile->unique()-1);
+  } else {
+    compile->record_dead_node(_idx);
   }
   // Clear debug info:
   Node_Notes* nn = compile->node_notes_at(_idx);
@@ -2373,6 +2376,29 @@ void Node::ensure_control_or_add_prec(Node* c) {
   } else if (in(0) != c) {
     add_prec(c);
   }
+}
+
+bool Node::is_dead_loop_safe() const {
+  if (is_Phi()) {
+    return true;
+  }
+  if (is_Proj() && in(0) == NULL)  {
+    return true;
+  }
+  if ((_flags & (Flag_is_dead_loop_safe | Flag_is_Con)) != 0) {
+    if (!is_Proj()) {
+      return true;
+    }
+    if (in(0)->is_Allocate()) {
+      return false;
+    }
+    // MemNode::can_see_stored_value() peeks through the boxing call
+    if (in(0)->is_CallStaticJava() && in(0)->as_CallStaticJava()->is_boxing_method()) {
+      return false;
+    }
+    return true;
+  }
+  return false;
 }
 
 //=============================================================================

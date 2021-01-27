@@ -552,7 +552,7 @@ public final class SSLSocketImpl
     // locks may be deadlocked.
     @Override
     public void close() throws IOException {
-        if (tlsIsClosed) {
+        if (isClosed()) {
             return;
         }
 
@@ -561,19 +561,16 @@ public final class SSLSocketImpl
         }
 
         try {
-            // shutdown output bound, which may have been closed previously.
-            if (!isOutputShutdown()) {
-                duplexCloseOutput();
-            }
+            if (isConnected()) {
+                // shutdown output bound, which may have been closed previously.
+                if (!isOutputShutdown()) {
+                    duplexCloseOutput();
+                }
 
-            // shutdown input bound, which may have been closed previously.
-            if (!isInputShutdown()) {
-                duplexCloseInput();
-            }
-
-            if (!isClosed()) {
-                // close the connection directly
-                closeSocket(false);
+                // shutdown input bound, which may have been closed previously.
+                if (!isInputShutdown()) {
+                    duplexCloseInput();
+                }
             }
         } catch (IOException ioe) {
             // ignore the exception
@@ -581,7 +578,19 @@ public final class SSLSocketImpl
                 SSLLogger.warning("SSLSocket duplex close failed", ioe);
             }
         } finally {
-            tlsIsClosed = true;
+            if (!isClosed()) {
+                // close the connection directly
+                try {
+                    closeSocket(false);
+                } catch (IOException ioe) {
+                    // ignore the exception
+                    if (SSLLogger.isOn && SSLLogger.isOn("ssl")) {
+                        SSLLogger.warning("SSLSocket close failed", ioe);
+                    }
+                } finally {
+                    tlsIsClosed = true;
+                }
+            }
         }
     }
 
@@ -736,16 +745,17 @@ public final class SSLSocketImpl
         // Is it ready to close inbound?
         //
         // No need to throw exception if the initial handshake is not started.
-        if (checkCloseNotify && !conContext.isInputCloseNotified &&
-            (conContext.isNegotiated || conContext.handshakeContext != null)) {
-
-            throw conContext.fatal(Alert.INTERNAL_ERROR,
+        try {
+            if (checkCloseNotify && !conContext.isInputCloseNotified &&
+                (conContext.isNegotiated || conContext.handshakeContext != null)) {
+            throw new SSLException(
                     "closing inbound before receiving peer's close_notify");
-        }
-
-        conContext.closeInbound();
-        if ((autoClose || !isLayered()) && !super.isInputShutdown()) {
-            super.shutdownInput();
+            }
+        } finally {
+            conContext.closeInbound();
+            if ((autoClose || !isLayered()) && !super.isInputShutdown()) {
+                super.shutdownInput();
+            }
         }
     }
 

@@ -641,8 +641,6 @@ com/sun/nio/sctp/SctpChannel/SocketOptionTests.java             8141694 linux-al
 
 sun/security/pkcs11/ec/TestKeyFactory.java                      8026976 generic-all
 sun/security/pkcs11/KeyStore/ClientAuth.sh                      8254806 solaris-all
-sun/security/pkcs11/Secmod/AddTrustedCert.java                  8180837 generic-all
-sun/security/pkcs11/tls/TestKeyMaterial.java                    8180837 generic-all
 sun/security/pkcs11/sslecc/ClientJSSEServerJSSE.java            8161536 generic-all
 
 sun/security/tools/keytool/ListKeychainStore.sh                 8156889 macosx-all
@@ -913,6 +911,12 @@ java/awt/print/bug8023392/bug8023392.html 8231231 generic-all
 java/awt/font/TextLayout/TestJustification.html 8250791 macosx-all
 javax/swing/JTabbedPane/4209065/bug4209065.java 8251177 macosx-all
 java/awt/TrayIcon/DragEventSource/DragEventSource.java 8252242 macosx-all
+java/awt/FileDialog/DefaultFocusOwner/DefaultFocusOwner.java 7187728 macosx-all,linux-all
+java/awt/FileDialog/RegexpFilterTest/RegexpFilterTest.html 7187728 macosx-all,linux-all
+java/awt/print/PageFormat/Orient.java 8016055 macosx-all
+java/awt/TextArea/TextAreaCursorTest/HoveringAndDraggingTest.java 8024986 macosx-all,linux-all
+java/awt/event/MouseEvent/SpuriousExitEnter/SpuriousExitEnter.java 8254841 macosx-all
+
 
 ############################################################################
 

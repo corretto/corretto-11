@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -21,15 +21,9 @@
  * questions.
  */
 
-package test;
+package p;
 
-public class Main {
-    public void run() {
-        Version v = new Version();
-        v.getVersion();
-    }
-
-    public static void main(String[] args) {
-        (new Main()).run();
-    }
+public class Foo implements Runnable {
+   public void run() {
+   }
 }

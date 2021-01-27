@@ -45,9 +45,11 @@ friend class ArrayCopyStub;
 
   bool is_literal_address(LIR_Address* addr);
 
-  // When we need to use something other than rscratch1 use this
-  // method.
+  // When we need to use something other than rscratch1 use this method.
   Address as_Address(LIR_Address* addr, Register tmp);
+
+  // Ensure we have a valid Address (base+offset) to a stack-slot.
+  Address stack_slot_address(int index, uint shift, Register tmp, int adjust = 0);
 
   // Record the type of the receiver in ReceiverTypeData
   void type_profile_helper(Register mdo,
@@ -76,8 +78,6 @@ friend class ArrayCopyStub;
     _exception_handler_size = DEBUG_ONLY(1*K) NOT_DEBUG(175),
     _deopt_handler_size = 7 * NativeInstruction::instruction_size
   };
-
-  void arithmetic_idiv(LIR_Op3* op, bool is_irem);
 
 public:
 

@@ -2302,7 +2302,7 @@ void MacroAssembler::tlab_allocate(
 ) {
   // make sure arguments make sense
   assert_different_registers(obj, var_size_in_bytes, t1);
-  assert(0 <= con_size_in_bytes && is_simm13(con_size_in_bytes), "illegal object size");
+  assert(0 <= con_size_in_bytes && is_simm16(con_size_in_bytes), "illegal object size");
   assert((con_size_in_bytes & MinObjAlignmentInBytesMask) == 0, "object size is not multiple of alignment");
 
   const Register new_top = t1;
@@ -3221,10 +3221,25 @@ void MacroAssembler::store_klass_gap(Register dst_oop, Register val) {
 }
 
 int MacroAssembler::instr_size_for_decode_klass_not_null() {
-  if (!UseCompressedClassPointers) return 0;
-  int num_instrs = 1;  // shift or move
-  if (Universe::narrow_klass_base() != 0) num_instrs = 7;  // shift + load const + add
-  return num_instrs * BytesPerInstWord;
+  static int computed_size = -1;
+
+  // Not yet computed?
+  if (computed_size == -1) {
+
+    if (!UseCompressedClassPointers) {
+      computed_size = 0;
+    } else {
+      // Determine by scratch emit.
+      ResourceMark rm;
+      int code_size = 8 * BytesPerInstWord;
+      CodeBuffer cb("decode_klass_not_null scratch buffer", code_size, 0);
+      MacroAssembler* a = new MacroAssembler(&cb);
+      a->decode_klass_not_null(R11_scratch1);
+      computed_size = a->offset();
+    }
+  }
+
+  return computed_size;
 }
 
 void MacroAssembler::decode_klass_not_null(Register dst, Register src) {

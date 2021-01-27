@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -21,24 +21,17 @@
  * questions.
  */
 
-#include <stdlib.h>
-#include <string.h>
+import test.Version;
+import p.Foo;
 
-#ifdef _WIN32
+public class Main {
+    public void run() {
+        Version v = new Version();
+        v.getVersion();
+    }
 
-#include "jni.h"
-#include "jni_util.h"
-#include <windows.h>
-
-JNIEXPORT jlong JNICALL Java_CheckHandles_getProcessHandleCount(JNIEnv *env)
-{
-    DWORD handleCount;
-    HANDLE handle = GetCurrentProcess();
-    if (GetProcessHandleCount(handle, &handleCount)) {
-        return (jlong)handleCount;
-    } else {
-        return -1L;
+    public static void main(String[] args) {
+        (new Main()).run();
+        Foo foo = new Foo();
     }
 }
-
-#endif  /*  _WIN32 */

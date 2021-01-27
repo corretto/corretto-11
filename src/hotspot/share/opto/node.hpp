@@ -48,6 +48,7 @@ class CMoveNode;
 class CallDynamicJavaNode;
 class CallJavaNode;
 class CallLeafNode;
+class CallLeafNoFPNode;
 class CallNode;
 class CallRuntimeNode;
 class CallStaticJavaNode;
@@ -626,6 +627,7 @@ public:
             DEFINE_CLASS_ID(CallDynamicJava,  CallJava, 1)
           DEFINE_CLASS_ID(CallRuntime,      Call, 1)
             DEFINE_CLASS_ID(CallLeaf,         CallRuntime, 0)
+              DEFINE_CLASS_ID(CallLeafNoFP,     CallLeaf, 0)
           DEFINE_CLASS_ID(Allocate,         Call, 2)
             DEFINE_CLASS_ID(AllocateArray,    Allocate, 0)
           DEFINE_CLASS_ID(AbstractLock,     Call, 3)
@@ -810,6 +812,7 @@ public:
   DEFINE_CLASS_QUERY(CallDynamicJava)
   DEFINE_CLASS_QUERY(CallJava)
   DEFINE_CLASS_QUERY(CallLeaf)
+  DEFINE_CLASS_QUERY(CallLeafNoFP)
   DEFINE_CLASS_QUERY(CallRuntime)
   DEFINE_CLASS_QUERY(CallStaticJava)
   DEFINE_CLASS_QUERY(Catch)
@@ -906,11 +909,7 @@ public:
 
   bool is_Con () const { return (_flags & Flag_is_Con) != 0; }
   // The data node which is safe to leave in dead loop during IGVN optimization.
-  bool is_dead_loop_safe() const {
-    return is_Phi() || (is_Proj() && in(0) == NULL) ||
-           ((_flags & (Flag_is_dead_loop_safe | Flag_is_Con)) != 0 &&
-            (!is_Proj() || !in(0)->is_Allocate()));
-  }
+  bool is_dead_loop_safe() const;
 
   // is_Copy() returns copied edge index (0 or 1)
   uint is_Copy() const { return (_flags & Flag_is_Copy); }

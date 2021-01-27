@@ -213,7 +213,7 @@ Node *MemNode::optimize_memory_chain(Node *mchain, const TypePtr *t_adr, Node *l
   Node* result = optimize_simple_memory_chain(mchain, t_oop, load, phase);
   bool is_instance = t_oop->is_known_instance_field();
   PhaseIterGVN *igvn = phase->is_IterGVN();
-  if (is_instance && igvn != NULL  && result->is_Phi()) {
+  if (is_instance && igvn != NULL && result->is_Phi()) {
     PhiNode *mphi = result->as_Phi();
     assert(mphi->bottom_type() == Type::MEMORY, "memory phi required");
     const TypePtr *t = mphi->adr_type();
@@ -4604,24 +4604,6 @@ Node *MergeMemNode::Ideal(PhaseGVN *phase, bool can_reshape) {
       new_mem = old_mmem->memory_at(i);
     }
     // else preceding memory was not a MergeMem
-
-    // replace equivalent phis (unfortunately, they do not GVN together)
-    if (new_mem != NULL && new_mem != new_base &&
-        new_mem->req() == phi_len && new_mem->in(0) == phi_reg) {
-      if (new_mem->is_Phi()) {
-        PhiNode* phi_mem = new_mem->as_Phi();
-        for (uint i = 1; i < phi_len; i++) {
-          if (phi_base->in(i) != phi_mem->in(i)) {
-            phi_mem = NULL;
-            break;
-          }
-        }
-        if (phi_mem != NULL) {
-          // equivalent phi nodes; revert to the def
-          new_mem = new_base;
-        }
-      }
-    }
 
     // maybe store down a new value
     Node* new_in = new_mem;
