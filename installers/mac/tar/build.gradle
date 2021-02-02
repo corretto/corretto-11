@@ -158,6 +158,9 @@ task packageTestResults(type: Tar) {
 
 }
 
+build.dependsOn packaging
+build.dependsOn packageTestResults
+
 artifacts {
     buildTar file: packaging.outputs.getFiles().getSingleFile(), builtBy: packaging
     testLib packageTestResults

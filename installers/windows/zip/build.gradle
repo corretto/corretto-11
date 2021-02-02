@@ -95,6 +95,8 @@ task packageJdk(type: Zip) {
     }
 }
 
+build.dependsOn packageJdk
+
 artifacts {
     archives packageJdk
 }
