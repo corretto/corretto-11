@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -21,27 +21,27 @@
  * questions.
  */
 
-#include <jni.h>
+package jdk.test.lib.security.timestamp;
 
-JNIEXPORT jboolean JNICALL
-Java_TestCheckedReleaseCriticalArray_modifyArray(JNIEnv *env,
-                                                 jclass clazz,
-                                                 jintArray iarr) {
-  jboolean isCopy;
-  jint* arr = (jint *)(*env)->GetPrimitiveArrayCritical(env, iarr, &isCopy);
-  if (arr == NULL) {
-    (*env)->FatalError(env, "Unexpected NULL return from GetPrimitiveArrayCritical");
-  }
-  if (isCopy == JNI_FALSE) {
-    jint len = (*env)->GetArrayLength(env, iarr);
-    // make arbitrary changes to the array
-    int i;
-    for (i = 0; i < len; i++) {
-      arr[i] *= 2;
+import java.security.PrivateKey;
+import java.security.cert.X509Certificate;
+import java.util.Objects;
+
+/**
+ * A carrier for the TSA signer private key and certificate chain.
+ */
+public class SignerEntry {
+
+    public final PrivateKey privateKey;
+    public final X509Certificate[] certChain;
+    public final X509Certificate cert;
+
+    public SignerEntry(PrivateKey privateKey, X509Certificate[] certChain) {
+        Objects.requireNonNull(privateKey);
+        Objects.requireNonNull(certChain);
+
+        this.privateKey = privateKey;
+        this.certChain = certChain;
+        this.cert = certChain[0];
     }
-    // write-back using JNI_COMMIT to test for memory leak
-    (*env)->ReleasePrimitiveArrayCritical(env, iarr, arr, JNI_COMMIT);
-  }
-  // we skip the test if the VM makes a copy - as it will definitely leak
-  return !isCopy;
 }

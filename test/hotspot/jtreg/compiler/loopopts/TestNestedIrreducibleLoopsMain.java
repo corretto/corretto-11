@@ -21,27 +21,25 @@
  * questions.
  */
 
-#include <jni.h>
+/*
+ * @test
+ * @bug 8253353
+ * @summary Tests custom bytecode with deep nested irreducible loops.
+ *
+ * @compile TestNestedIrreducibleLoops.jasm
+ * @run main/othervm -Xbatch -XX:CompileCommand=dontinline,TestNestedIrreducibleLoops::*
+ *                   -XX:CompileCommand=exclude,TestNestedIrreducibleLoopsMain::main
+ *                   TestNestedIrreducibleLoopsMain
+ */
 
-JNIEXPORT jboolean JNICALL
-Java_TestCheckedReleaseCriticalArray_modifyArray(JNIEnv *env,
-                                                 jclass clazz,
-                                                 jintArray iarr) {
-  jboolean isCopy;
-  jint* arr = (jint *)(*env)->GetPrimitiveArrayCritical(env, iarr, &isCopy);
-  if (arr == NULL) {
-    (*env)->FatalError(env, "Unexpected NULL return from GetPrimitiveArrayCritical");
-  }
-  if (isCopy == JNI_FALSE) {
-    jint len = (*env)->GetArrayLength(env, iarr);
-    // make arbitrary changes to the array
-    int i;
-    for (i = 0; i < len; i++) {
-      arr[i] *= 2;
+public class TestNestedIrreducibleLoopsMain {
+    public static void main(String[] args) {
+        TestNestedIrreducibleLoops t = new TestNestedIrreducibleLoops();
+        t.loopCounter = 3;
+        int j;
+        for (int i = 0; i < 11000; i++) {
+            t.start = i & 0x3ff;
+            j = t.test(); // Produces deep nested irreducible loops
+        }
     }
-    // write-back using JNI_COMMIT to test for memory leak
-    (*env)->ReleasePrimitiveArrayCritical(env, iarr, arr, JNI_COMMIT);
-  }
-  // we skip the test if the VM makes a copy - as it will definitely leak
-  return !isCopy;
 }
