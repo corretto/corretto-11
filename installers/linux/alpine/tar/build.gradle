@@ -80,7 +80,7 @@ task configureBuild(type: Exec) {
     def configureCmd = [
         'bash',
         'configure',
-        '--with-jvm-features=zgc',
+        '--with-jvm-features=zgc shenandoahgc',
         "--with-version-feature=${version.major}",
         '--with-freetype=bundled',
         '--with-zlib=bundled',
@@ -91,6 +91,7 @@ task configureBuild(type: Exec) {
         '--with-vendor-name=Amazon.com Inc.',
         '--with-vendor-url=https://aws.amazon.com/corretto/',
         "--with-vendor-bug-url=https://github.com/corretto/corretto-${version.major}/issues/",
+        "--with-vendor-vm-bug-url=https://github.com/corretto/corretto-${version.major}/issues/",
         '--with-debug-level=release',
         '--with-native-debug-symbols=none',
         '--with-stdc++lib=static',
