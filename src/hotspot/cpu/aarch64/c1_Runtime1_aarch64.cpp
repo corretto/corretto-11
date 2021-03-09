@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1999, 2020, Oracle and/or its affiliates. All rights reserved.
  * Copyright (c) 2014, Red Hat Inc. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
@@ -143,7 +143,7 @@ int StubAssembler::call_RT(Register oop_result1, Register metadata_result, addre
   if (arg1 == c_rarg2 || arg1 == c_rarg3 ||
       arg2 == c_rarg1 || arg2 == c_rarg3 ||
       arg3 == c_rarg1 || arg3 == c_rarg2) {
-    stp(arg3, arg2, Address(pre(sp, 2 * wordSize)));
+    stp(arg3, arg2, Address(pre(sp, -2 * wordSize)));
     stp(arg1, zr, Address(pre(sp, -2 * wordSize)));
     ldp(c_rarg1, zr, Address(post(sp, 2 * wordSize)));
     ldp(c_rarg3, c_rarg2, Address(post(sp, 2 * wordSize)));
@@ -1123,6 +1123,16 @@ OopMapSet* Runtime1::generate_code_for(StubID id, StubAssembler* sasm) {
       }
       break;
 
+    case dtrace_object_alloc_id:
+      { // c_rarg0: object
+        StubFrame f(sasm, "dtrace_object_alloc", dont_gc_arguments);
+        save_live_registers(sasm);
+
+        __ call_VM_leaf(CAST_FROM_FN_PTR(address, SharedRuntime::dtrace_object_alloc), c_rarg0);
+
+        restore_live_registers(sasm);
+      }
+      break;
 
     default:
       { StubFrame f(sasm, "unimplemented entry", dont_gc_arguments);
