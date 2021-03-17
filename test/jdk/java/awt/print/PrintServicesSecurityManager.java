@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -21,27 +21,28 @@
  * questions.
  */
 
+import java.util.Arrays;
+
+import javax.print.PrintServiceLookup;
+
 /*
  * @test
- * @bug 8131029 8160127 8159935 8168615
- * @summary Test that fail-over works for fail-over ExecutionControl generators.
- * @modules jdk.jshell/jdk.jshell.execution
- *          jdk.jshell/jdk.jshell.spi
- * @build KullaTesting ExecutionControlTestBase
- * @run testng FailOverExecutionControlTest
+ * @bug 8241829
  */
+public final class PrintServicesSecurityManager {
 
-import org.testng.annotations.Test;
-import org.testng.annotations.BeforeMethod;
-
-@Test
-public class FailOverExecutionControlTest extends ExecutionControlTestBase {
-
-    @BeforeMethod
-    @Override
-    public void setUp() {
-        setUp(builder -> builder.executionEngine("failover:0(expectedFailureNonExistent1), 1(expectedFailureNonExistent2), "
-                + standardSpecs()));
+    public static void main(String[] args) throws InterruptedException {
+        System.setSecurityManager(new SecurityManager());
+        test();
+        Thread.sleep(3000); // to be sure the pooling thread started
+        test();
     }
 
+    private static void test() {
+        Object[] services = PrintServiceLookup.lookupPrintServices(null, null);
+        if (services.length != 0) {
+            System.err.println("services = " + Arrays.toString(services));
+            throw new RuntimeException("The array of Services must be empty");
+        }
+    }
 }
