@@ -16141,6 +16141,35 @@ instruct vsub2D(vecX dst, vecX src1, vecX src2)
 
 // --------------------------------- MUL --------------------------------------
 
+instruct vmul8B(vecD dst, vecD src1, vecD src2)
+%{
+  predicate(n->as_Vector()->length() == 4 ||
+            n->as_Vector()->length() == 8);
+  match(Set dst (MulVB src1 src2));
+  ins_cost(INSN_COST);
+  format %{ "mulv  $dst,$src1,$src2\t# vector (8B)" %}
+  ins_encode %{
+    __ mulv(as_FloatRegister($dst$$reg), __ T8B,
+            as_FloatRegister($src1$$reg),
+            as_FloatRegister($src2$$reg));
+  %}
+  ins_pipe(vmul64);
+%}
+
+instruct vmul16B(vecX dst, vecX src1, vecX src2)
+%{
+  predicate(n->as_Vector()->length() == 16);
+  match(Set dst (MulVB src1 src2));
+  ins_cost(INSN_COST);
+  format %{ "mulv  $dst,$src1,$src2\t# vector (16B)" %}
+  ins_encode %{
+    __ mulv(as_FloatRegister($dst$$reg), __ T16B,
+            as_FloatRegister($src1$$reg),
+            as_FloatRegister($src2$$reg));
+  %}
+  ins_pipe(vmul128);
+%}
+
 instruct vmul4S(vecD dst, vecD src1, vecD src2)
 %{
   predicate(n->as_Vector()->length() == 2 ||
@@ -17470,6 +17499,44 @@ instruct vmin2D(vecX dst, vecX src1, vecX src2)
             as_FloatRegister($src2$$reg));
   %}
   ins_pipe(vdop_fp128);
+%}
+
+instruct vpopcount4I(vecX dst, vecX src) %{
+  predicate(UsePopCountInstruction && n->as_Vector()->length() == 4);
+  match(Set dst (PopCountVI src));
+  format %{
+    "cnt     $dst, $src\t# vector (16B)\n\t"
+    "uaddlp  $dst, $dst\t# vector (16B)\n\t"
+    "uaddlp  $dst, $dst\t# vector (8H)"
+  %}
+  ins_encode %{
+     __ cnt(as_FloatRegister($dst$$reg), __ T16B,
+            as_FloatRegister($src$$reg));
+     __ uaddlp(as_FloatRegister($dst$$reg), __ T16B,
+               as_FloatRegister($dst$$reg));
+     __ uaddlp(as_FloatRegister($dst$$reg), __ T8H,
+               as_FloatRegister($dst$$reg));
+  %}
+  ins_pipe(pipe_class_default);
+%}
+
+instruct vpopcount2I(vecD dst, vecD src) %{
+  predicate(UsePopCountInstruction && n->as_Vector()->length() == 2);
+  match(Set dst (PopCountVI src));
+  format %{
+    "cnt     $dst, $src\t# vector (8B)\n\t"
+    "uaddlp  $dst, $dst\t# vector (8B)\n\t"
+    "uaddlp  $dst, $dst\t# vector (4H)"
+  %}
+  ins_encode %{
+     __ cnt(as_FloatRegister($dst$$reg), __ T8B,
+            as_FloatRegister($src$$reg));
+     __ uaddlp(as_FloatRegister($dst$$reg), __ T8B,
+               as_FloatRegister($dst$$reg));
+     __ uaddlp(as_FloatRegister($dst$$reg), __ T4H,
+               as_FloatRegister($dst$$reg));
+  %}
+  ins_pipe(pipe_class_default);
 %}
 
 //----------PEEPHOLE RULES-----------------------------------------------------
