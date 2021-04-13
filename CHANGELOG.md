@@ -2,9 +2,41 @@
 
 The following sections describe the changes for each release of Amazon Corretto 11.
 
+## Corretto version: 11.0.11.9.1
+
+Release Date: April 20, 2021
+
+**Target Platforms**
+
++  RPM-based Linux using glibc 2.12 or later, x86, x86_64
++  Debian-based Linux using glibc 2.12 or later, x86, x86_64
++  RPM-based Linux using glibc 2.17 or later, aarch64
++  Debian-based Linux using glibc 2.17 or later, aarch64
++  Linux using glibc 2.25 or later, Arm (Preview)
++  Alpine-based Linux, x86_64
++  Windows 7 or later, x86_64
++  macOS 10.13 and later, x86_64
+
+The following issues are addressed in 11.0.11.9.1.
+
+| Issue Name | Platform | Description | Link |
+| --- | --- | --- | --- |
+| Import jdk-11.0.11.9.1 | All | Updates Corretto baseline to OpenJDK 11.0.10+9 | [jdk-11.0.11+9](http://hg.openjdk.java.net/jdk-updates/jdk11u/rev/4ba63d63eae5)
+| Update Alpine flags to include Shenandoah and VM bug URL | Alpine-based Linux | Updating Corretto Alpine build flags to include Shenandoah garbage collector and to match up with the other Corretto platforms. | [corretto-11#180](https://github.com/corretto/corretto-11/pull/180)
+| Remove expired cacerts | All | Removes expired cacerts "thawtepremiumserverca" and "verisigntsaca" | [corretto-11#184](https://github.com/corretto/corretto-11/pull/184)
+| Fix C2 compilation failed with assert(!q->is_MergeMem()) | All | Include [JDK-8221592](https://bugs.openjdk.java.net/browse/JDK-8221592) and [JDK-8223581](https://bugs.openjdk.java.net/browse/JDK-8223581) to address C2 compilation failed with assert(!q->is_MergeMem()) | [JDK-8221592](https://bugs.openjdk.java.net/browse/JDK-8221592), [JDK-8223581](https://bugs.openjdk.java.net/browse/JDK-8223581)
+| Enable TLS 1.0 and 1.1 | All | Re-enable TLS 1.0 and 1.1 which has been disabled in upstream 11.0.11+9 | |
+
+The following CVEs are addressed in 11.0.11.9.1
+
+| CVE | CVSS | Component |
+| --- | --- | --- |
+| CVE-2021-2161  | 5.9 | core-libs/java.io
+| CVE-2020-14792  | 5.3 | security-libs/java.security
+
 ## Corretto version: 11.0.10.9.1
 
-Release Date: January xx, 2021
+Release Date: January 19, 2021
 
 **Target Platforms**
 
