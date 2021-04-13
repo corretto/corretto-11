@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1999, 2021, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -46,9 +46,17 @@ import java.lang.reflect.Method;
 import java.lang.reflect.InvocationTargetException;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
 import java.util.Arrays;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import javax.net.SocketFactory;
 import javax.net.ssl.SSLParameters;
+import javax.net.ssl.HandshakeCompletedEvent;
+import javax.net.ssl.HandshakeCompletedListener;
+import javax.net.ssl.SSLPeerUnverifiedException;
+import javax.security.sasl.SaslException;
 
 /**
   * A thread that creates a connection to an LDAP server.
@@ -349,6 +357,7 @@ public final class Connection implements Runnable {
                 param.setEndpointIdentificationAlgorithm("LDAPS");
                 sslSocket.setSSLParameters(param);
             }
+            setHandshakeCompletedListener(sslSocket);
             if (connectTimeout > 0) {
                 int socketTimeout = sslSocket.getSoTimeout();
                 sslSocket.setSoTimeout(connectTimeout); // reuse full timeout value
@@ -642,6 +651,15 @@ public final class Connection implements Runnable {
                         while (ldr != null) {
                             ldr.cancel();
                             ldr = ldr.next;
+                        }
+                    }
+                    if (isTlsConnection() && tlsHandshakeListener != null) {
+                        if (closureReason != null) {
+                            CommunicationException ce = new CommunicationException();
+                            ce.setRootCause(closureReason);
+                            tlsHandshakeListener.tlsHandshakeCompleted.completeExceptionally(ce);
+                        } else {
+                            tlsHandshakeListener.tlsHandshakeCompleted.cancel(false);
                         }
                     }
                     sock = null;
@@ -1007,5 +1025,64 @@ public final class Connection implements Runnable {
             nread += count;
         }
         return buf;
+    }
+
+    public boolean isTlsConnection() {
+        return (sock instanceof SSLSocket) || isUpgradedToStartTls;
+    }
+
+    /*
+     * tlsHandshakeListener can be created for initial secure connection
+     * and updated by StartTLS extended operation. It is used later by LdapClient
+     * to create TLS Channel Binding data on the base of TLS server certificate
+     */
+    private volatile HandshakeListener tlsHandshakeListener;
+
+    synchronized public void setHandshakeCompletedListener(SSLSocket sslSocket) {
+        if (tlsHandshakeListener != null)
+            tlsHandshakeListener.tlsHandshakeCompleted.cancel(false);
+
+        tlsHandshakeListener = new HandshakeListener();
+        sslSocket.addHandshakeCompletedListener(tlsHandshakeListener);
+    }
+
+    public X509Certificate getTlsServerCertificate()
+        throws SaslException {
+        try {
+            if (isTlsConnection() && tlsHandshakeListener != null)
+                return tlsHandshakeListener.tlsHandshakeCompleted.get();
+        } catch (InterruptedException iex) {
+            throw new SaslException("TLS Handshake Exception ", iex);
+        } catch (ExecutionException eex) {
+            throw new SaslException("TLS Handshake Exception ", eex.getCause());
+        }
+        return null;
+    }
+
+    private class HandshakeListener implements HandshakeCompletedListener {
+
+        private final CompletableFuture<X509Certificate> tlsHandshakeCompleted =
+                new CompletableFuture<>();
+        @Override
+        public void handshakeCompleted(HandshakeCompletedEvent event) {
+            try {
+                X509Certificate tlsServerCert = null;
+                Certificate[] certs;
+                if (event.getSocket().getUseClientMode()) {
+                    certs = event.getPeerCertificates();
+                } else {
+                    certs = event.getLocalCertificates();
+                }
+                if (certs != null && certs.length > 0 &&
+                        certs[0] instanceof X509Certificate) {
+                    tlsServerCert = (X509Certificate) certs[0];
+                }
+                tlsHandshakeCompleted.complete(tlsServerCert);
+            } catch (SSLPeerUnverifiedException ex) {
+                CommunicationException ce = new CommunicationException();
+                ce.setRootCause(closureReason);
+                tlsHandshakeCompleted.completeExceptionally(ex);
+            }
+        }
     }
 }
