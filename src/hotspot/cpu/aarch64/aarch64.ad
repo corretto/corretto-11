@@ -2042,8 +2042,10 @@ int HandlerImpl::emit_deopt_handler(CodeBuffer& cbuf)
 const bool Matcher::match_rule_supported(int opcode) {
 
   switch (opcode) {
-  default:
-    break;
+    case Op_OnSpinWait:
+      return VM_Version::supports_on_spin_wait();
+    default:
+      break;
   }
 
   if (!has_match_rule(opcode)) {
@@ -3363,6 +3365,7 @@ encode %{
     Label cont;
     Label object_has_monitor;
     Label cas_failed;
+    Label monitor_fallthrough;
 
     assert_different_registers(oop, box, tmp, disp_hdr);
 
@@ -3393,6 +3396,10 @@ encode %{
     // Compare object markOop with an unlocked value (tmp) and if
     // equal exchange the stack address of our box with object markOop.
     // On failure disp_hdr contains the possibly locked markOop.
+    __ cmpxchg(oop, tmp, box, Assembler::xword, /*acquire*/ true,
+               /*release*/ true, /*weak*/ false, disp_hdr);
+    __ br(Assembler::EQ, cont);
+    __ isb();
     __ cmpxchg(oop, tmp, box, Assembler::xword, /*acquire*/ true,
                /*release*/ true, /*weak*/ false, disp_hdr);
     __ br(Assembler::EQ, cont);
@@ -3427,6 +3434,12 @@ encode %{
       __ add(tmp, disp_hdr, (ObjectMonitor::owner_offset_in_bytes()-markOopDesc::monitor_value));
     __ cmpxchg(tmp, zr, rthread, Assembler::xword, /*acquire*/ true,
                /*release*/ true, /*weak*/ false, noreg); // Sets flags for result
+    __ br(Assembler::EQ, monitor_fallthrough);
+    __ isb();
+    __ cmpxchg(tmp, zr, rthread, Assembler::xword, /*acquire*/ true,
+               /*release*/ true, /*weak*/ false, noreg); // Sets flags for result
+
+    __ bind(monitor_fallthrough);
 
       // Store a non-null value into the box to avoid looking like a re-entrant
       // lock. The fast-path monitor unlock code checks for
@@ -12728,6 +12741,24 @@ instruct signumF_reg(vRegF dst, vRegF src, vRegF zero, vRegF one) %{
     __ bsl(dst, __ T8B, one, src);
   %}
   ins_pipe(fp_uop_d);
+%}
+
+instruct onspinwait() %{
+  match(OnSpinWait);
+  ins_cost(INSN_COST);
+
+  format %{
+    $$template
+    if (os::is_MP()) {
+      $$emit$$"'ISB\t! membar_onspinwait"
+    } else {
+      $$emit$$"MEMBAR-onspinwait ! (empty encoding)"
+    }
+  %}
+  ins_encode %{
+    __ isb();
+  %}
+  ins_pipe(pipe_class_empty);
 %}
 
 // ============================================================================

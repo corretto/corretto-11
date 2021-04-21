@@ -28,7 +28,7 @@
  * @bug 8147844
  * @library /test/lib
  * @modules java.base/jdk.internal.misc
- * @requires os.arch=="x86" | os.arch=="amd64" | os.arch=="x86_64"
+ * @requires os.arch=="x86" | os.arch=="amd64" | os.arch=="x86_64" | os.arch=="aarch64"
  * @run driver compiler.onSpinWait.TestOnSpinWait
  */
 
