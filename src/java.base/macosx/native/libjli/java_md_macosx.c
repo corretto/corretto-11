@@ -736,8 +736,9 @@ void SplashFreeLibrary() {
  * Signature adapter for pthread_create().
  */
 static void* ThreadJavaMain(void* args) {
-   return (void*)(intptr_t)JavaMain(args);
+    return (void*)(intptr_t)JavaMain(args);
 }
+
 /*
  * Block current thread and continue execution in a new thread
  */
@@ -750,7 +751,7 @@ CallJavaMainInNewThread(jlong stack_size, void* args) {
     pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
 
     if (stack_size > 0) {
-      pthread_attr_setstacksize(&attr, stack_size);
+        pthread_attr_setstacksize(&attr, stack_size);
     }
     pthread_attr_setguardsize(&attr, 0); // no pthread guard page on java threads
 
@@ -759,12 +760,12 @@ CallJavaMainInNewThread(jlong stack_size, void* args) {
         pthread_join(tid, &tmp);
         rslt = (int)(intptr_t)tmp;
     } else {
-        /*
-         * Continue execution in current thread if for some reason (e.g. out of
-         * memory/LWP)  a new thread can't be created. This will likely fail
-         * later in JavaMain as JNI_CreateJavaVM needs to create quite a
-         * few new threads, anyway, just give it a try..
-         */
+       /*
+        * Continue execution in current thread if for some reason (e.g. out of
+        * memory/LWP)  a new thread can't be created. This will likely fail
+        * later in JavaMain as JNI_CreateJavaVM needs to create quite a
+        * few new threads, anyway, just give it a try..
+        */
         rslt = JavaMain(args);
     }
 

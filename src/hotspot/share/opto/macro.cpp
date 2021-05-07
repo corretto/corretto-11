@@ -269,7 +269,11 @@ static Node *scan_mem_chain(Node *mem, int alias_idx, int offset, Node *start_me
         }
         mem = in->in(TypeFunc::Memory);
       } else {
+#ifdef ASSERT
+        in->dump();
+        mem->dump();
         assert(false, "unexpected projection");
+#endif
       }
     } else if (mem->is_Store()) {
       const TypePtr* atype = mem->as_Store()->adr_type();
@@ -280,8 +284,9 @@ static Node *scan_mem_chain(Node *mem, int alias_idx, int offset, Node *start_me
         uint adr_iid = atype->is_oopptr()->instance_id();
         // Array elements references have the same alias_idx
         // but different offset and different instance_id.
-        if (adr_offset == offset && adr_iid == alloc->_idx)
+        if (adr_offset == offset && adr_iid == alloc->_idx) {
           return mem;
+        }
       } else {
         assert(adr_idx == Compile::AliasIdxRaw, "address must match or be raw");
       }
@@ -295,10 +300,11 @@ static Node *scan_mem_chain(Node *mem, int alias_idx, int offset, Node *start_me
         InitializeNode* init = alloc->as_Allocate()->initialization();
         // We are looking for stored value, return Initialize node
         // or memory edge from Allocate node.
-        if (init != NULL)
+        if (init != NULL) {
           return init;
-        else
+        } else {
           return alloc->in(TypeFunc::Memory); // It will produce zero value (see callers).
+        }
       }
       // Otherwise skip it (the call updated 'mem' value).
     } else if (mem->Opcode() == Op_SCMemProj) {
@@ -462,16 +468,17 @@ Node *PhaseMacroExpand::value_from_mem_phi(Node *mem, BasicType ft, const Type *
       if (val == mem) {
         values.at_put(j, mem);
       } else if (val->is_Store()) {
-#if INCLUDE_SHENANDOAHGC
         Node* n = val->in(MemNode::ValueIn);
+#if INCLUDE_SHENANDOAHGC
         if (UseShenandoahGC) {
           BarrierSetC2* bs = BarrierSet::barrier_set()->barrier_set_c2();
           n = bs->step_over_gc_barrier(n);
         }
-        values.at_put(j, n);
-#else
-        values.at_put(j, val->in(MemNode::ValueIn));
 #endif
+        if (is_subword_type(ft)) {
+          n = Compile::narrow_value(ft, n, phi_type, &_igvn, true);
+        }
+        values.at_put(j, n);
       } else if(val->is_Proj() && val->in(0) == alloc) {
         values.at_put(j, _igvn.zerocon(ft));
       } else if (val->is_Phi()) {
@@ -493,10 +500,8 @@ Node *PhaseMacroExpand::value_from_mem_phi(Node *mem, BasicType ft, const Type *
         }
         values.at_put(j, res);
       } else {
-#ifdef ASSERT
-        val->dump();
+        DEBUG_ONLY( val->dump(); )
         assert(false, "unknown node on this path");
-#endif
         return NULL;  // unknown node on this path
       }
     }
@@ -574,6 +579,7 @@ Node *PhaseMacroExpand::value_from_mem(Node *sfpt_mem, Node *sfpt_ctl, BasicType
     } else if (mem->is_ArrayCopy()) {
       done = true;
     } else {
+      DEBUG_ONLY( mem->dump(); )
       assert(false, "unexpected node");
     }
   }
