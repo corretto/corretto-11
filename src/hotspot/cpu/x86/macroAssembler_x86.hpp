@@ -1171,6 +1171,10 @@ public:
   void sqrtsd(XMMRegister dst, Address src)        { Assembler::sqrtsd(dst, src); }
   void sqrtsd(XMMRegister dst, AddressLiteral src);
 
+  void roundsd(XMMRegister dst, XMMRegister src, int32_t rmode)    { Assembler::roundsd(dst, src, rmode); }
+  void roundsd(XMMRegister dst, Address src, int32_t rmode)        { Assembler::roundsd(dst, src, rmode); }
+  void roundsd(XMMRegister dst, AddressLiteral src, int32_t rmode, Register scratch_reg);
+
   void sqrtss(XMMRegister dst, XMMRegister src)    { Assembler::sqrtss(dst, src); }
   void sqrtss(XMMRegister dst, Address src)        { Assembler::sqrtss(dst, src); }
   void sqrtss(XMMRegister dst, AddressLiteral src);
@@ -1341,7 +1345,7 @@ public:
 
   void vinserti128(XMMRegister dst, XMMRegister nds, XMMRegister src, uint8_t imm8) {
     if (UseAVX > 2 && VM_Version::supports_avx512novl()) {
-      Assembler::vinserti32x4(dst, dst, src, imm8);
+      Assembler::vinserti32x4(dst, nds, src, imm8);
     } else if (UseAVX > 1) {
       // vinserti128 is available only in AVX2
       Assembler::vinserti128(dst, nds, src, imm8);
@@ -1352,7 +1356,7 @@ public:
 
   void vinserti128(XMMRegister dst, XMMRegister nds, Address src, uint8_t imm8) {
     if (UseAVX > 2 && VM_Version::supports_avx512novl()) {
-      Assembler::vinserti32x4(dst, dst, src, imm8);
+      Assembler::vinserti32x4(dst, nds, src, imm8);
     } else if (UseAVX > 1) {
       // vinserti128 is available only in AVX2
       Assembler::vinserti128(dst, nds, src, imm8);

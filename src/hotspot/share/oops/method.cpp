@@ -384,6 +384,7 @@ bool Method::was_executed_more_than(int n) {
 }
 
 void Method::print_invocation_count() {
+  //---<  compose+print method return type, klass, name, and signature  >---
   if (is_static()) tty->print("static ");
   if (is_final()) tty->print("final ");
   if (is_synchronized()) tty->print("synchronized ");
@@ -398,12 +399,22 @@ void Method::print_invocation_count() {
   }
   tty->cr();
 
-  tty->print_cr ("  interpreter_invocation_count: %8d ", interpreter_invocation_count());
-  tty->print_cr ("  invocation_counter:           %8d ", invocation_count());
-  tty->print_cr ("  backedge_counter:             %8d ", backedge_count());
+  // Counting based on signed int counters tends to overflow with
+  // longer-running workloads on fast machines. The counters under
+  // consideration here, however, are limited in range by counting
+  // logic. See InvocationCounter:count_limit for example.
+  // No "overflow precautions" need to be implemented here.
+  tty->print_cr ("  interpreter_invocation_count: " INT32_FORMAT_W(11), interpreter_invocation_count());
+  tty->print_cr ("  invocation_counter:           " INT32_FORMAT_W(11), invocation_count());
+  tty->print_cr ("  backedge_counter:             " INT32_FORMAT_W(11), backedge_count());
+
+  if (method_data() != NULL) {
+    tty->print_cr ("  decompile_count:              " UINT32_FORMAT_W(11), method_data()->decompile_count());
+  }
+
 #ifndef PRODUCT
   if (CountCompiledCalls) {
-    tty->print_cr ("  compiled_invocation_count: %8d ", compiled_invocation_count());
+    tty->print_cr ("  compiled_invocation_count:    " INT64_FORMAT_W(11), compiled_invocation_count());
   }
 #endif
 }
@@ -1142,7 +1153,7 @@ address Method::make_adapters(const methodHandle& mh, TRAPS) {
 }
 
 void Method::restore_unshareable_info(TRAPS) {
-  assert(is_method() && is_valid_method(), "ensure C++ vtable is restored");
+  assert(is_method() && is_valid_method(this), "ensure C++ vtable is restored");
 
   // Since restore_unshareable_info can be called more than once for a method, don't
   // redo any work.
@@ -2214,16 +2225,16 @@ bool Method::has_method_vptr(const void* ptr) {
 }
 
 // Check that this pointer is valid by checking that the vtbl pointer matches
-bool Method::is_valid_method() const {
-  if (this == NULL) {
+bool Method::is_valid_method(const Method* m) {
+  if (m == NULL) {
     return false;
-  } else if ((intptr_t(this) & (wordSize-1)) != 0) {
+  } else if ((intptr_t(m) & (wordSize-1)) != 0) {
     // Quick sanity check on pointer.
     return false;
-  } else if (is_shared()) {
-    return MetaspaceShared::is_valid_shared_method(this);
-  } else if (Metaspace::contains_non_shared(this)) {
-    return has_method_vptr((const void*)this);
+  } else if (m->is_shared()) {
+    return MetaspaceShared::is_valid_shared_method(m);
+  } else if (Metaspace::contains_non_shared(m)) {
+    return has_method_vptr((const void*)m);
   } else {
     return false;
   }

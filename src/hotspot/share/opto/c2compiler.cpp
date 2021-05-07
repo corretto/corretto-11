@@ -187,11 +187,11 @@ bool C2Compiler::is_intrinsic_supported(const methodHandle& method, bool is_virt
   switch (id) {
   case vmIntrinsics::_compressStringC:
   case vmIntrinsics::_compressStringB:
-    if (!Matcher::has_match_rule(Op_StrCompressedCopy)) return false;
+    if (!Matcher::match_rule_supported(Op_StrCompressedCopy)) return false;
     break;
   case vmIntrinsics::_inflateStringC:
   case vmIntrinsics::_inflateStringB:
-    if (!Matcher::has_match_rule(Op_StrInflatedCopy)) return false;
+    if (!Matcher::match_rule_supported(Op_StrInflatedCopy)) return false;
     break;
   case vmIntrinsics::_compareToL:
   case vmIntrinsics::_compareToU:
@@ -452,6 +452,23 @@ bool C2Compiler::is_intrinsic_supported(const methodHandle& method, bool is_virt
     break;
   case vmIntrinsics::_minD:
     if (!Matcher::match_rule_supported(Op_MinD)) return false;
+    break;
+  case vmIntrinsics::_dcopySign:
+    if (!Matcher::match_rule_supported(Op_CopySignD)) return false;
+    break;
+  case vmIntrinsics::_fcopySign:
+    if (!Matcher::match_rule_supported(Op_CopySignF)) return false;
+    break;
+  case vmIntrinsics::_dsignum:
+    if (!Matcher::match_rule_supported(Op_SignumD)) return false;
+    break;
+  case vmIntrinsics::_fsignum:
+    if (!Matcher::match_rule_supported(Op_SignumF)) return false;
+    break;
+  case vmIntrinsics::_rint:
+  case vmIntrinsics::_ceil:
+  case vmIntrinsics::_floor:
+    if (!Matcher::match_rule_supported(Op_RoundDoubleMode)) return false;
     break;
   case vmIntrinsics::_hashCode:
   case vmIntrinsics::_identityHashCode:

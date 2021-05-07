@@ -29,8 +29,8 @@
 #include "memory/resourceArea.hpp"
 #include "runtime/java.hpp"
 #include "runtime/stubCodeGenerator.hpp"
+#include "runtime/vm_version.hpp"
 #include "utilities/macros.hpp"
-#include "vm_version_aarch64.hpp"
 
 #include OS_HEADER_INLINE(os)
 
@@ -159,6 +159,10 @@ void VM_Version::get_processor_features() {
     SoftwarePrefetchHintDistance &= ~7;
   }
 
+  if (FLAG_IS_DEFAULT(ContendedPaddingWidth) && (dcache_line > ContendedPaddingWidth)) {
+    ContendedPaddingWidth = dcache_line;
+  }
+
   unsigned long auxv = getauxval(AT_HWCAP);
 
   char buf[512];
@@ -242,6 +246,12 @@ void VM_Version::get_processor_features() {
   if (_cpu == CPU_ARM && (_model == 0xd0c || _model2 == 0xd0c)) {
     if (FLAG_IS_DEFAULT(UseSIMDForMemoryOps)) {
       FLAG_SET_DEFAULT(UseSIMDForMemoryOps, true);
+    }
+  }
+
+  if (_cpu == CPU_ARM) {
+    if (FLAG_IS_DEFAULT(UseSignumIntrinsic)) {
+      FLAG_SET_DEFAULT(UseSignumIntrinsic, true);
     }
   }
 
@@ -374,6 +384,10 @@ void VM_Version::get_processor_features() {
   } else if (UseGHASHIntrinsics) {
     warning("GHASH intrinsics are not available on this CPU");
     FLAG_SET_DEFAULT(UseGHASHIntrinsics, false);
+  }
+
+  if (FLAG_IS_DEFAULT(UseBASE64Intrinsics)) {
+    UseBASE64Intrinsics = true;
   }
 
   if (is_zva_enabled()) {
