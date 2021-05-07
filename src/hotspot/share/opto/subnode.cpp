@@ -741,6 +741,16 @@ Node *CmpINode::Ideal( PhaseGVN *phase, bool can_reshape ) {
   return NULL;                  // No change
 }
 
+Node *CmpLNode::Ideal( PhaseGVN *phase, bool can_reshape ) {
+  const TypeLong *t2 = phase->type(in(2))->isa_long();
+  if (Opcode() == Op_CmpL && in(1)->Opcode() == Op_ConvI2L && t2 && t2->is_con()) {
+    const jlong con = t2->get_con();
+    if (con >= min_jint && con <= max_jint) {
+      return new CmpINode(in(1)->in(1), phase->intcon((jint)con));
+    }
+  }
+  return NULL;
+}
 
 //=============================================================================
 // Simplify a CmpL (compare 2 longs ) node, based on local information.
@@ -1425,6 +1435,34 @@ Node *BoolNode::Ideal(PhaseGVN *phase, bool can_reshape) {
     cmp->swap_edges(1, 2);
     cmp = phase->transform( cmp );
     return new BoolNode( cmp, _test.commute() );
+  }
+
+  // Change "bool eq/ne (cmp (and X 16) 16)" into "bool ne/eq (cmp (and X 16) 0)".
+  if (cop == Op_CmpI &&
+      (_test._test == BoolTest::eq || _test._test == BoolTest::ne) &&
+      cmp1->Opcode() == Op_AndI && cmp2->Opcode() == Op_ConI &&
+      cmp1->in(2)->Opcode() == Op_ConI) {
+    const TypeInt *t12 = phase->type(cmp2)->isa_int();
+    const TypeInt *t112 = phase->type(cmp1->in(2))->isa_int();
+    if (t12 && t12->is_con() && t112 && t112->is_con() &&
+        t12->get_con() == t112->get_con() && is_power_of_2(t12->get_con())) {
+      Node *ncmp = phase->transform(new CmpINode(cmp1, phase->intcon(0)));
+      return new BoolNode(ncmp, _test.negate());
+    }
+  }
+
+  // Same for long type: change "bool eq/ne (cmp (and X 16) 16)" into "bool ne/eq (cmp (and X 16) 0)".
+  if (cop == Op_CmpL &&
+      (_test._test == BoolTest::eq || _test._test == BoolTest::ne) &&
+      cmp1->Opcode() == Op_AndL && cmp2->Opcode() == Op_ConL &&
+      cmp1->in(2)->Opcode() == Op_ConL) {
+    const TypeLong *t12 = phase->type(cmp2)->isa_long();
+    const TypeLong *t112 = phase->type(cmp1->in(2))->isa_long();
+    if (t12 && t12->is_con() && t112 && t112->is_con() &&
+        t12->get_con() == t112->get_con() && is_power_of_2(t12->get_con())) {
+      Node *ncmp = phase->transform(new CmpLNode(cmp1, phase->longcon(0)));
+      return new BoolNode(ncmp, _test.negate());
+    }
   }
 
   // Change "bool eq/ne (cmp (xor X 1) 0)" into "bool ne/eq (cmp X 0)".
