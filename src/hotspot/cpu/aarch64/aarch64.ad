@@ -12727,6 +12727,24 @@ instruct signumF_reg(vRegF dst, vRegF src, vRegF zero, vRegF one) %{
   ins_pipe(fp_uop_d);
 %}
 
+instruct onspinwait() %{
+  match(OnSpinWait);
+  ins_cost(INSN_COST);
+
+  format %{
+    $$template
+    if (os::is_MP()) {
+      $$emit$$"'ISB\t! membar_onspinwait"
+    } else {
+      $$emit$$"MEMBAR-onspinwait ! (empty encoding)"
+    }
+  %}
+  ins_encode %{
+    __ isb();
+  %}
+  ins_pipe(pipe_class_empty);
+%}
+
 // ============================================================================
 // Logical Instructions
 
