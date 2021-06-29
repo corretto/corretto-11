@@ -278,50 +278,6 @@ AC_DEFUN_ONCE([HOTSPOT_ENABLE_DISABLE_CDS],
 ])
 
 ###############################################################################
-# Check if the serviceability agent attach functionality should be included.
-#
-AC_DEFUN_ONCE([HOTSPOT_SETUP_SA],
-[
-  # Test for serviceability agent attach dependencies
-  AC_ARG_ENABLE([sa-attach], [AS_HELP_STRING([--enable-sa-attach@<:@=yes/no/auto@:>@],
-      [enable serviceability agent attach. Default is auto, where it is enabled if all dependencies
-      are present.])])
-
-  SA_ATTACH_DEP_MISSING=false
-
-  AC_CHECK_HEADERS([thread_db.h], [SA_ATTACH_HEADERS_OK=yes],[SA_ATTACH_HEADERS_OK=no])
-  if test "x$SA_ATTACH_HEADERS_OK" != "xyes"; then
-    SA_ATTACH_DEP_MISSING=true
-  fi
-
-  AC_MSG_CHECKING([if serviceability agent attach should be included])
-  if test "x$enable_sa_attach" = "xyes"; then
-    if test "x$SA_ATTACH_DEP_MISSING" = "xtrue"; then
-      AC_MSG_RESULT([no, missing dependencies])
-      HELP_MSG_MISSING_DEPENDENCY([sa-attach])
-      AC_MSG_ERROR([Cannot enable sa-attach with missing dependencies. See above. $HELP_MSG])
-    else
-      INCLUDE_SA_ATTACH=true
-      AC_MSG_RESULT([yes, forced])
-    fi
-  elif test "x$enable_sa_attach" = "xno"; then
-    INCLUDE_SA_ATTACH=false
-    AC_MSG_RESULT([no, forced])
-  elif test "x$enable_sa_attach" = "xauto" || test "x$enable_sa_attach" = "x"; then
-    if test "x$SA_ATTACH_DEP_MISSING" = "xtrue"; then
-      INCLUDE_SA_ATTACH=false
-      AC_MSG_RESULT([no, missing dependencies])
-    else
-      INCLUDE_SA_ATTACH=true
-      AC_MSG_RESULT([yes, dependencies present])
-    fi
-  else
-    AC_MSG_ERROR([Invalid value for --enable-sa-attach: $enable_sa_attach])
-  fi
-  AC_SUBST(INCLUDE_SA_ATTACH)
-])
-
-###############################################################################
 # Set up all JVM features for each JVM variant.
 #
 AC_DEFUN_ONCE([HOTSPOT_SETUP_JVM_FEATURES],
