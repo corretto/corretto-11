@@ -31,6 +31,7 @@
 
 #include <sys/procfs.h>
 #include <sys/ptrace.h>
+#include <proc_service.h>
 
 
 #if defined(sparc) || defined(sparcv9) || defined(ppc64) || defined(ppc64le)

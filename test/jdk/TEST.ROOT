@@ -49,6 +49,7 @@ requires.properties= \
     vm.compiler2.enabled \
     vm.cds \
     vm.debug \
+    vm.musl \
     vm.hasSA \
     vm.hasSAandCanAttach \
     vm.hasJFR \

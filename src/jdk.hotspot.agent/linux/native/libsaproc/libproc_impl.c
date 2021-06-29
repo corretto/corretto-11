@@ -27,6 +27,11 @@
 #include <string.h>
 #include <fcntl.h>
 #include <sys/procfs.h>
+#ifdef INCLUDE_SA_ATTACH
+#include <thread_db.h>
+#else
+#include <dirent.h>
+#endif
 #include "libproc_impl.h"
 #include "proc_service.h"
 
@@ -117,6 +122,15 @@ JNIEXPORT bool JNICALL
 init_libproc(bool debug) {
    // init debug mode
    _libsaproc_debug = debug;
+
+#ifdef INCLUDE_SA_ATTACH
+   // initialize the thread_db library
+   if (td_init() != TD_OK) {
+     print_debug("libthread_db's td_init failed\n");
+     return false;
+   }
+#endif
+
    return true;
 }
 
