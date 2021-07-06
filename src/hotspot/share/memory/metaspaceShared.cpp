@@ -563,6 +563,7 @@ static void rewrite_nofast_bytecodes_and_calculate_fingerprints() {
   }
 }
 
+#if INCLUDE_JVMTI
 static void relocate_cached_class_file() {
   for (int i = 0; i < _global_klass_objects->length(); i++) {
     Klass* k = _global_klass_objects->at(i);
@@ -579,6 +580,7 @@ static void relocate_cached_class_file() {
     }
   }
 }
+#endif // INCLUDE_JVMTI
 
 NOT_PRODUCT(
 static void assert_not_anonymous_class(InstanceKlass* k) {
@@ -838,6 +840,11 @@ public:
   }
 
   void do_u4(u4* p) {
+    void* ptr = (void*)(uintx(*p));
+    do_ptr(&ptr);
+  }
+
+  void do_bool(bool *p) {
     void* ptr = (void*)(uintx(*p));
     do_ptr(&ptr);
   }
@@ -1435,7 +1442,7 @@ void VM_PopulateDumpSharedSpace::doit() {
   _md_region.pack(&_od_region);
 
   // Relocate the archived class file data into the od region
-  relocate_cached_class_file();
+  JVMTI_ONLY(relocate_cached_class_file();)
   _od_region.pack();
 
   // The 5 core spaces are allocated consecutively mc->rw->ro->md->od, so there total size
@@ -2002,6 +2009,11 @@ public:
   void do_u4(u4* p) {
     intptr_t obj = nextPtr();
     *p = (u4)(uintx(obj));
+  }
+
+  void do_bool(bool* p) {
+    intptr_t obj = nextPtr();
+    *p = (bool)(uintx(obj));
   }
 
   void do_tag(int tag) {
