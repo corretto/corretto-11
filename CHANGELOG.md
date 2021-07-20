@@ -2,6 +2,20 @@
 
 The following sections describe the changes for each release of Amazon Corretto 11.
 
+## Corretto version: 11.0.12.7.2
+
+Release Date: July 20, 2021
+
+**Target Platforms**
+
++  macOS 10.13 and later, x86_64
+
+The following issues are addressed in 11.0.12.7.2.
+
+| Issue Name | Platform | Description | Link |
+| --- | --- | --- | --- |
+| 8266248: Compilation failure in PLATFORM_API_MacOSX_MidiUtils.c with Xcode 12.5 | MacOS | Compilation failure in PLATFORM_API_MacOSX_MidiUtils.c with Xcode 12.5 | [JDK-8266248](https://bugs.openjdk.java.net/browse/JDK-8266248)
+
 ## Corretto version: 11.0.12.7.1
 
 Release Date: July 20, 2021
