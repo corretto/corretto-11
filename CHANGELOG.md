@@ -2,6 +2,55 @@
 
 The following sections describe the changes for each release of Amazon Corretto 11.
 
+## Corretto version: 11.0.12.7.2
+
+Release Date: July 20, 2021
+
+**Target Platforms**
+
++  macOS 10.13 and later, x86_64
+
+The following issues are addressed in 11.0.12.7.2.
+
+| Issue Name | Platform | Description | Link |
+| --- | --- | --- | --- |
+| 8266248: Compilation failure in PLATFORM_API_MacOSX_MidiUtils.c with Xcode 12.5 | MacOS | Compilation failure in PLATFORM_API_MacOSX_MidiUtils.c with Xcode 12.5 | [JDK-8266248](https://bugs.openjdk.java.net/browse/JDK-8266248)
+
+## Corretto version: 11.0.12.7.1
+
+Release Date: July 20, 2021
+
+**Target Platforms**
+
++  RPM-based Linux using glibc 2.12 or later, x86, x86_64
++  Debian-based Linux using glibc 2.12 or later, x86, x86_64
++  RPM-based Linux using glibc 2.17 or later, aarch64
++  Debian-based Linux using glibc 2.17 or later, aarch64
++  Linux using glibc 2.25 or later, Arm
++  Alpine-based Linux, x86_64
++  Windows 7 or later, x86_64
++  macOS 10.13 and later, x86_64
+
+The following issues are addressed in 11.0.12.7.1.
+
+| Issue Name | Platform | Description | Link |
+| --- | --- | --- | --- |
+| Import jdk-11.0.12+6 | All | Update Corretto baseline to OpenJDK 11.0.12+6 | [jdk-11.0.12+6](https://github.com/openjdk/jdk11u/releases/tag/jdk-11.0.12%2B6)
+| Add support for GCC 10. | All | Add support for building corretto with gcc 10. | |
+| Aarch64 enhancements | aarch64 | 8186670: Implement _onSpinWait() intrinsic for AArch64 <br/>  8258604: Use 'isb' instruction in SpinPause on linux-aarch64 | |
+| x86 enhancements | x86 | Fix missing code from 8222074: Enhance auto vectorization for x86 | |
+| Update amazon cacerts | All | Update amazon cacerts file from amazonlinux | |
+| Serial GC Bugfix effecting Java-11 Runtime in Lambda | All | [8268635: Corrupt oop in ClassLoaderData](https://bugs.openjdk.java.net/browse/JDK-8268635) | |
+
+The following CVEs are addressed in 11.0.12.7.1
+
+| CVE | CVSS | Component |
+| --- | --- | --- |
+| CVE-2021-2388 | 7.5 |	hotspot/compiler |
+| CVE-2021-2369 | 4.3 | security-libs/java.security |
+| CVE-2021-2341 | 3.1 | core-libs/java.net |
+
+
 ## Corretto version: 11.0.11.9.1
 
 Release Date: April 20, 2021
