@@ -605,7 +605,7 @@ else
       WARNINGS_AS_ERRORS_xlc := false, \
       DISABLED_WARNINGS_gcc := type-limits missing-field-initializers strict-aliasing, \
       DISABLED_WARNINGS_CXX_gcc := reorder delete-non-virtual-dtor strict-overflow \
-          maybe-uninitialized missing-attributes class-memaccess, \
+          maybe-uninitialized class-memaccess, \
       DISABLED_WARNINGS_clang := unused-value incompatible-pointer-types \
           tautological-constant-out-of-range-compare int-to-pointer-cast \
           undef missing-field-initializers, \
