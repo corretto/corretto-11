@@ -101,6 +101,7 @@
 # include <string.h>
 # include <syscall.h>
 # include <sys/sysinfo.h>
+# include <gnu/libc-version.h>
 # include <sys/ipc.h>
 # include <sys/shm.h>
 # include <link.h>
@@ -154,8 +155,8 @@ pthread_t os::Linux::_main_thread;
 int os::Linux::_page_size = -1;
 bool os::Linux::_supports_fast_thread_cpu_time = false;
 uint32_t os::Linux::_os_version = 0;
-const char * os::Linux::_glibc_version = "unknown";
-const char * os::Linux::_libpthread_version = "unknown";
+const char * os::Linux::_glibc_version = NULL;
+const char * os::Linux::_libpthread_version = NULL;
 
 static jlong initial_time_count=0;
 
@@ -609,21 +610,17 @@ void os::Linux::libpthread_init() {
   #error "glibc too old (< 2.3.2)"
 #endif
 
-  size_t n;
-
-  n = confstr(_CS_GNU_LIBC_VERSION, NULL, 0);
-  if (n > 0) {
-    char* str = (char *)malloc(n, mtInternal);
-    confstr(_CS_GNU_LIBC_VERSION, str, n);
-    os::Linux::set_glibc_version(str);
-  }
+  size_t n = confstr(_CS_GNU_LIBC_VERSION, NULL, 0);
+  assert(n > 0, "cannot retrieve glibc version");
+  char *str = (char *)malloc(n, mtInternal);
+  confstr(_CS_GNU_LIBC_VERSION, str, n);
+  os::Linux::set_glibc_version(str);
 
   n = confstr(_CS_GNU_LIBPTHREAD_VERSION, NULL, 0);
-  if (n > 0) {
-    char* str = (char *)malloc(n, mtInternal);
-    confstr(_CS_GNU_LIBPTHREAD_VERSION, str, n);
-    os::Linux::set_libpthread_version(str);
-  }
+  assert(n > 0, "cannot retrieve pthread version");
+  str = (char *)malloc(n, mtInternal);
+  confstr(_CS_GNU_LIBPTHREAD_VERSION, str, n);
+  os::Linux::set_libpthread_version(str);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -3189,36 +3186,20 @@ void os::Linux::sched_getcpu_init() {
 extern "C" JNIEXPORT void numa_warn(int number, char *where, ...) { }
 extern "C" JNIEXPORT void numa_error(char *where) { }
 
-static void* dlvsym_if_available(void* handle, const char* name, const char* version) {
-  typedef void* (*dlvsym_func_type)(void* handle, const char* name, const char* version);
-  static dlvsym_func_type dlvsym_func;
-  static bool initialized = false;
-
-  if (!initialized) {
-    dlvsym_func = (dlvsym_func_type)dlsym(RTLD_NEXT, "dlvsym");
-    initialized = true;
-  }
-
-  if (dlvsym_func != NULL) {
-    void *f = dlvsym_func(handle, name, version);
-    if (f != NULL) {
-      return f;
-    }
-  }
-
-  return dlsym(handle, name);
-}
-
 // Handle request to load libnuma symbol version 1.1 (API v1). If it fails
 // load symbol from base version instead.
 void* os::Linux::libnuma_dlsym(void* handle, const char *name) {
-  return dlvsym_if_available(handle, name, "libnuma_1.1");
+  void *f = dlvsym(handle, name, "libnuma_1.1");
+  if (f == NULL) {
+    f = dlsym(handle, name);
+  }
+  return f;
 }
 
 // Handle request to load libnuma symbol version 1.2 (API v2) only.
 // Return NULL if the symbol is not defined in this particular version.
 void* os::Linux::libnuma_v2_dlsym(void* handle, const char* name) {
-  return dlvsym_if_available(handle, name, "libnuma_1.2");
+  return dlvsym(handle, name, "libnuma_1.2");
 }
 
 bool os::Linux::libnuma_init() {
@@ -5229,63 +5210,6 @@ void os::Linux::check_signal_handler(int sig) {
 extern void report_error(char* file_name, int line_no, char* title,
                          char* format, ...);
 
-// Some linux distributions (notably: Alpine Linux) include the
-// grsecurity in the kernel by default. Of particular interest from a
-// JVM perspective is PaX (https://pax.grsecurity.net/), which adds
-// some security features related to page attributes. Specifically,
-// the MPROTECT PaX functionality
-// (https://pax.grsecurity.net/docs/mprotect.txt) prevents dynamic
-// code generation by disallowing a (previously) writable page to be
-// marked as executable. This is, of course, exactly what HotSpot does
-// for both JIT compiled method, as well as for stubs, adapters, etc.
-//
-// Instead of crashing "lazily" when trying to make a page executable,
-// this code probes for the presence of PaX and reports the failure
-// eagerly.
-static void check_pax(void) {
-  // Zero doesn't generate code dynamically, so no need to perform the PaX check
-#ifndef ZERO
-  size_t size = os::Linux::page_size();
-
-  void* p = ::mmap(NULL, size, PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
-  if (p == MAP_FAILED) {
-    vm_exit_out_of_memory(size, OOM_MMAP_ERROR, "failed to allocate memory for PaX check.");
-  }
-
-  int res = ::mprotect(p, size, PROT_WRITE|PROT_EXEC);
-  if (res == -1) {
-    vm_exit_during_initialization("Failed to mark memory page as executable",
-                                  "Please check if grsecurity/PaX is enabled in your kernel.\n"
-                                  "\n"
-                                  "For example, you can do this by running (note: you may need root privileges):\n"
-                                  "\n"
-                                  "    sysctl kernel.pax.softmode\n"
-                                  "\n"
-                                  "If PaX is included in the kernel you will see something like this:\n"
-                                  "\n"
-                                  "    kernel.pax.softmode = 0\n"
-                                  "\n"
-                                  "In particular, if the value is 0 (zero), then PaX is enabled.\n"
-                                  "\n"
-                                  "PaX includes security functionality which interferes with the dynamic code\n"
-                                  "generation the JVM relies on. Specifically, the MPROTECT functionality as\n"
-                                  "described on https://pax.grsecurity.net/docs/mprotect.txt is not compatible\n"
-                                  "with the JVM. If you want to allow the JVM to run you will have to disable PaX.\n"
-                                  "You can do this on a per-executable basis using the paxctl tool, for example:\n"
-                                  "\n"
-                                  "    paxctl -cm bin/java\n"
-                                  "\n"
-                                  "Please note that this modifies the executable binary in-place, so you may want\n"
-                                  "to make a backup of it first. Also note that you have to repeat this for other\n"
-                                  "executables like javac, jar, jcmd, etc.\n"
-                                  );
-
-  }
-
-  ::munmap(p, size);
-#endif
-}
-
 // this is called _before_ most of the global arguments have been parsed
 void os::init(void) {
   char dummy;   // used to get a guess on initial stack address
@@ -5323,8 +5247,6 @@ void os::init(void) {
   // retrieve entry point for pthread_setname_np
   Linux::_pthread_setname_np =
     (int(*)(pthread_t, const char*))dlsym(RTLD_DEFAULT, "pthread_setname_np");
-
-  check_pax();
 
   os::Posix::init();
 }
