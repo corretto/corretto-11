@@ -436,7 +436,7 @@ void LIRGenerator::cmp_reg_mem(LIR_Condition condition, LIR_Opr reg, LIR_Opr bas
 }
 
 
-bool LIRGenerator::strength_reduce_multiply(LIR_Opr left, int c, LIR_Opr result, LIR_Opr tmp) {
+bool LIRGenerator::strength_reduce_multiply(LIR_Opr left, jint c, LIR_Opr result, LIR_Opr tmp) {
   assert(left != result, "should be different registers");
   if (is_power_of_2(c + 1)) {
 #ifdef AARCH64
@@ -733,6 +733,7 @@ void LIRGenerator::do_ArithmeticOp_Long(ArithmeticOp* x) {
 
     default:
       ShouldNotReachHere();
+      return;
   }
 #else
   switch (x->op()) {
@@ -757,6 +758,7 @@ void LIRGenerator::do_ArithmeticOp_Long(ArithmeticOp* x) {
         break;
       default:
         ShouldNotReachHere();
+        return;
       }
       LIR_Opr result = call_runtime(x->y(), x->x(), entry, x->type(), NULL);
       set_result(x, result);
@@ -824,7 +826,7 @@ void LIRGenerator::do_ArithmeticOp_Int(ArithmeticOp* x) {
       if (x->op() == Bytecodes::_irem) {
         out_reg = FrameMap::R0_opr;
         __ irem(left_arg->result(), right_arg->result(), out_reg, tmp, info);
-      } else if (x->op() == Bytecodes::_idiv) {
+      } else { // (x->op() == Bytecodes::_idiv)
         out_reg = FrameMap::R1_opr;
         __ idiv(left_arg->result(), right_arg->result(), out_reg, tmp, info);
       }
