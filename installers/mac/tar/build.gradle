@@ -97,13 +97,22 @@ task prepareArtifacts {
             workingDir jdkResultingImage
             commandLine 'bash', "-c", "mv jdk-*.jdk ${correttoMacDir}"
         }
+
         // Replace Info.plist
+        def plistTokens = new Properties()
+        plistTokens["INFO"] = "Amazon Corretto ${project.version.full}-LTS".toString()
+        plistTokens["ID"] = "com.amazon.corretto.${project.version.major}".toString()
+        plistTokens["NAME"] = "Amazon Corretto ${project.version.major}".toString()
+        plistTokens["PLATFORM_VERSION"] = "${project.version.major}.${project.version.minor}.${project.version.security}".toString()
+        plistTokens["VERSION"] = "${project.version.major}.${project.version.minor}.${project.version.security}".toString()
+        plistTokens["BUILD_VERSION"] = "${project.version.full}".toString()
+        plistTokens["MACOSX_VERSION_MIN"] = "10.6.0"
+        plistTokens["VENDOR"] = "Amazon.com Inc."
+
         copy {
-            from("templates/Info.plist.template") {
-                rename { file -> file.replace(".template", "") }
-                project.version.each {
-                    prop -> filter(org.apache.tools.ant.filters.ReplaceTokens, tokens: [ (prop.key): String.valueOf(prop.value)])
-                }
+            from("${rootDir}/make/data/bundle/JDK-Info.plist") {
+                rename { file -> 'Info.plist' }
+                filter(org.apache.tools.ant.filters.ReplaceTokens, beginToken: "@@", endToken: "@@", tokens: plistTokens)
             }
             into "${jdkResultingImage}/${correttoMacDir}/Contents".toString()
         }
