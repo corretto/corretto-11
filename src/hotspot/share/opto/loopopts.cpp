@@ -1009,8 +1009,7 @@ Node *PhaseIdealLoop::split_if_with_blocks_pre( Node *n ) {
     }
   }
 
-  // Use same limit as split_if_with_blocks_post
-  if( C->live_nodes() > 35000 ) return n; // Method too big
+  if (must_throttle_split_if()) return n;
 
   // Split 'n' through the merge point if it is profitable
   Node *phi = split_thru_phi( n, n_blk, policy );
@@ -1118,9 +1117,10 @@ bool PhaseIdealLoop::identical_backtoback_ifs(Node *n) {
   return true;
 }
 
-bool PhaseIdealLoop::can_split_if(Node *n_ctrl) {
-  if (C->live_nodes() > 35000) {
-    return false; // Method too big
+
+bool PhaseIdealLoop::can_split_if(Node* n_ctrl) {
+  if (must_throttle_split_if()) {
+    return false;
   }
 
   // Do not do 'split-if' if irreducible loops are present.
@@ -1483,12 +1483,13 @@ void PhaseIdealLoop::split_if_with_blocks_post(Node *n, bool last_round) {
 // Check for aggressive application of 'split-if' optimization,
 // using basic block level info.
 void PhaseIdealLoop::split_if_with_blocks(VectorSet &visited, Node_Stack &nstack, bool last_round) {
-  Node *n = C->root();
-  visited.set(n->_idx); // first, mark node as visited
+  Node* root = C->root();
+  visited.set(root->_idx); // first, mark root as visited
   // Do pre-visit work for root
-  n = split_if_with_blocks_pre( n );
-  uint cnt = n->outcnt();
-  uint i   = 0;
+  Node* n   = split_if_with_blocks_pre(root);
+  uint  cnt = n->outcnt();
+  uint  i   = 0;
+
   while (true) {
     // Visit all children
     if (i < cnt) {
@@ -1496,7 +1497,7 @@ void PhaseIdealLoop::split_if_with_blocks(VectorSet &visited, Node_Stack &nstack
       ++i;
       if (use->outcnt() != 0 && !visited.test_set(use->_idx)) {
         // Now do pre-visit work for this use
-        use = split_if_with_blocks_pre( use );
+        use = split_if_with_blocks_pre(use);
         nstack.push(n, i); // Save parent and next use's index.
         n   = use;         // Process all children of current use.
         cnt = use->outcnt();
@@ -1507,7 +1508,10 @@ void PhaseIdealLoop::split_if_with_blocks(VectorSet &visited, Node_Stack &nstack
       // All of n's children have been processed, complete post-processing.
       if (cnt != 0 && !n->is_Con()) {
         assert(has_node(n), "no dead nodes");
-        split_if_with_blocks_post( n, last_round );
+        split_if_with_blocks_post(n, last_round);
+      }
+      if (must_throttle_split_if()) {
+        nstack.clear();
       }
       if (nstack.is_empty()) {
         // Finished all nodes on stack.
@@ -1854,7 +1858,10 @@ static void clone_outer_loop_helper(Node* n, const IdealLoopTree *loop, const Id
       Node* c = phase->get_ctrl(u);
       IdealLoopTree* u_loop = phase->get_loop(c);
       assert(!loop->is_member(u_loop), "can be in outer loop or out of both loops only");
-      if (outer_loop->is_member(u_loop)) {
+      if (outer_loop->is_member(u_loop) ||
+          // nodes pinned with control in the outer loop but not referenced from the safepoint must be moved out of
+          // the outer loop too
+          (u->in(0) != NULL && outer_loop->is_member(phase->get_loop(u->in(0))))) {
         wq.push(u);
       }
     }
@@ -1974,11 +1981,20 @@ void PhaseIdealLoop::clone_outer_loop(LoopNode* head, CloneLoopMode mode, IdealL
       Node* old = extra_data_nodes.at(i);
       clone_outer_loop_helper(old, loop, outer_loop, old_new, wq, this, true);
     }
+
+    Node* inner_out = sfpt->in(0);
+    if (inner_out->outcnt() > 1) {
+      clone_outer_loop_helper(inner_out, loop, outer_loop, old_new, wq, this, true);
+    }
+
     Node* new_ctrl = cl->outer_loop_exit();
     assert(get_loop(new_ctrl) != outer_loop, "must be out of the loop nest");
     for (uint i = 0; i < wq.size(); i++) {
       Node* n = wq.at(i);
       set_ctrl(n, new_ctrl);
+      if (n->in(0) != NULL) {
+        _igvn.replace_input_of(n, 0, new_ctrl);
+      }
       clone_outer_loop_helper(n, loop, outer_loop, old_new, wq, this, false);
     }
   } else {
