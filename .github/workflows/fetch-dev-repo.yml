@@ -1,7 +1,7 @@
-name: "Refresh from Upstream"
+name: "Refresh from Upstream-dev"
 on:
   schedule:
-    - cron: '0 7 * * *'
+    - cron: '0 8 * * *'
   workflow_dispatch:
 
 jobs:
@@ -17,15 +17,10 @@ jobs:
             - name: "Fetch Corretto-11 upstream"
               uses: ./.github/actions/fetch-repo
               with:
-                upstream: 'https://github.com/openjdk/jdk11u.git'
-                local-branch: 'upstream'
+                upstream: 'https://github.com/openjdk/jdk11u-dev.git'
+                local-branch: 'upstream-dev'
             - name: "Merge Corretto-11"
               uses: ./.github/actions/merge-repo
               with:
-                upstream: 'upstream'
-                merge-branch: 'develop'
-            - name: "Merge Corretto-11 develop to nightly"
-              uses: ./.github/actions/merge-repo
-              with:
-                upstream: 'develop'
+                upstream: 'upstream-dev'
                 merge-branch: 'nightly'
