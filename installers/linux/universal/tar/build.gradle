@@ -124,12 +124,23 @@ task packageTestImage(type: Tar) {
         include '**'
     }
     into project.correttoTestImageArchiveName
+}
 
+task packageDebugSymbols(type: Tar) {
+    description 'Package debug results'
+    dependsOn packageTestImage
+    archiveName "${project.correttoDebugSymbolsArchiveName}.tar.gz"
+    compression Compression.GZIP
+    from(jdkResultingImage) {
+        include 'bin/*.diz'
+        include 'lib/*.diz'
+        into project.correttoDebugSymbolsArchiveName
+    }
 }
 
 task packageBuildResults(type: Tar) {
     description 'Compresses the JDK image and puts the results in build/distributions.'
-    dependsOn packageTestImage
+    dependsOn packageDebugSymbols
     archiveName "${project.correttoJdkArchiveName}.tar.gz"
     compression Compression.GZIP
     from(buildRoot) {
@@ -149,6 +160,7 @@ task packageBuildResults(type: Tar) {
         include 'lib/**'
         include 'man/man1/**'
         include 'release'
+        exclude '**/*.diz'
         into project.correttoJdkArchiveName
     }
 
