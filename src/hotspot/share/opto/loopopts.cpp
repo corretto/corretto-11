@@ -1076,7 +1076,7 @@ static bool merge_point_safe(Node* region) {
 // For inner loop uses move it to the preheader area.
 Node *PhaseIdealLoop::place_near_use(Node *useblock) const {
   IdealLoopTree *u_loop = get_loop( useblock );
-  if (u_loop->_irreducible) {
+  if (u_loop->_irreducible || !u_loop->_head->is_Loop()) {
     return useblock;
   }
   if (u_loop->_child) {
@@ -2041,10 +2041,14 @@ void PhaseIdealLoop::clone_loop( IdealLoopTree *loop, Node_List &old_new, int dd
 
   // Step 1: Clone the loop body.  Make the old->new mapping.
   uint i;
-  for( i = 0; i < loop->_body.size(); i++ ) {
-    Node *old = loop->_body.at(i);
-    Node *nnn = old->clone();
-    old_new.map( old->_idx, nnn );
+  for (i = 0; i < loop->_body.size(); i++) {
+    Node* old = loop->_body.at(i);
+    Node* nnn = old->clone();
+    old_new.map(old->_idx, nnn);
+    if (old->is_reduction()) {
+      // Reduction flag is not copied by default. Copy it here when cloning the entire loop body.
+      nnn->add_flag(Node::Flag_is_reduction);
+    }
     if (C->do_vector_loop()) {
       cm.verify_insert_and_clone(old, nnn, cm.clone_idx());
     }

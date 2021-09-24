@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2000, 2020, Oracle and/or its affiliates. All rights reserved.
- * Copyright (c) 2014, Red Hat Inc. All rights reserved.
+ * Copyright (c) 2014, 2020, Red Hat Inc. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -1378,7 +1378,7 @@ void LIR_Assembler::emit_typecheck_helper(LIR_OpTypeCheck *op, Label* success, L
     __ load_klass(klass_RInfo, obj);
     if (k->is_loaded()) {
       // See if we get an immediate positive hit
-      __ ldr(rscratch1, Address(klass_RInfo, long(k->super_check_offset())));
+      __ ldr(rscratch1, Address(klass_RInfo, int64_t(k->super_check_offset())));
       __ cmp(k_RInfo, rscratch1);
       if ((juint)in_bytes(Klass::secondary_super_cache_offset()) != k->super_check_offset()) {
         __ br(Assembler::NE, *failure_target);
@@ -2042,7 +2042,7 @@ void LIR_Assembler::comp_fl2i(LIR_Code code, LIR_Opr left, LIR_Opr right, LIR_Op
   } else if (code == lir_cmp_l2i) {
     Label done;
     __ cmp(left->as_register_lo(), right->as_register_lo());
-    __ mov(dst->as_register(), (u_int64_t)-1L);
+    __ mov(dst->as_register(), (uint64_t)-1L);
     __ br(Assembler::LT, done);
     __ csinc(dst->as_register(), zr, zr, Assembler::EQ);
     __ bind(done);
@@ -2314,7 +2314,6 @@ void LIR_Assembler::emit_arraycopy(LIR_OpArrayCopy* op) {
   assert(default_type != NULL && default_type->is_array_klass() && default_type->is_loaded(), "must be true at this point");
 
   int elem_size = type2aelembytes(basic_type);
-  int shift_amount;
   int scale = exact_log2(elem_size);
 
   Address src_length_addr = Address(src, arrayOopDesc::length_offset_in_bytes());
@@ -2704,7 +2703,7 @@ void LIR_Assembler::emit_updatecrc32(LIR_OpUpdateCRC32* op) {
   Register res = op->result_opr()->as_register();
 
   assert_different_registers(val, crc, res);
-  unsigned long offset;
+  uint64_t offset;
   __ adrp(res, ExternalAddress(StubRoutines::crc_table_addr()), offset);
   if (offset) __ add(res, res, offset);
 
@@ -2851,7 +2850,7 @@ void LIR_Assembler::emit_profile_type(LIR_OpProfileType* op) {
         }
 #endif
         // first time here. Set profile type.
-        __ ldr(tmp, mdo_addr);
+        __ str(tmp, mdo_addr);
       } else {
         assert(ciTypeEntries::valid_ciklass(current_klass) != NULL &&
                ciTypeEntries::valid_ciklass(current_klass) != exact_klass, "inconsistent");

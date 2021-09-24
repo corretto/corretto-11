@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1997, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997, 2021, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -109,6 +109,7 @@ extern Monitor* Notify_lock;                     // a lock used to synchronize t
 extern Mutex*   ProfilePrint_lock;               // a lock used to serialize the printing of profiles
 extern Mutex*   ExceptionCache_lock;             // a lock used to synchronize exception cache updates
 extern Mutex*   OsrList_lock;                    // a lock used to serialize access to OSR queues
+extern Mutex*   NMethodSweeperStats_lock;        // a lock used to serialize access to sweeper statistics
 
 #ifndef PRODUCT
 extern Mutex*   FullGCALot_lock;                 // a lock to make FullGCALot MT safe
@@ -134,11 +135,15 @@ extern Mutex*   ThreadIdTableCreate_lock;        // Used by ThreadIdTable to laz
 extern Monitor* RedefineClasses_lock;            // locks classes from parallel redefinition
 extern Mutex*   ThreadHeapSampler_lock;          // protects the static data for initialization.
 
+extern Monitor* ThreadsSMRDelete_lock;           // Used by ThreadsSMRSupport to take pressure off the Threads_lock
+extern Mutex*   SharedDecoder_lock;              // serializes access to the decoder during normal (not error reporting) use
+extern Mutex*   DCmdFactory_lock;                // serialize access to DCmdFactory information
 #if INCLUDE_JFR
 extern Mutex*   JfrStacktrace_lock;              // used to guard access to the JFR stacktrace table
 extern Monitor* JfrMsg_lock;                     // protects JFR messaging
 extern Mutex*   JfrBuffer_lock;                  // protects JFR buffer operations
 extern Mutex*   JfrStream_lock;                  // protects JFR stream access
+extern Monitor* JfrThreadSampler_lock;           // used to suspend/resume JFR thread sampler
 #endif
 
 #ifndef SUPPORTS_NATIVE_CX8
@@ -146,7 +151,7 @@ extern Mutex*   UnsafeJlong_lock;                // provides Unsafe atomic updat
 #endif
 
 extern Mutex*   MetaspaceExpand_lock;            // protects Metaspace virtualspace and chunk expansions
-
+extern Mutex*   ClassLoaderDataGraph_lock;       // protects CLDG list, needed for concurrent unloading
 
 extern Monitor* CodeHeapStateAnalytics_lock;     // lock print functions against concurrent analyze functions.
                                                  // Only used locally in PrintCodeCacheLayout processing.

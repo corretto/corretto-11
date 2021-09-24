@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2003, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2003, 2019, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -31,10 +31,8 @@
 #include <thread_db.h>
 #endif
 #include "jni.h"
+#include "libproc.h"
 
-// Linux does not have the proc service library, though it does provide the
-// thread_db library which can be used to manipulate threads without having
-// to know the details of NPTL
 
 // copied from Solaris "proc_service.h"
 typedef enum {

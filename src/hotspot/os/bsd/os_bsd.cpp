@@ -3297,16 +3297,6 @@ void os::init(void) {
   Bsd::clock_init();
   initial_time_count = javaTimeNanos();
 
-#ifdef __APPLE__
-  // XXXDARWIN
-  // Work around the unaligned VM callbacks in hotspot's
-  // sharedRuntime. The callbacks don't use SSE2 instructions, and work on
-  // Linux, Solaris, and FreeBSD. On Mac OS X, dyld (rightly so) enforces
-  // alignment when doing symbol lookup. To work around this, we force early
-  // binding of all symbols now, thus binding when alignment is known-good.
-  _dyld_bind_fully_image_containing_address((const void *) &os::init);
-#endif
-
   os::Posix::init();
 }
 
@@ -3638,9 +3628,7 @@ int os::open(const char *path, int oflag, int mode) {
 // create binary file, rewriting existing file if required
 int os::create_binary_file(const char* path, bool rewrite_existing) {
   int oflags = O_WRONLY | O_CREAT;
-  if (!rewrite_existing) {
-    oflags |= O_EXCL;
-  }
+  oflags |= rewrite_existing ? O_TRUNC : O_EXCL;
   return ::open(path, oflags, S_IREAD | S_IWRITE);
 }
 

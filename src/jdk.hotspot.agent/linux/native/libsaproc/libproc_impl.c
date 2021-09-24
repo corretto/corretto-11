@@ -26,12 +26,14 @@
 #include <stdlib.h>
 #include <string.h>
 #include <fcntl.h>
+#include <sys/procfs.h>
 #ifdef INCLUDE_SA_ATTACH
 #include <thread_db.h>
 #else
 #include <dirent.h>
 #endif
 #include "libproc_impl.h"
+#include "proc_service.h"
 
 #define SA_ALTROOT "SA_ALTROOT"
 
@@ -262,7 +264,7 @@ const char* symbol_for_pc(struct ps_prochandle* ph, uintptr_t addr, uintptr_t* p
 }
 
 // add a thread to ps_prochandle
-thread_info* add_thread_info(struct ps_prochandle* ph, pthread_t pthread_id, lwpid_t lwp_id) {
+thread_info* add_thread_info(struct ps_prochandle* ph, lwpid_t lwp_id) {
    thread_info* newthr;
    if ( (newthr = (thread_info*) calloc(1, sizeof(thread_info))) == NULL) {
       print_debug("can't allocate memory for thread_info\n");
@@ -270,7 +272,6 @@ thread_info* add_thread_info(struct ps_prochandle* ph, pthread_t pthread_id, lwp
    }
 
    // initialize thread info
-   newthr->pthread_id = pthread_id;
    newthr->lwp_id = lwp_id;
 
    // add new thread to the list
@@ -299,91 +300,6 @@ void delete_thread_info(struct ps_prochandle* ph, thread_info* thr_to_be_removed
     }
     ph->num_threads--;
     free(current_thr);
-}
-
-#ifdef INCLUDE_SA_ATTACH
-// struct used for client data from thread_db callback
-struct thread_db_client_data {
-   struct ps_prochandle* ph;
-   thread_info_callback callback;
-};
-
-// callback function for libthread_db
-static int thread_db_callback(const td_thrhandle_t *th_p, void *data) {
-  struct thread_db_client_data* ptr = (struct thread_db_client_data*) data;
-  td_thrinfo_t ti;
-  td_err_e err;
-
-  memset(&ti, 0, sizeof(ti));
-  err = td_thr_get_info(th_p, &ti);
-  if (err != TD_OK) {
-    print_debug("libthread_db : td_thr_get_info failed, can't get thread info\n");
-    return err;
-  }
-
-  print_debug("thread_db : pthread %d (lwp %d)\n", ti.ti_tid, ti.ti_lid);
-
-  if (ti.ti_state == TD_THR_UNKNOWN || ti.ti_state == TD_THR_ZOMBIE) {
-    print_debug("Skipping pthread %d (lwp %d)\n", ti.ti_tid, ti.ti_lid);
-    return TD_OK;
-  }
-
-  if (ptr->callback(ptr->ph, ti.ti_tid, ti.ti_lid) != true)
-    return TD_ERR;
-
-  return TD_OK;
-}
-#endif // INCLUDE_SA_ATTACH
-
-// read thread_info using libthread_db or by iterating through the entries
-// in /proc/<pid>/task/
-bool read_thread_info(struct ps_prochandle* ph, thread_info_callback cb) {
-#ifdef INCLUDE_SA_ATTACH
-  struct thread_db_client_data mydata;
-  td_thragent_t* thread_agent = NULL;
-  if (td_ta_new(ph, &thread_agent) != TD_OK) {
-     print_debug("can't create libthread_db agent\n");
-     return false;
-  }
-
-  mydata.ph = ph;
-  mydata.callback = cb;
-
-  // we use libthread_db iterator to iterate thru list of threads.
-  if (td_ta_thr_iter(thread_agent, thread_db_callback, &mydata,
-                 TD_THR_ANY_STATE, TD_THR_LOWEST_PRIORITY,
-                 TD_SIGNO_MASK, TD_THR_ANY_USER_FLAGS) != TD_OK) {
-     td_ta_delete(thread_agent);
-     return false;
-  }
-
-  // delete thread agent
-  td_ta_delete(thread_agent);
-#else
-  DIR *dir = NULL;
-  struct dirent *ent = NULL;
-  char taskpath[80];
-  pid_t pid = ph->pid;
-
-  // Find the lwpids to attach to by traversing the /proc/<pid>/task/ directory.
-  snprintf(taskpath, sizeof (taskpath), "/proc/%ld/task", (unsigned long)pid);
-  if ((dir = opendir(taskpath)) != NULL) {
-    while ((ent = readdir(dir)) != NULL) {
-      unsigned long lwp;
-
-      if ((lwp = strtoul(ent->d_name, NULL, 10)) != 0) {
-        // Create and add the thread info.
-        (*cb)(ph, 0, lwp);
-      }
-    }
-  } else {
-    print_debug("Could not open /proc/%ld/task.\n", (unsigned long)pid);
-    return false;
-  }
-
-  closedir(dir);
-#endif
-  return true;
 }
 
 // get number of threads
@@ -514,12 +430,5 @@ ps_lgetfpregs(struct  ps_prochandle  *ph,  lwpid_t lid, prfpregset_t *fpregs) {
 JNIEXPORT ps_err_e JNICALL
 ps_lgetregs(struct ps_prochandle *ph, lwpid_t lid, prgregset_t gregset) {
   print_debug("ps_lgetfpregs not implemented\n");
-  return PS_OK;
-}
-
-// new libthread_db of NPTL seem to require this symbol
-JNIEXPORT ps_err_e JNICALL
-ps_get_thread_area() {
-  print_debug("ps_get_thread_area not implemented\n");
   return PS_OK;
 }
