@@ -188,7 +188,6 @@ java/awt/event/MouseEvent/MouseButtonsAndKeyMasksTest/MouseButtonsAndKeyMasksTes
 
 java/awt/dnd/URIListToFileListBetweenJVMsTest/URIListToFileListBetweenJVMsTest.java 8194947 generic-all
 java/awt/Frame/FramesGC/FramesGC.java 8079069 macosx-all
-java/awt/FullScreen/AltTabCrashTest/AltTabCrashTest.java 8047218 generic-all
 java/awt/GridLayout/LayoutExtraGaps/LayoutExtraGaps.java 8000171 windows-all
 java/awt/Mouse/GetMousePositionTest/GetMousePositionWithPopup.java 8196017 windows-all
 java/awt/Scrollbar/ScrollbarMouseWheelTest/ScrollbarMouseWheelTest.java 8196018 windows-all,linux-all
@@ -499,7 +498,6 @@ java/awt/Modal/ModalFocusTransferTests/FocusTransferDialogsDocModalTest.java 816
 java/awt/GraphicsDevice/DisplayModes/CycleDMImage.java 7099223 linux-all,solaris-all,windows-all
 java/awt/Window/WindowResizing/DoubleClickTitleBarTest.java 8233557 macosx-all
 java/awt/Window/WindowOwnedByEmbeddedFrameTest/WindowOwnedByEmbeddedFrameTest.java 8233558 macosx-all
-java/awt/Mouse/MouseComboBoxTest/MouseComboBoxTest.java 8233564 macosx-all
 java/awt/Modal/NullModalityDialogTest/NullModalityDialogTest.java 8233565 macosx-all
 java/awt/keyboard/AllKeyCode/AllKeyCode.java 8242930 macosx-all
 java/awt/KeyboardFocusmanager/TypeAhead/SubMenuShowTest/SubMenuShowTest.java 8233566 macosx-all
@@ -547,7 +545,6 @@ java/lang/instrument/BootClassPath/BootClassPathTest.sh         8072130 macosx-a
 java/lang/management/MemoryMXBean/Pending.java                  8158837 generic-all
 java/lang/management/MemoryMXBean/PendingAllGC.sh               8158837 generic-all
 
-java/lang/management/ThreadMXBean/ThreadMXBeanStateTest.java    8081652 generic-all
 java/lang/management/ThreadMXBean/AllThreadIds.java             8131745 generic-all
 
 ############################################################################
@@ -562,6 +559,8 @@ java/io/pathNames/GeneralWin32.java                             8180264 windows-
 
 com/sun/management/OperatingSystemMXBean/GetProcessCpuLoad.java 8030957 aix-all
 com/sun/management/OperatingSystemMXBean/GetSystemCpuLoad.java  8030957 aix-all
+
+java/lang/management/ThreadMXBean/ThreadMXBeanStateTest.java    8247426 generic-all
 
 ############################################################################
 
@@ -887,7 +886,6 @@ java/awt/Modal/PrintDialogsTest/PrintDialogsTest.java 8068378 generic-all
 java/awt/dnd/DnDFileGroupDescriptor/DnDFileGroupDescriptor.html 8080185 macosx-all,linux-all
 javax/swing/JTabbedPane/4666224/bug4666224.html 8144124  macosx-all
 java/awt/event/MouseEvent/AltGraphModifierTest/AltGraphModifierTest.java 8162380 generic-all
-java/awt/Window/TranslucentJAppletTest/TranslucentJAppletTest.java 8163086 macosx-all
 java/awt/image/multiresolution/MultiResolutionIcon/IconTest.java 8250804 macosx-all,linux-all
 java/awt/image/VolatileImage/VolatileImageConfigurationTest.java 8171069 macosx-all,linux-all
 java/awt/Modal/InvisibleParentTest/InvisibleParentTest.java 8172245 linux-all
