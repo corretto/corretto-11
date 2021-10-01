@@ -53,10 +53,89 @@ ciMethodData::ciMethodData(MethodData* md)
   _orig(),
   _parameters(NULL) {}
 
-void ciMethodData::load_extra_data() {
+// Check for entries that reference an unloaded method
+class PrepareExtraDataClosure : public CleanExtraDataClosure {
+  MethodData*            _mdo;
+  int                    _safepoint_counter; // Needs to be uint64_t after JDK-8212108!
+  GrowableArray<Method*> _uncached_methods;
+
+public:
+  PrepareExtraDataClosure(MethodData* mdo)
+    : _mdo(mdo),
+      _safepoint_counter(SafepointSynchronize::safepoint_counter()),
+      _uncached_methods()
+  { }
+
+  bool is_live(Method* m) {
+    if (!m->method_holder()->is_loader_alive()) {
+      return false;
+    }
+    if (CURRENT_ENV->cached_metadata(m) == NULL) {
+      // Uncached entries need to be pre-populated.
+      _uncached_methods.append(m);
+    }
+    return true;
+  }
+
+  bool has_safepointed() {
+    return SafepointSynchronize::safepoint_counter() != _safepoint_counter;
+  }
+
+  bool finish() {
+    if (_uncached_methods.length() == 0) {
+      // Preparation finished iff all Methods* were already cached.
+      return true;
+    }
+    // Holding locks through safepoints is bad practice.
+    MutexUnlocker mu(_mdo->extra_data_lock());
+    for (int i = 0; i < _uncached_methods.length(); ++i) {
+      if (has_safepointed()) {
+        // The metadata in the growable array might contain stale
+        // entries after a safepoint.
+        return false;
+      }
+      Method* method = _uncached_methods.at(i);
+      // Populating ciEnv caches may cause safepoints due
+      // to taking the Compile_lock with safepoint checks.
+      (void)CURRENT_ENV->get_method(method);
+    }
+    return false;
+  }
+};
+
+void ciMethodData::prepare_metadata() {
   MethodData* mdo = get_MethodData();
 
+  for (;;) {
+    ResourceMark rm;
+    PrepareExtraDataClosure cl(mdo);
+    mdo->clean_extra_data(&cl);
+    if (cl.finish()) {
+      // When encountering uncached metadata, the Compile_lock might be
+      // acquired when creating ciMetadata handles, causing safepoints
+      // which requires a new round of preparation to clean out potentially
+      // new unloading metadata.
+      return;
+    }
+  }
+}
+
+void ciMethodData::load_remaining_extra_data() {
+  MethodData* mdo = get_MethodData();
   MutexLocker ml(mdo->extra_data_lock());
+  // Deferred metadata cleaning due to concurrent class unloading.
+  prepare_metadata();
+  // After metadata preparation, there is no stale metadata,
+  // and no safepoints can introduce more stale metadata.
+  NoSafepointVerifier no_safepoint;
+
+  assert((mdo->data_size() == _data_size) && (mdo->extra_data_size() == _extra_data_size), "sanity, unchanged");
+  assert(extra_data_base() == (DataLayout*)((address) _data + _data_size), "sanity");
+
+  // Copy the extra data once it is prepared (i.e. cache populated, no release of extra data lock anymore)
+  Copy::disjoint_words_atomic((HeapWord*) mdo->extra_data_base(),
+                              (HeapWord*)((address) _data + _data_size),
+                              (_extra_data_size - mdo->parameters_size_in_bytes()) / HeapWordSize);
 
   // speculative trap entries also hold a pointer to a Method so need to be translated
   DataLayout* dp_src  = mdo->extra_data_base();
@@ -66,28 +145,12 @@ void ciMethodData::load_extra_data() {
     assert(dp_src < end_src, "moved past end of extra data");
     assert(((intptr_t)dp_dst) - ((intptr_t)extra_data_base()) == ((intptr_t)dp_src) - ((intptr_t)mdo->extra_data_base()), "source and destination don't match");
 
-    // New traps in the MDO may have been added since we copied the
-    // data (concurrent deoptimizations before we acquired
-    // extra_data_lock above) or can be removed (a safepoint may occur
-    // in the translate_from call below) as we translate the copy:
-    // update the copy as we go.
     int tag = dp_src->tag();
-    size_t entry_size = DataLayout::header_size_in_bytes();
-    if (tag != DataLayout::no_tag) {
-      ProfileData* src_data = dp_src->data_in();
-      entry_size = src_data->size_in_bytes();
-    }
-    memcpy(dp_dst, dp_src, entry_size);
-
     switch(tag) {
     case DataLayout::speculative_trap_data_tag: {
       ciSpeculativeTrapData data_dst(dp_dst);
       SpeculativeTrapData   data_src(dp_src);
-
-      { // During translation a safepoint can happen or VM lock can be taken (e.g., Compile_lock).
-        MutexUnlocker ml(mdo->extra_data_lock());
-        data_dst.translate_from(&data_src);
-      }
+      data_dst.translate_from(&data_src);
       break;
     }
     case DataLayout::bit_data_tag:
@@ -113,9 +176,31 @@ bool ciMethodData::load_data() {
   // To do: don't copy the data if it is not "ripe" -- require a minimum #
   // of invocations.
 
-  // Snapshot the data -- actually, take an approximate snapshot of
-  // the data.  Any concurrently executing threads may be changing the
-  // data as we copy it.
+  // Snapshot the data and extra parameter data first without the extra trap and arg info data.
+  // Those are copied in a second step. Actually, an approximate snapshot of the data is taken.
+  // Any concurrently executing threads may be changing the data as we copy it.
+  //
+  // The first snapshot step requires two copies (data entries and parameter data entries) since
+  // the MDO is laid out as follows:
+  //
+  //  data_base:        ---------------------------
+  //                    |       data entries      |
+  //                    |           ...           |
+  //  extra_data_base:  ---------------------------
+  //                    |    trap data entries    |
+  //                    |           ...           |
+  //                    | one arg info data entry |
+  //                    |    data for each arg    |
+  //                    |           ...           |
+  //  args_data_limit:  ---------------------------
+  //                    |  parameter data entries |
+  //                    |           ...           |
+  //  extra_data_limit: ---------------------------
+  //
+  // _data_size = extra_data_base - data_base
+  // _extra_data_size = extra_data_limit - extra_data_base
+  // total_size = _data_size + _extra_data_size
+  // args_data_limit = data_base + total_size - parameter_data_size
   STATIC_ASSERT(sizeof(_orig) % HeapWordSize == 0); // "align"
   Copy::disjoint_words_atomic((HeapWord*) &mdo->_compiler_counters,
                               (HeapWord*) &_orig,
@@ -127,8 +212,15 @@ bool ciMethodData::load_data() {
   _data = (intptr_t *) arena->Amalloc(total_size);
   Copy::disjoint_words_atomic((HeapWord*) mdo->data_base(),
                               (HeapWord*) _data,
-                              total_size / HeapWordSize);
+                              _data_size / HeapWordSize);
 
+  int parameters_data_size = mdo->parameters_size_in_bytes();
+  if (parameters_data_size > 0) {
+    // Snapshot the parameter data
+    Copy::disjoint_words_atomic((HeapWord*) mdo->args_data_limit(),
+                                (HeapWord*) ((address)_data + total_size - parameters_data_size),
+                                parameters_data_size / HeapWordSize);
+  }
   // Traverse the profile data, translating any oops into their
   // ci equivalents.
   ResourceMark rm;
@@ -145,7 +237,9 @@ bool ciMethodData::load_data() {
     parameters->translate_from(mdo->parameters_type_data());
   }
 
-  load_extra_data();
+  assert((DataLayout*) ((address)_data + total_size - parameters_data_size) == args_data_limit(),
+      "sanity - parameter data starts after the argument data of the single ArgInfoData entry");
+  load_remaining_extra_data();
 
   // Note:  Extra data are all BitData, and do not need translation.
   _current_mileage = MethodData::mileage_of(mdo->method());
@@ -257,7 +351,7 @@ ciProfileData* ciMethodData::bci_to_extra_data(int bci, ciMethod* m, bool& two_f
       two_free_slots = (MethodData::next_extra(dp)->tag() == DataLayout::no_tag);
       return NULL;
     case DataLayout::arg_info_data_tag:
-      return NULL; // ArgInfoData is at the end of extra data section.
+      return NULL; // ArgInfoData is after the trap data right before the parameter data.
     case DataLayout::bit_data_tag:
       if (m == NULL && dp->bci() == bci) {
         return new ciBitData(dp);
@@ -668,7 +762,7 @@ void ciMethodData::print_data_on(outputStream* st) {
       break;
     case DataLayout::arg_info_data_tag:
       data = new ciArgInfoData(dp);
-      dp = end; // ArgInfoData is at the end of extra data section.
+      dp = end; // ArgInfoData is after the trap data right before the parameter data.
       break;
     case DataLayout::speculative_trap_data_tag:
       data = new ciSpeculativeTrapData(dp);

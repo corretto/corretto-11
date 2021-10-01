@@ -473,7 +473,8 @@ private:
     return (address) _data;
   }
 
-  void load_extra_data();
+  void prepare_metadata();
+  void load_remaining_extra_data();
   ciProfileData* bci_to_extra_data(int bci, ciMethod* m, bool& two_free_slots);
 
   void dump_replay_data_type_helper(outputStream* out, int round, int& count, ProfileData* pdata, ByteSize offset, ciKlass* k);
