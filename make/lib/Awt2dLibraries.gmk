@@ -626,7 +626,6 @@ else
   ifeq ($(FREETYPE_TO_USE), bundled)
     $(BUILD_LIBHARFBUZZ): $(BUILD_LIBFREETYPE)
   endif
->>>>>>> eac24125f3 (Backport 8219675: Disable harfbuzz warnings with gcc 8)
 
   LIBFONTMANAGER_CFLAGS += $(HARFBUZZ_CFLAGS)
 

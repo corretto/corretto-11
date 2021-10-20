@@ -480,7 +480,7 @@ AC_DEFUN([PLATFORM_SETUP_LEGACY_VARS_HELPER],
   fi
 
   OPENJDK_$1_LIBC_BUNDLE=""
-  if test "x$OPENJDK_$1_LIBC" = "xmusl"; then  
+  if test "x$OPENJDK_$1_LIBC" = "xmusl"; then
     OPENJDK_$1_LIBC_BUNDLE="-$OPENJDK_$1_LIBC"
   fi
 

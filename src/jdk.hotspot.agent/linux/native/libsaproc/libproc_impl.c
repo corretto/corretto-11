@@ -432,4 +432,3 @@ ps_lgetregs(struct ps_prochandle *ph, lwpid_t lid, prgregset_t gregset) {
   print_debug("ps_lgetfpregs not implemented\n");
   return PS_OK;
 }
-
