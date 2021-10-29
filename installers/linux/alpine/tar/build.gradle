@@ -143,9 +143,21 @@ task packageTestImage(type: Tar) {
 
 }
 
+task packageDebugSymbols(type: Tar) {
+    dependsOn packageTestImage
+    description 'Package debug symbols'
+    archiveName "amazon-corretto-debugsymbols-${project.version.full}-alpine-linux-${arch_alias}.tar.gz"
+    compression Compression.GZIP
+    from(jdkResultingImage) {
+        include 'bin/*.diz'
+        include 'lib/*.diz'
+    }
+    into "amazon-corretto-debugsymbols-${project.version.full}-alpine-linux-${arch_alias}"
+}
+
 task packageBuildResults(type: Tar) {
     description 'Compresses the JDK image and puts the results in build/distributions.'
-    dependsOn packageTestImage
+    dependsOn packageDebugSymbols
     dependsOn importAmazonCacerts
     archiveName "amazon-corretto-${project.version.full}-alpine-linux-${arch_alias}.tar.gz"
     compression Compression.GZIP
@@ -166,6 +178,7 @@ task packageBuildResults(type: Tar) {
         include 'lib/**'
         include 'man/man1/**'
         include 'release'
+        exclude '**/*.diz'
     }
     into "amazon-corretto-${project.version.full}-alpine-linux-${arch_alias}"
 }

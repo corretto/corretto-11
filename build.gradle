@@ -107,7 +107,7 @@ allprojects {
         switch(project.findProperty("corretto.debug_level")) {
             case null:
             case "release":
-                correttoCommonFlags += ['--with-debug-level=release', '--with-native-debug-symbols=none']
+                correttoCommonFlags += ['--with-debug-level=release', '--with-native-debug-symbols=zipped']
                 break
             case "fastdebug":
                 correttoDebugLevel = "fastdebug"
@@ -191,6 +191,7 @@ allprojects {
             correttoJdkArchiveName =
                     "amazon-corretto-${project.version.full}-${os}-${correttoArch}-${correttoDebugLevel}".toString()
         }
+        correttoDebugSymbolsArchiveName = "amazon-corretto-debugsymbols-${project.version.full}-${os}-${correttoArch}".toString()
         correttoTestImageArchiveName = "amazon-corretto-testimage-${project.version.full}-${os}-${correttoArch}".toString()
     }
 }
