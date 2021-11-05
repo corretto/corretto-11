@@ -352,10 +352,11 @@ bool IdealLoopTree::policy_peeling( PhaseIdealLoop *phase ) const {
   }
 
   // check for vectorized loops, any peeling done was already applied
-  if (_head->is_CountedLoop() && _head->as_CountedLoop()->do_unroll_only()) return false;
-
-  if (_head->is_CountedLoop() && _head->as_CountedLoop()->trip_count() == 1) {
-    return false;
+  if (_head->is_CountedLoop()) {
+    CountedLoopNode* cl = _head->as_CountedLoop();
+    if (cl->is_unroll_only() || cl->trip_count() == 1) {
+      return false;
+    }
   }
 
   while( test != _head ) {      // Scan till run off top of loop
@@ -877,7 +878,7 @@ bool IdealLoopTree::policy_unroll(PhaseIdealLoop *phase) {
     return false;
   }
 
-  if (cl->do_unroll_only()) {
+  if (cl->is_unroll_only()) {
     if (TraceSuperWordLoopUnrollAnalysis) {
       tty->print_cr("policy_unroll passed vector loop(vlen=%d,factor = %d)\n", slp_max_unroll_factor, future_unroll_ct);
     }
@@ -939,7 +940,7 @@ bool IdealLoopTree::policy_range_check( PhaseIdealLoop *phase ) const {
   Node *trip_counter = cl->phi();
 
   // check for vectorized loops, some opts are no longer needed
-  if (cl->do_unroll_only()) return false;
+  if (cl->is_unroll_only()) return false;
 
   // Check loop body for tests of trip-counter plus loop-invariant vs
   // loop-invariant.
@@ -993,7 +994,9 @@ bool IdealLoopTree::policy_range_check( PhaseIdealLoop *phase ) const {
 // for unrolling loops with NO array accesses.
 bool IdealLoopTree::policy_peel_only( PhaseIdealLoop *phase ) const {
   // check for vectorized loops, any peeling done was already applied
-  if (_head->is_CountedLoop() && _head->as_CountedLoop()->do_unroll_only()) return false;
+  if (_head->is_CountedLoop() && _head->as_CountedLoop()->is_unroll_only()) {
+    return false;
+  }
 
   for( uint i = 0; i < _body.size(); i++ )
     if( _body[i]->is_Mem() )
@@ -3019,11 +3022,11 @@ void IdealLoopTree::remove_main_post_loops(CountedLoopNode *cl, PhaseIdealLoop *
   phase->_igvn.replace_input_of(main_cmp, 2, main_cmp->in(2)->in(1));
 }
 
-//------------------------------policy_do_remove_empty_loop--------------------
-// Micro-benchmark spamming.  Policy is to always remove empty loops.
-// The 'DO' part is to replace the trip counter with the value it will
-// have on the last iteration.  This will break the loop.
-bool IdealLoopTree::policy_do_remove_empty_loop( PhaseIdealLoop *phase ) {
+//------------------------------do_remove_empty_loop---------------------------
+// We always attempt remove empty loops.   The approach is to replace the trip
+// counter with the value it will have on the last iteration.  This will break
+// the loop.
+bool IdealLoopTree::do_remove_empty_loop(PhaseIdealLoop *phase) {
   // Minimum size must be empty loop
   if (_body.size() > EMPTY_LOOP_SIZE)
     return false;
@@ -3140,12 +3143,12 @@ bool IdealLoopTree::policy_do_remove_empty_loop( PhaseIdealLoop *phase ) {
   return true;
 }
 
-//------------------------------policy_do_one_iteration_loop-------------------
+//------------------------------do_one_iteration_loop--------------------------
 // Convert one iteration loop into normal code.
-bool IdealLoopTree::policy_do_one_iteration_loop( PhaseIdealLoop *phase ) {
-  if (!_head->as_Loop()->is_valid_counted_loop())
+bool IdealLoopTree::do_one_iteration_loop(PhaseIdealLoop *phase) {
+  if (!_head->as_Loop()->is_valid_counted_loop()) {
     return false; // Only for counted loop
-
+  }
   CountedLoopNode *cl = _head->as_CountedLoop();
   if (!cl->has_exact_trip_count() || cl->trip_count() != 1) {
     return false;
@@ -3178,13 +3181,13 @@ bool IdealLoopTree::iteration_split_impl( PhaseIdealLoop *phase, Node_List &old_
   compute_trip_count(phase);
 
   // Convert one iteration loop into normal code.
-  if (policy_do_one_iteration_loop(phase))
+  if (do_one_iteration_loop(phase)) {
     return true;
-
+  }
   // Check and remove empty loops (spam micro-benchmarks)
-  if (policy_do_remove_empty_loop(phase))
+  if (do_remove_empty_loop(phase)) {
     return true;  // Here we removed an empty loop
-
+  }
   bool should_peel = policy_peeling(phase); // Should we peel?
 
   bool should_unswitch = policy_unswitching(phase);
@@ -3324,25 +3327,18 @@ bool IdealLoopTree::iteration_split( PhaseIdealLoop *phase, Node_List &old_new )
   // Clean out prior deadwood
   DCE_loop_body();
 
-
   // Look for loop-exit tests with my 50/50 guesses from the Parsing stage.
   // Replace with a 1-in-10 exit guess.
-  if (_parent /*not the root loop*/ &&
-      !_irreducible &&
-      // Also ignore the occasional dead backedge
-      !tail()->is_top()) {
+  if (!is_root() && is_loop()) {
     adjust_loop_exit_prob(phase);
   }
 
-  // Gate unrolling, RCE and peeling efforts.
-  if (!_child &&                // If not an inner loop, do not split
-      !_irreducible &&
-      _allow_optimizations &&
-      !tail()->is_top()) {     // Also ignore the occasional dead backedge
+  // Unrolling, RCE and peeling efforts, iff innermost loop.
+  if (_allow_optimizations && is_innermost()) {
     if (!_has_call) {
-        if (!iteration_split_impl(phase, old_new)) {
-          return false;
-        }
+      if (!iteration_split_impl(phase, old_new)) {
+        return false;
+      }
     } else if (policy_unswitching(phase)) {
       phase->do_unswitching(this, old_new);
       return false; // need to recalculate idom data
@@ -3616,7 +3612,7 @@ bool PhaseIdealLoop::match_fill_loop(IdealLoopTree* lpt, Node*& store, Node*& st
 
 bool PhaseIdealLoop::intrinsify_fill(IdealLoopTree* lpt) {
   // Only for counted inner loops
-  if (!lpt->is_counted() || !lpt->is_inner()) {
+  if (!lpt->is_counted() || !lpt->is_innermost()) {
     return false;
   }
 

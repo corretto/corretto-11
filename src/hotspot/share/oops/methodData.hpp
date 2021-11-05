@@ -1944,7 +1944,11 @@ public:
 // adjusted in the event of a change in control flow.
 //
 
-class CleanExtraDataClosure;
+class CleanExtraDataClosure : public StackObj {
+public:
+  virtual bool is_live(Method* m) = 0;
+};
+
 
 class ciMethodData;
 
@@ -2104,10 +2108,6 @@ private:
   // parameter profiling.
   enum { no_parameters = -2, parameters_uninitialized = -1 };
   int _parameters_type_data_di;
-  int parameters_size_in_bytes() const {
-    ParametersTypeData* param = parameters_type_data();
-    return param == NULL ? 0 : param->size_in_bytes();
-  }
 
   // Beginning of the data entries
   intptr_t _data[1];
@@ -2184,11 +2184,12 @@ private:
   static bool profile_parameters_jsr292_only();
   static bool profile_all_parameters();
 
-  void clean_extra_data(CleanExtraDataClosure* cl);
   void clean_extra_data_helper(DataLayout* dp, int shift, bool reset = false);
   void verify_extra_data_clean(CleanExtraDataClosure* cl);
 
 public:
+  void clean_extra_data(CleanExtraDataClosure* cl);
+
   static int header_size() {
     return sizeof(MethodData)/wordSize;
   }
@@ -2315,6 +2316,11 @@ public:
   }
   int data_size() const {
     return _data_size;
+  }
+
+  int parameters_size_in_bytes() const {
+    ParametersTypeData* param = parameters_type_data();
+    return param == NULL ? 0 : param->size_in_bytes();
   }
 
   // Accessors
