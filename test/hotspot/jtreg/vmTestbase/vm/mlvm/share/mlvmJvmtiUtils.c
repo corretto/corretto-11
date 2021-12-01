@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2018, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -65,24 +65,9 @@ struct MethodName * getMethodName(jvmtiEnv * pJvmtiEnv, jmethodID method) {
         return NULL;
     }
 
-    if (strlen(szName) + 1 > sizeof(mn->methodName) ||
-        strlen(szSignature) + 1 > sizeof(mn->classSig)) {
-      NSK_JVMTI_VERIFY(NSK_CPP_STUB2(Deallocate, pJvmtiEnv, (void *) szName));
-      NSK_JVMTI_VERIFY(NSK_CPP_STUB2(Deallocate, pJvmtiEnv, (void *) szName));
-      return NULL;
-    }
-
     mn = malloc(sizeof(MethodNameStruct));
-
-    if (mn == NULL) {
-      NSK_JVMTI_VERIFY(NSK_CPP_STUB2(Deallocate, pJvmtiEnv, (void *) szName));
-      NSK_JVMTI_VERIFY(NSK_CPP_STUB2(Deallocate, pJvmtiEnv, (void *) szName));
-      return NULL;
-    }
-
     strncpy(mn->methodName, szName, sizeof(mn->methodName) - 1);
     mn->methodName[sizeof(mn->methodName) - 1] = '\0';
-
     strncpy(mn->classSig, szSignature, sizeof(mn->classSig) - 1);
     mn->classSig[sizeof(mn->classSig) - 1] = '\0';
 
