@@ -1,4 +1,4 @@
-# Copyright (c) 2019, Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# Copyright (c) 2021, Amazon.com, Inc. or its affiliates. All Rights Reserved.
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
 #
 # This code is free software; you can redistribute it and/or modify it
@@ -17,11 +17,28 @@
 # 2 along with this work; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
 
+# The Corretto github project provides tarfiles with five dotted
+# version parts.  The first four are the typical Java version + build,
+# and the last one is the release ID.
+%global java_version    $java_version
+%global java_major_version    $java_spec_version
+%global java_security_version    $java_security_version
+%global build_id        $build_id
+%global release_id      $release_id
+%global version_opt     $version_opt
+# If we need to rev the package for something outside of what the
+# Corretto team is doing, we can define release_ext.
+# %global release_ext  1
 
 %global java_home %{_jvmdir}/%{name}.%{_arch}
+%global java_lib  %{java_home}/lib
+%global java_inc  %{java_home}/include
+
+# Where the make targets actually get written out
+%global java_imgdir build/linux-%{_arch}-normal-server-release/images/
 
 # Higher numbers win for the alternatives program.
-%global alternatives_priority 1000
+%global alternatives_priority 2
 
 # Instruct rpmbuild to copy jars rather than de-compress and re-compress.
 %global __jar_repack 0
@@ -37,24 +54,29 @@
 %global script 'use File::Spec; print File::Spec->abs2rel(\$ARGV[0], \$ARGV[1])'
 %global abs2rel %{__perl} -e %{script}
 
+# By default install a bootstrap jdk. If one is already available,
+# this can be skipped using --without bootjdk
+%bcond_without bootjdk
+
 Summary: Amazon Corretto development environment
-Name: ${rpmName}
-Version: ${rpmVersion}
-Release: ${version.revision}%{?dist}
+Name: java-11-amazon-corretto
+# Matches the 'full version' from Java's release notes:
+# https://www.oracle.com/technetwork/java/javase/11-0-2-relnotes-5188746.html
+# Eg: 11.0.2+7
+Version: %{java_version}+%{build_id}
+Release: %{release_id}%{?dist}
 Epoch: 1
 Group: Development/Languages
 AutoReqProv: 0
-License: ${packageInfo.license}
-Vendor: ${packageInfo.vendor}
-Url: ${packageInfo.url}
-Source0: $sourceTar
-ExclusiveArch: x86_64
+License: ASL 1.1 and ASL 2.0 and BSD and BSD with advertising and GPL+ and GPLv2 and GPLv2 with exceptions and IJG and LGPLv2+ and MIT and MPLv2.0 and Public Domain and W3C and zlib and ISC and FTL and RSA.
+Vendor: Amazon
+Url: https://github.com/corretto/corretto-11
+Source0: amazon-corretto-source-%{java_version}.%{build_id}.%{release_id}.tar.gz
 
 # jpackage-utils is required for both build and runtime.
 # For build, it provides the jvmdir macro. For runtime,
 # it provides the /usr/lib/jvm directory.
 BuildRequires: jpackage-utils
-BuildRequires: java-11-devel
 BuildRequires: autoconf
 BuildRequires: make
 BuildRequires: alsa-lib-devel
@@ -73,15 +95,21 @@ BuildRequires: libXi-devel
 BuildRequires: libXinerama-devel
 BuildRequires: libXt-devel
 BuildRequires: libXrender-devel
+BuildRequires: libXrandr-devel
 BuildRequires: libXtst-devel
 BuildRequires: pkgconfig
 BuildRequires: xorg-x11-proto-devel
+
+%if %{with bootjdk}
+BuildRequires: java-11-devel
+%endif
 
 Requires: libX11
 Requires: libXi
 Requires: libXinerama
 Requires: libXt
 Requires: libXrender
+Requires: libXrandr
 Requires: libXtst
 Requires: alsa-lib
 Requires: giflib
@@ -93,9 +121,18 @@ Requires: dejavu-sans-mono-fonts
 # Require headless package.
 Requires: %{name}-headless%{?_isa} = %{epoch}:%{version}-%{release}
 
+Provides: java = %{epoch}:%{java_version}
+Provides: java-11 = %{epoch}:%{java_version}
+Provides: java-11 = %{epoch}:%{version}-%{release}
+Provides: java-11-devel = %{epoch}:%{java_version}
+Provides: java-11-devel = %{epoch}:%{version}-%{release}
+Provides: jre = %{java_version}
+Provides: jre-11 = %{epoch}:%{version}-%{release}
+Provides: jre-11-amazon-corretto = %{epoch}:%{version}-%{release}
 
-Provides: java = %{epoch}:${version.major}
-Provides: java-${version.major} = %{epoch}:${version.major}.${version.minor}.${version.security}
+%description
+Amazon Corretto's packaging of the runtime core elements of the
+OpenJDK 11 code.
 
 %package headless
 Summary: Amazon Corretto headless development environment
@@ -110,42 +147,60 @@ Requires: ca-certificates
 Requires(post): chkconfig
 Requires(postun): chkconfig
 
-%description
-${packageInfo.description}
+Provides: java-headless = %{epoch}:%{java_version}
+Provides: java-11-headless = %{epoch}:%{version}-%{release}
+Provides: jre-headless = %{epoch}:%{java_version}
+Provides: jre-11-headless = %{epoch}:%{version}-%{release}
+Provides: jre-11-amazon-corretto-headless = %{epoch}:%{version}-%{release}
 
 %description headless
-${packageInfo.description} (Headless environment)
+Amazon Corretto's packaging of the runtime core elements of the
+OpenJDK 11 code. (Headless environment)
+
+%package javadoc
+Summary: Amazon Corretto 11 API documentation
+Group: Documentation
+
+Provides: java-javadoc = %{epoch}:%{version}-%{release}
+Provides: java-11-javadoc = %{epoch}:%{version}-%{release}
+
+%description javadoc
+Amazon Corretto's packaging of the OpenJDK 11 API documentation.
 
 %prep
 %setup -q
 
 %build
-cd src
 bash ./configure \\
-        --with-jvm-features=zgc \\
-        --with-version-feature="${version.major}" \\
+%ifarch aarch64
+        --with-extra-cflags="-moutline-atomics" \\
+        --with-extra-cxxflags="-moutline-atomics" \\
+%endif
+        --with-jvm-features="zgc shenandoahgc" \\
+        --with-version-feature="11" \\
         --with-freetype=system \\
         --with-libjpeg=system \\
         --with-giflib=system \\
         --with-libpng=system \\
         --with-zlib=system \\
-        --with-version-opt= \\
-        --with-version-string="${version.major}.${version.minor}.${version.security}" \\
-        --with-version-build="${version.build}" \\
-        --with-vendor-version-string="Corretto-${version.full}" \\
+        --with-version-opt="LTS" \\
+        --with-version-build="%{build_id}" \\
+        --with-vendor-version-string="Corretto-%{java_version}.%{build_id}.%{release_id}" \\
         --with-version-pre= \\
         --with-vendor-name="Amazon.com Inc." \\
         --with-vendor-url="https://aws.amazon.com/corretto/" \\
-        --with-vendor-bug-url="https://github.com/corretto/corretto-${version.major}/issues/" \\
+        --with-vendor-bug-url="https://github.com/corretto/corretto-11/issues/" \\
+        --with-vendor-vm-bug-url="https://github.com/corretto/corretto-11/issues/" \\
         --with-debug-level=release \\
         --with-native-debug-symbols=none
 
 make images
+make LOG=debug docs
 
 %install
 rm -rf %{buildroot}
 install -d -m 755 %{buildroot}%{java_home}
-cp -a src/build/linux-%{_arch}-normal-server-release/images/jdk/* %{buildroot}%{java_home}
+cp -a %{java_imgdir}/jdk/* %{buildroot}%{java_home}
 rm -rf %{buildroot}%{java_home}/demo
 
 # Make a *relative* symlink pointing to the cacerts file from ca-certificates.
@@ -158,10 +213,23 @@ popd
 %post headless
 if [ \$1 -eq 1 ] ; then
   alternatives --install %{_bindir}/java java %{java_home}/bin/java %{alternatives_priority} \\
+               --slave %{_jvmdir}/jre jre %{java_home} \\
+               --slave %{_bindir}/keytool keytool %{java_home}/bin/keytool \\
+               --slave %{_bindir}/pack200 pack200 %{java_home}/bin/pack200 \\
+               --slave %{_bindir}/rmid rmid %{java_home}/bin/rmid \\
+               --slave %{_bindir}/rmiregistry rmiregistry %{java_home}/bin/rmiregistry \\
+               --slave %{_bindir}/unpack200 unpack200 %{java_home}/bin/unpack200 \\
+               --slave %{_mandir}/man1/java.1 java.1 %{java_home}/man/man1/java.1 \\
+               --slave %{_mandir}/man1/keytool.1 keytool.1 %{java_home}/man/man1/keytool.1 \\
+               --slave %{_mandir}/man1/pack200.1 pack200.1 %{java_home}/man/man1/pack200.1 \\
+               --slave %{_mandir}/man1/rmid.1 rmid.1 %{java_home}/man/man1/rmid.1 \\
+               --slave %{_mandir}/man1/rmiregistry.1 rmiregistry.1 %{java_home}/man/man1/rmiregistry.1 \\
+               --slave %{_mandir}/man1/unpack200.1 unpack200.1 %{java_home}/man/man1/unpack200.1
+
+  alternatives --install %{_bindir}/javac javac %{java_home}/bin/javac %{alternatives_priority} \\
                --slave %{_bindir}/jaotc jaotc %{java_home}/bin/jaotc \\
                --slave %{_bindir}/jar jar %{java_home}/bin/jar \\
                --slave %{_bindir}/jarsigner jarsigner %{java_home}/bin/jarsigner \\
-               --slave %{_bindir}/javac javac %{java_home}/bin/javac \\
                --slave %{_bindir}/javadoc javadoc %{java_home}/bin/javadoc \\
                --slave %{_bindir}/javap javap %{java_home}/bin/javap \\
                --slave %{_bindir}/jcmd jcmd %{java_home}/bin/jcmd \\
@@ -182,16 +250,13 @@ if [ \$1 -eq 1 ] ; then
                --slave %{_bindir}/jstack jstack %{java_home}/bin/jstack \\
                --slave %{_bindir}/jstat jstat %{java_home}/bin/jstat \\
                --slave %{_bindir}/jstatd jstatd %{java_home}/bin/jstatd \\
-               --slave %{_bindir}/keytool keytool %{java_home}/bin/keytool \\
-               --slave %{_bindir}/pack200 pack200 %{java_home}/bin/pack200 \\
                --slave %{_bindir}/rmic rmic %{java_home}/bin/rmic \\
-               --slave %{_bindir}/rmid rmid %{java_home}/bin/rmid \\
-               --slave %{_bindir}/rmiregistry rmiregistry %{java_home}/bin/rmiregistry \\
                --slave %{_bindir}/serialver serialver %{java_home}/bin/serialver \\
-               --slave %{_bindir}/unpack200 unpack200 %{java_home}/bin/unpack200 \\
+               --slave %{_jvmdir}/jre-openjdk jre-openjdk %{java_home} \\
+               --slave %{_jvmdir}/jre-11 jre-11 %{java_home} \\
+               --slave %{_jvmdir}/jre-11-openjdk jre-11-openjdk %{java_home} \\
                --slave %{_mandir}/man1/jar.1 jar.1 %{java_home}/man/man1/jar.1 \\
                --slave %{_mandir}/man1/jarsigner.1 jarsigner.1 %{java_home}/man/man1/jarsigner.1 \\
-               --slave %{_mandir}/man1/java.1 java.1 %{java_home}/man/man1/java.1 \\
                --slave %{_mandir}/man1/javac.1 javac.1 %{java_home}/man/man1/javac.1 \\
                --slave %{_mandir}/man1/javadoc.1 javadoc.1 %{java_home}/man/man1/javadoc.1 \\
                --slave %{_mandir}/man1/javap.1 javap.1 %{java_home}/man/man1/javap.1 \\
@@ -207,22 +272,98 @@ if [ \$1 -eq 1 ] ; then
                --slave %{_mandir}/man1/jstack.1 jstack.1 %{java_home}/man/man1/jstack.1 \\
                --slave %{_mandir}/man1/jstat.1 jstat.1 %{java_home}/man/man1/jstat.1 \\
                --slave %{_mandir}/man1/jstatd.1 jstatd.1 %{java_home}/man/man1/jstatd.1 \\
-               --slave %{_mandir}/man1/keytool.1 keytool.1 %{java_home}/man/man1/keytool.1 \\
-               --slave %{_mandir}/man1/pack200.1 pack200.1 %{java_home}/man/man1/pack200.1 \\
                --slave %{_mandir}/man1/rmic.1 rmic.1 %{java_home}/man/man1/rmic.1 \\
-               --slave %{_mandir}/man1/rmid.1 rmid.1 %{java_home}/man/man1/rmid.1 \\
-               --slave %{_mandir}/man1/rmiregistry.1 rmiregistry.1 %{java_home}/man/man1/rmiregistry.1 \\
-               --slave %{_mandir}/man1/serialver.1 serialver.1 %{java_home}/man/man1/serialver.1 \\
-               --slave %{_mandir}/man1/unpack200.1 unpack200.1 %{java_home}/man/man1/unpack200.1
+               --slave %{_mandir}/man1/serialver.1 serialver.1 %{java_home}/man/man1/serialver.1
 fi
 
 %postun headless
 if [ \$1 -eq 0 ] ; then
   alternatives --remove java %{java_home}/bin/java
+  alternatives --remove javac %{java_home}/bin/javac
 fi
 
-# The headfull variant adds RPM dependencies, but not files.
 %files
+%{java_lib}/libawt_xawt.so
+%{java_lib}/libjawt.so
+%{java_lib}/libsplashscreen.so
+
+%{java_inc}/jawt.h
+%{java_inc}/linux/jawt_md.h
 
 %files headless
 %{java_home}
+
+# Keep the libs and includes that need X11 in the main package
+%exclude %{java_lib}/libawt_xawt.so
+%exclude %{java_lib}/libjawt.so
+%exclude %{java_lib}/libsplashscreen.so
+
+%exclude %{java_inc}/jawt.h
+%exclude %{java_inc}/linux/jawt_md.h
+
+%files javadoc
+%doc %{java_imgdir}/docs/index.html
+%doc %{java_imgdir}/docs/api
+%doc %{java_imgdir}/docs/resources
+%doc %{java_imgdir}/docs/specs
+%license %{java_imgdir}/docs/legal
+
+%changelog
+* Thu Dec 02 2021 Dan Lutker <lutkerd@amazon.com> - 11.0.13+8-1
+- Templatize spec
+- Update provides to include java-11-devel
+
+* Wed Oct 13 2021 Dan Lutker <lutkerd@amazon.com> - 11.0.13+8-1
+- Update to 11.0.13+8-1
+
+* Wed Jul 14 2021 Dan Lutker <lutkerd@amazon.com> - 11.0.12+9-1
+- Update to 11.0.12+7-1
+
+* Mon Apr 19 2021 Sai Harsha <ssuryad@amazon.com> - 11.0.11+9-1
+- Update to 11.0.11+9-1
+
+* Wed Feb 03 2021 Trinity Quirk <tquirk@amazon.com> - 11.0.10+9-1.1
+- Enable shenandoah garbage collector
+
+* Wed Jan 13 2021 Trinity Quirk <tquirk@amazon.com> - 11.0.10+9-1
+- Update to 11.0.10+9-1
+- Force docs builds to generate debug logs to combat occasional failures
+
+* Wed Nov 04 2020 Sai Harsha <ssuryad@amazon.com> - 11.0.9+12-1
+- Update to 11.0.9+12-1
+
+* Fri Oct 16 2020 Sai Harsha <ssuryad@amazon.com> - 11.0.9+11-1
+- Update to 11.0.9+11-1
+
+* Mon Oct 05 2020 Trinity Quirk <tquirk@amazon.com> - 11.0.8+10-3
+- Update to 11.0.8+10-3
+
+* Wed Sep 16 2020 Trinity Quirk <tquirk@amazon.com> - 11.0.8+10-1.1
+- Add -moutline-atomics compile flags for aarch64 packages
+
+* Tue Jun 09 2020 Trinity Quirk <tquirk@amazon.com> - 11.0.8+10-1
+- Update to 11.0.8+10-1
+
+* Fri May 22 2020 Trinity Quirk <tquirk@amazon.com> - 11.0.7+10-1.1
+- Split alternatives into java and javac groups
+
+* Thu Apr 09 2020 Trinity Quirk <tquirk@amazon.com> - 11.0.7+10-1
+- Update to 11.0.7+10-1
+
+* Fri Jan 10 2020 Trinity Quirk <tquirk@amazon.com> - 11.0.6+10-1
+- Update to 11.0.6+10-1
+
+* Mon Oct 14 2019 Frederick Lefebvre <fredlef@amazon.com> - 11.0.5+10-1
+- Update to 11.0.5+10-1
+
+* Mon Aug 26 2019 Trinity Quirk <tquirk@amazon.com> - 11.0.4+11-1.1
+- Provide java and jre resources
+
+* Tue Jul 16 2019 Trinity Quirk <tquirk@amazon.com> - 11.0.4+11-1
+- Update to 11.0.4+11-1.
+
+* Fri May 31 2019 Trinity Quirk <tquirk@amazon.com> - 11.0.3+7-1
+- Update to 11.0.3+7-1.
+
+* Mon Apr 15 2019 Trinity Quirk <tquirk@amazon.com> - 11.0.2+9-3
+- Initial release of Corretto 11.
