@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2019, Amazon.com, Inc. or its affiliates. All Rights Reserved.
+* Copyright (c) 2021, Amazon.com, Inc. or its affiliates. All Rights Reserved.
 * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
 *
 * This code is free software; you can redistribute it and/or modify it
@@ -25,31 +25,31 @@ dependencies {
     compile project(path: ':openjdksrc', configuration: 'archives')
 }
 
-// Matches Red Hat's naming convention of java-version-provider:
-// https://developers.redhat.com/articles/using-java-rhel-7-openjdk-8/
-def rpmName = 'java-11-amazon-corretto'
-// Matches the 'full version' from Java's release notes:
-// https://www.oracle.com/technetwork/java/javase/11-0-2-relnotes-5188746.html
-// Eg: 11.0.2+7
-def rpmVersion = "${version.major}.${version.minor}.${version.security}+${version.build}"
+def tarName = "java-${version.major}-amazon-corretto"
+def tarVersion = "${version.major}.${version.minor}.${version.security}+${version.build}"
 
+def javaVersion = "${version.major}.${version.minor}.${version.security}"
+def buildId = "${version.build}"
+def releaseId = "${version.revision}"
 /**
  * Apply version numbers to the RPM spec file template and copy
  * to the build root.
  */
 task inflateRpmSpec {
     inputs.file 'java-11-amazon-corretto.spec.template'
-    outputs.file "$buildDir/java-11-amazon-corretto.spec"
+    outputs.file "$buildDir/java-${version.major}-amazon-corretto.spec"
     doLast {
         def renderedTemplate = new GStringTemplateEngine()
                 .createTemplate(file('java-11-amazon-corretto.spec.template'))
                 .make(
                 [
-                        rpmName    : rpmName,
-                        rpmVersion : rpmVersion,
-                        version    : project.version,
-                        sourceTar  : project.configurations.compile.singleFile.name,
-                        packageInfo: packageInfo
+                    java_spec_version   : version.major,
+                    java_major_version   : version.major,
+                    java_security_version   : version.security,
+                    java_version        : javaVersion,
+                    build_id            : buildId,
+                    release_id          : releaseId,
+                    version_opt         : versionOpt
                 ])
         outputs.files.singleFile.text = renderedTemplate
     }
@@ -60,13 +60,25 @@ task copySourceTar(type: Tar) {
     compression Compression.GZIP
     archiveName project.configurations.compile.singleFile.name
     from("$buildDir") {
-        include 'java-11-amazon-corretto.spec'
+        include "java-${project.version.major}-amazon-corretto.spec"
         into 'rpm'
     }
     from tarTree(project.configurations.compile.singleFile)
-    into "$rpmName-$rpmVersion"
+    into "$tarName-$tarVersion"
 }
 
-artifacts {
-    archives copySourceTar
+task rpmBuild(type: Exec) {
+  dependsOn copySourceTar
+    workingDir "$buildDir"
+    executable = '/usr/bin/rpmbuild'
+    args  = ['-vv',
+        '-bs',
+        '--define',
+        'dist .amzn2',
+        '--define',
+        "_sourcedir ${buildDir}/distributions",
+        '--define',
+        "_srcrpmdir ${buildDir}/distributions",
+        "java-${version.major}-amazon-corretto.spec"]
+
 }
