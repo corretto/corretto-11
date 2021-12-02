@@ -185,7 +185,15 @@ class MacroAssembler: public Assembler {
     mov(rscratch2, call_site);
   }
 
+// Microsoft's MSVC team thinks that the __FUNCSIG__ is approximately (sympathy for calling conventions) equivalent to __PRETTY_FUNCTION__
+// Also, from Clang patch: "It is very similar to GCC's PRETTY_FUNCTION, except it prints the calling convention."
+// https://reviews.llvm.org/D3311
+
+#ifdef _WIN64
+#define call_Unimplemented() _call_Unimplemented((address)__FUNCSIG__)
+#else
 #define call_Unimplemented() _call_Unimplemented((address)__PRETTY_FUNCTION__)
+#endif
 
   // aliases defined in AARCH64 spec
 
@@ -505,10 +513,10 @@ public:
 
   // Generalized Test Bit And Branch, including a "far" variety which
   // spans more than 32KiB.
-  void tbr(Condition cond, Register Rt, int bitpos, Label &dest, bool far = false) {
+  void tbr(Condition cond, Register Rt, int bitpos, Label &dest, bool isfar = false) {
     assert(cond == EQ || cond == NE, "must be");
 
-    if (far)
+    if (isfar)
       cond = ~cond;
 
     void (Assembler::* branch)(Register Rt, int bitpos, Label &L);
@@ -517,7 +525,7 @@ public:
     else
       branch = &Assembler::tbnz;
 
-    if (far) {
+    if (isfar) {
       Label L;
       (this->*branch)(Rt, bitpos, L);
       b(dest);
@@ -1291,6 +1299,24 @@ public:
                        Register zlen, Register tmp1, Register tmp2, Register tmp3,
                        Register tmp4, Register tmp5, Register tmp6, Register tmp7);
   void mul_add(Register out, Register in, Register offs, Register len, Register k);
+  void ghash_multiply(FloatRegister result_lo, FloatRegister result_hi,
+                      FloatRegister a, FloatRegister b, FloatRegister a1_xor_a0,
+                      FloatRegister tmp1, FloatRegister tmp2, FloatRegister tmp3);
+  void ghash_reduce(FloatRegister result, FloatRegister lo, FloatRegister hi,
+                    FloatRegister p, FloatRegister z, FloatRegister t1);
+  void ghash_processBlocks_wide(address p, Register state, Register subkeyH,
+                                Register data, Register blocks, int unrolls);
+  void ghash_modmul (FloatRegister result,
+                     FloatRegister result_lo, FloatRegister result_hi, FloatRegister b,
+                     FloatRegister a, FloatRegister vzr, FloatRegister a1_xor_a0, FloatRegister p,
+                     FloatRegister t1, FloatRegister t2, FloatRegister t3);
+
+  void aesenc_loadkeys(Register key, Register keylen);
+  void aesecb_encrypt(Register from, Register to, Register keylen,
+                      FloatRegister data = v0, int unrolls = 1);
+  void aesecb_decrypt(Register from, Register to, Register key, Register keylen);
+  void aes_round(FloatRegister input, FloatRegister subkey);
+
   // ISB may be needed because of a safepoint
   void maybe_isb() { isb(); }
 
