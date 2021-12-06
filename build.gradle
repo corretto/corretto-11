@@ -68,7 +68,7 @@ allprojects {
         caCerts = "cacerts"
         sourceTar = "amazon-corretto-source-${project.version.full}.tar.gz"
 
-        def versionOpt = project.findProperty("corretto.versionOpt") ?: "LTS"
+        versionOpt = project.findProperty("corretto.versionOpt") ?: "LTS"
         correttoCommonFlags = [
                 "--with-freetype=bundled",
                 '--with-jvm-features=zgc shenandoahgc',
@@ -289,4 +289,3 @@ project(':openjdksrc') {
         archives sourceDistributionTarball
     }
 }
-
