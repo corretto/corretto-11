@@ -954,7 +954,7 @@ void SafepointSynchronize::handle_polling_page_exception(JavaThread *thread) {
   if (!ThreadLocalHandshakes) {
     assert(SafepointSynchronize::is_synchronizing(), "polling encountered outside safepoint synchronization");
   }
-  
+
   // Enable WXWrite: the function is called implicitly from java code.
   MACOS_AARCH64_ONLY(ThreadWXEnable wx(WXWrite, thread));
 
