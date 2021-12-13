@@ -170,7 +170,7 @@ void InterpreterRuntime::SignatureHandlerGenerator::pass_object() {
     __ cbnz(temp(), L);
     __ mov(r0, zr);
     __ bind(L);
-    static_assert(sizeof(jobject) == wordSize, "");
+    STATIC_ASSERT(sizeof(jobject) == wordSize);
     __ str(r0, Address(to(), next_stack_offset(sizeof(jobject))));
   }
 }
