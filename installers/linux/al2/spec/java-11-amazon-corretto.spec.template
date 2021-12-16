@@ -144,6 +144,7 @@ Requires: zlib
 Requires: fontconfig
 Requires: freetype
 Requires: ca-certificates
+Requires: log4j-cve-2021-44228-cve-mitigations
 Requires(post): chkconfig
 Requires(postun): chkconfig
 
@@ -309,6 +310,9 @@ fi
 %license %{java_imgdir}/docs/legal
 
 %changelog
+* Tue Dec 16 2021 Clive Verghese <verghese@amazon.com> 
+- Add requires for log4j CVE-2021-44228 static mitigation
+
 * Thu Dec 02 2021 Dan Lutker <lutkerd@amazon.com> - 11.0.13+8-1
 - Templatize spec
 - Update provides to include java-11-devel
