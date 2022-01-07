@@ -140,11 +140,6 @@ task prepareArtifacts {
         exec {
             commandLine "SetFile", "-a", "B", "${buildDir}/${correttoMacDir}"
         }
-        // Gradle does not preserve symlink, fix it before packaging
-        exec {
-            workingDir "${buildDir}/${correttoMacDir}/Contents"
-            commandLine "ln", "-sf", "../Home/lib/jli/libjli.dylib", "MacOS/libjli.dylib"
-        }
     }
 }
 
