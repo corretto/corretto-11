@@ -159,6 +159,7 @@ task packageDebugSymbols(type: Tar) {
     from("${jdkResultingImage}/${correttoMacDir}") {
         include "Contents/Home/bin/*.diz"
         include "Contents/Home/lib/*.diz"
+        include "Contents/Home/lib/server/*.diz"
     }
     into "${buildDir}/${correttoMacDir}"
     into project.correttoDebugSymbolsArchiveName

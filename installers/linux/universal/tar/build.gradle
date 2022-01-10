@@ -134,6 +134,7 @@ task packageDebugSymbols(type: Tar) {
     from(jdkResultingImage) {
         include 'bin/*.diz'
         include 'lib/*.diz'
+        include 'lib/server/*.diz'
         into project.correttoDebugSymbolsArchiveName
     }
 }
