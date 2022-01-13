@@ -2,6 +2,51 @@
 
 The following sections describe the changes for each release of Amazon Corretto 11.
 
+## Corretto version: 11.0.14.9.1
+
+Release Date: January 18, 2022
+
+**Target Platforms**
+
++  RPM-based Linux using glibc 2.12 or later, x86, x86_64
++  Debian-based Linux using glibc 2.12 or later, x86, x86_64
++  RPM-based Linux using glibc 2.17 or later, aarch64
++  Debian-based Linux using glibc 2.17 or later, aarch64
++  Linux using glibc 2.25 or later, Arm
++  Alpine-based Linux, x86_64
++  Windows 7 or later, x86_64
++  macOS 10.13 and later, x86_64
+
+The following issues are addressed in 11.0.14.9.1.
+
+| Issue Name | Platform | Description | Link |
+| --- | --- | --- | --- |
+| Import jdk-11.0.14+9 | All | Update Corretto baseline to OpenJDK 11.0.14+9 | [jdk-11.0.14+9](https://github.com/openjdk/jdk11u/releases/tag/jdk-11.0.14%2B9)
+| Use SHA256 hashes in RPM File Digest | RPM-based Linux | Update plugins to support FIPS compliant file digests in generated RPMs | [#344](https://github.com/corretto/corretto-8/issues/344) |
+| Sign Mac bundle | Macos x64 | The Macos tgz contained signed files, but was not signed as a bundle | |
+| Update Amazon CACerts | All | Pull in the latest CA Certificates from Amazon Linux | |
+| 64 bit .dll on Windows x86 | Windows x86 | 64 bit .dll was used by the Corretto 11 on windows x86 | [corretto-11#238](https://github.com/corretto/corretto-11/issues/238) |
+
+The following CVEs are addressed in 11.0.14.9.1
+
+| CVE | CVSS | Component |
+| --- | --- | --- |
+| CVE-2022-21341 | 5.3 | core-libs/java.io:serialization |
+| CVE-2022-21365 | 5.3 | client-libs/javax.imageio |
+| CVE-2022-21282 | 5.3 | xml/jaxp |
+| CVE-2022-21291 | 5.3 | hotspot/runtime |
+| CVE-2022-21277 | 5.3 | client-libs/javax.imageio | 	
+| CVE-2022-21305 | 5.3 | hotspot/compiler |
+| CVE-2022-21299 | 5.3 | xml/jaxp |
+| CVE-2022-21296 | 5.3 | xml/jaxp |
+| CVE-2022-21283 | 5.3 | core-libs/java.util |
+| CVE-2022-21340 | 5.3 | security-libs/java.security |
+| CVE-2022-21293 | 5.3 | core-libs/java.lang |
+| CVE-2022-21294 | 5.3 | core-libs/java.util |
+| CVE-2022-21360 | 5.3 | client-libs/javax.imageio |
+| CVE-2022-21248 | 3.7 | core-libs/java.io:serialization |
+| CVE-2022-21366 | 5.3 | client-libs/javax.imageio |
+
 ## Corretto version: 11.0.13.8.1
 
 Release Date: October 19, 2021
