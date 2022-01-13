@@ -54,7 +54,7 @@ esac
 ${COMPILEJAVA}${FS}bin${FS}javac ${TESTJAVACOPTS} ${TESTTOOLVMOPTS} -d . \
     ${TESTSRC}${FS}DebugReportsOneExtraByte.java
 
-STRING='WRITE: TLS10 application_data, length = 8'
+STRING='WRITE: TLSv1 application_data, length = 8'
 
 echo "Examining debug output for the string:"
 echo "${STRING}"
