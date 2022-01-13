@@ -82,5 +82,57 @@ task rpmBuild(type: Exec) {
         '--define',
         "_srcrpmdir ${buildDir}/distributions",
         "java-${version.major}-amazon-corretto.spec"]
+}
 
+/**
+ * Apply version numbers to the RPM spec file template and copy
+ * to the build root.
+ */
+task inflateRpmSpecModular {
+    inputs.file 'java-11-amazon-corretto-modular.spec.template'
+    outputs.file "$buildDir/java-${version.major}-amazon-corretto-modular.spec"
+    doLast {
+        def renderedTemplate = new GStringTemplateEngine()
+                .createTemplate(file('java-11-amazon-corretto-modular.spec.template'))
+                .make(
+                [
+                    java_spec_version   : version.major,
+                    java_major_version   : version.major,
+                    java_security_version   : version.security,
+                    java_version        : javaVersion,
+                    build_id            : buildId,
+                    release_id          : releaseId,
+                    version_opt         : versionOpt
+                ])
+        outputs.files.singleFile.text = renderedTemplate
+    }
+}
+
+task copySourceTarModular(type: Tar) {
+    dependsOn project.configurations.compile, inflateRpmSpecModular
+    compression Compression.GZIP
+    archiveName project.configurations.compile.singleFile.name
+    from("$buildDir") {
+        include "java-${project.version.major}-amazon-corretto-modular.spec"
+        into 'rpm'
+    }
+    from tarTree(project.configurations.compile.singleFile)
+    into "$tarName-$tarVersion"
+}
+
+task rpmBuildModular(type: Exec) {
+  dependsOn copySourceTarModular
+    workingDir "$buildDir"
+    executable = '/usr/bin/rpmbuild'
+    args  = ['-vv',
+        '-bs',
+        '--define',
+        "dist .${project.findProperty('corretto.amzn_dist') ?: 'amzn2022'}",
+        '--define',
+        "_topdir ${buildDir}/rpmbuild",
+        '--define',
+        "_sourcedir ${buildDir}/distributions",
+        '--define',
+        "_srcrpmdir ${buildDir}/distributions",
+        "java-${version.major}-amazon-corretto-modular.spec"]
 }
