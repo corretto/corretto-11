@@ -150,7 +150,7 @@ void VM_Version::initialize() {
   }
 
   // Neoverse N1
-  if (_cpu == CPU_ARM && (_model == 0xd0c || _model2 == 0xd0c)) {
+  if (_cpu == CPU_ARM && (_model == 0xd0c || _model2 == 0xd0c || _model == 3392 || _model2 == 3392)) {
     if (FLAG_IS_DEFAULT(UseSIMDForMemoryOps)) {
       FLAG_SET_DEFAULT(UseSIMDForMemoryOps, true);
     }
