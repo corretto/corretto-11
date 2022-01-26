@@ -24,3 +24,8 @@ jobs:
               with:
                 upstream: 'upstream-dev'
                 merge-branch: 'nightly'
+            - name: "Update Corretto version"
+              uses: ./.github/actions/update-version
+              with:
+                upstream: 'upstream-dev'
+                version-branch: 'nightly'
