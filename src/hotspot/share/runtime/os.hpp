@@ -81,6 +81,11 @@ enum ThreadPriority {        // JLS 20.20.1-3
   CriticalPriority = 11      // Critical thread priority
 };
 
+enum WXMode {
+  WXWrite,
+  WXExec
+};
+
 // Executable parameter flag for os::commit_memory() and
 // os::commit_memory_or_exit().
 const bool ExecMem = true;
@@ -111,8 +116,12 @@ class os: AllStatic {
     _page_sizes[1] = 0; // sentinel
   }
 
-  static char*  pd_reserve_memory(size_t bytes, char* addr = 0,
-                                  size_t alignment_hint = 0);
+
+  MACOS_ONLY(static char*  pd_reserve_memory(size_t bytes, char* addr = 0,
+                                             size_t alignment_hint = 0,
+                                             bool executable = false);)
+  NOT_MACOS(static char*  pd_reserve_memory(size_t bytes, char* addr = 0,
+                                            size_t alignment_hint = 0);)
   static char*  pd_attempt_reserve_memory_at(size_t bytes, char* addr);
   static char*  pd_attempt_reserve_memory_at(size_t bytes, char* addr, int file_desc);
   static void   pd_split_reserved_memory(char *base, size_t size,
@@ -127,7 +136,9 @@ class os: AllStatic {
   static void   pd_commit_memory_or_exit(char* addr, size_t size,
                                          size_t alignment_hint,
                                          bool executable, const char* mesg);
-  static bool   pd_uncommit_memory(char* addr, size_t bytes);
+  MACOS_ONLY(static bool   pd_uncommit_memory(char* addr, size_t bytes,
+                                              bool executable = false);)
+  NOT_MACOS(static bool   pd_uncommit_memory(char* addr, size_t bytes);)
   static bool   pd_release_memory(char* addr, size_t bytes);
 
   static char*  pd_map_memory(int fd, const char* file_name, size_t file_offset,
@@ -325,8 +336,11 @@ class os: AllStatic {
                                                   const size_t size);
 
   static int    vm_allocation_granularity();
-  static char*  reserve_memory(size_t bytes, char* addr = 0,
-                               size_t alignment_hint = 0, int file_desc = -1);
+  MACOS_ONLY(static char*  reserve_memory(size_t bytes, char* addr = 0,
+                                          size_t alignment_hint = 0, int file_desc = -1,
+                                          bool executable = false);)
+  NOT_MACOS(static char*  reserve_memory(size_t bytes, char* addr = 0,
+                                         size_t alignment_hint = 0, int file_desc = -1);)
   static char*  reserve_memory(size_t bytes, char* addr,
                                size_t alignment_hint, MEMFLAGS flags);
   static char*  reserve_memory_aligned(size_t size, size_t alignment, int file_desc = -1);
@@ -343,7 +357,8 @@ class os: AllStatic {
   static void   commit_memory_or_exit(char* addr, size_t size,
                                       size_t alignment_hint,
                                       bool executable, const char* mesg);
-  static bool   uncommit_memory(char* addr, size_t bytes);
+  MACOS_ONLY(static bool   uncommit_memory(char* addr, size_t bytes, bool executable = false);)
+  NOT_MACOS(static bool   uncommit_memory(char* addr, size_t bytes);)
   static bool   release_memory(char* addr, size_t bytes);
 
   // Touch memory pages that cover the memory range from start to end (exclusive)
@@ -953,6 +968,11 @@ class os: AllStatic {
     Thread* _thread;
     bool _done;
   };
+
+#if defined(__APPLE__) && defined(AARCH64)
+  // Enables write or execute access to writeable and executable pages.
+  static void current_thread_enable_wx(WXMode mode);
+#endif // __APPLE__ && AARCH64
 
 #ifndef _WINDOWS
   // Suspend/resume support
