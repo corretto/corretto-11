@@ -29,9 +29,7 @@
  *
  * @library /vmTestbase
  *          /test/lib
- * @run driver jdk.test.lib.FileInstaller . .
- * @build jit.misctests.Pi.Pi
- * @run driver ExecDriver --java jit.misctests.Pi.Pi
+ * @run main/othervm jit.misctests.Pi.Pi
  */
 
 package jit.misctests.Pi;
@@ -39,7 +37,7 @@ package jit.misctests.Pi;
 import java.util.Random;
 import nsk.share.TestFailure;
 
-class Pi{
+public class Pi{
     static double pi;
     static int imKreis=0, imQuadrat=0, i=0;
 

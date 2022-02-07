@@ -18,7 +18,7 @@ BUILD_NUMBER=$(git ls-remote --tags ${UPSTREAM_REMOTE} |grep jdk-${DEFAULT_VERSI
 # Load the current Corretto version
 CURRENT_VERSION=$(cat version.txt)
 
-if [[ ${CURRENT_VERSION} == ${DEFAULT_VERSION_FEATURE}.${DEFAULT_VERSION_INTERIM}.${DEFAULT_VERSION_UPDATE}.${BUILD_NUMBER}.* ]]; then
+if [[ ${CURRENT_VERSION} == ${DEFAULT_VERSION_FEATURE}.${DEFAULT_VERSION_INTERIM}.${DEFAULT_VERSION_UPDATE}.${BUILD_NUMBER:=0}.* ]]; then
     echo "Corretto version is current."
 else
     echo "Updating Corretto version"
