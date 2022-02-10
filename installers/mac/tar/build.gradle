@@ -104,7 +104,7 @@ task prepareArtifacts {
         plistTokens["ID"] = "com.amazon.corretto.${project.version.major}".toString()
         plistTokens["NAME"] = "Amazon Corretto ${project.version.major}".toString()
         plistTokens["PLATFORM_VERSION"] = "${project.version.major}.${project.version.minor}.${project.version.security}".toString()
-        plistTokens["VERSION"] = "${project.version.major}.${project.version.minor}.${project.version.security}".toString()
+        plistTokens["VERSION"] = "${project.version.major}.${project.version.minor}.${project.version.security}.1".toString()
         plistTokens["BUILD_VERSION"] = "${project.version.full}".toString()
         plistTokens["MACOSX_VERSION_MIN"] = "10.6.0"
         plistTokens["VENDOR"] = "Amazon.com Inc."

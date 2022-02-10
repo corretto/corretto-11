@@ -2,6 +2,28 @@
 
 The following sections describe the changes for each release of Amazon Corretto 11.
 
+## Corretto version: 11.0.14.10.1
+
+Release Date: February 8, 2022
+
+**Target Platforms**
+
++  RPM-based Linux using glibc 2.12 or later, x86, x86_64
++  Debian-based Linux using glibc 2.12 or later, x86, x86_64
++  RPM-based Linux using glibc 2.17 or later, aarch64
++  Debian-based Linux using glibc 2.17 or later, aarch64
++  Linux using glibc 2.25 or later, Arm
++  Alpine-based Linux, x86_64
++  Windows 7 or later, x86_64
++  macOS 10.13 and later, x86_64
+
+The following issues are addressed in 11.0.14.10.1.
+
+| Issue Name             | Platform | Description | Link |
+|------------------------| --- | --- | --- |
+| Import jdk-11.0.14.1+1 | All | Update Corretto baseline to OpenJDK 11.0.14.1+1 | [jdk-11.0.14.1+1](https://github.com/openjdk/jdk11u/releases/tag/jdk-11.0.14.1%2B1)
+| Backport JDK-8218546 | All | Unable to connect to https://google.com using java.net.HttpClient | [JDK-8218546](https://bugs.openjdk.java.net/browse/JDK-8218546)
+
 ## Corretto version: 11.0.14.9.1
 
 Release Date: January 18, 2022
