@@ -80,23 +80,12 @@ task configureBuild(type: Exec) {
     def configureCmd = [
         'bash',
         'configure',
-        '--with-jvm-features=zgc shenandoahgc',
         "--with-version-feature=${version.major}",
-        '--with-freetype=bundled',
         '--with-zlib=bundled',
-        "--with-version-opt=${versionOpt}",
-        "--with-version-build=${version.build}",
-        "--with-vendor-version-string=Corretto-${version.full}",
-        '--with-version-pre=',
-        '--with-vendor-name=Amazon.com Inc.',
-        '--with-vendor-url=https://aws.amazon.com/corretto/',
-        "--with-vendor-bug-url=https://github.com/corretto/corretto-${version.major}/issues/",
-        "--with-vendor-vm-bug-url=https://github.com/corretto/corretto-${version.major}/issues/",
-        '--with-debug-level=release',
-        '--with-native-debug-symbols=none',
         '--with-stdc++lib=static',
         '--disable-warnings-as-errors'
     ]
+    configureCmd += project.correttoCommonFlags
 
     def versionDate = project.findProperty("corretto.versionDate")
     if (versionDate) {
