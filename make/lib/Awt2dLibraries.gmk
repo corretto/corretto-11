@@ -562,7 +562,7 @@ else
        maybe-uninitialized class-memaccess
   HARFBUZZ_DISABLED_WARNINGS_clang := unused-value incompatible-pointer-types \
        tautological-constant-out-of-range-compare int-to-pointer-cast \
-       undef missing-field-initializers
+       undef missing-field-initializers deprecated-declarations c++11-narrowing
   HARFBUZZ_DISABLED_WARNINGS_microsoft := 4267 4244 4090 4146 4334 4819 4101 4068 4805 4138
   HARFBUZZ_DISABLED_WARNINGS_C_solstudio := \
         E_INTEGER_OVERFLOW_DETECTED \
@@ -861,7 +861,7 @@ ifeq ($(ENABLE_HEADLESS_ONLY), false)
       EXTRA_HEADER_DIRS := $(LIBSPLASHSCREEN_HEADER_DIRS), \
       DISABLED_WARNINGS_gcc := sign-compare type-limits unused-result \
           maybe-uninitialized shift-negative-value implicit-fallthrough, \
-      DISABLED_WARNINGS_clang := incompatible-pointer-types, \
+      DISABLED_WARNINGS_clang := incompatible-pointer-types deprecated-declarations, \
       DISABLED_WARNINGS_solstudio := E_NEWLINE_NOT_LAST E_DECLARATION_IN_CODE \
           E_STATEMENT_NOT_REACHED, \
       DISABLED_WARNINGS_microsoft := 4018 4244 4267, \
