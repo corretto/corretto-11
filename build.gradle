@@ -68,13 +68,13 @@ allprojects {
         caCerts = "cacerts"
         sourceTar = "amazon-corretto-source-${project.version.full}.tar.gz"
 
-        versionOpt = project.findProperty("corretto.versionOpt") ?: "LTS"
+        versionOpt = project.findProperty("corretto.versionOpt") ?: ""
         correttoCommonFlags = [
                 "--with-freetype=bundled",
                 '--with-jvm-features=zgc shenandoahgc',
                 "--with-version-build=${project.version.build}",
                 "--with-version-opt=${versionOpt}",
-                '--with-version-pre=',
+                '--with-version-pre=preview',
                 "--with-vendor-bug-url=https://github.com/corretto/corretto-${project.version.major}/issues/",
                 "--with-vendor-vm-bug-url=https://github.com/corretto/corretto-${project.version.major}/issues/",
                 '--with-vendor-name=Amazon.com Inc.',
