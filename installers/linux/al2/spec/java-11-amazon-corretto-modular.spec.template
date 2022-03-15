@@ -254,7 +254,10 @@ if [ \$1 -eq 1 ] ; then
                --slave %{_mandir}/man1/rmid.1 rmid.1 %{java_home}/man/man1/rmid.1 \\
                --slave %{_mandir}/man1/rmiregistry.1 rmiregistry.1 %{java_home}/man/man1/rmiregistry.1 \\
                --slave %{_mandir}/man1/unpack200.1 unpack200.1 %{java_home}/man/man1/unpack200.1
+fi
 
+%post devel
+if [ \$1 -eq 1 ] ; then
   alternatives --install %{_bindir}/javac javac %{java_home}/bin/javac %{alternatives_priority} \\
                --slave %{_bindir}/jaotc jaotc %{java_home}/bin/jaotc \\
                --slave %{_bindir}/jar jar %{java_home}/bin/jar \\
@@ -308,6 +311,10 @@ fi
 %postun headless
 if [ \$1 -eq 0 ] ; then
   alternatives --remove java %{java_home}/bin/java
+fi
+
+%postun devel
+if [ \$1 -eq 0 ] ; then
   alternatives --remove javac %{java_home}/bin/javac
 fi
 
