@@ -28,7 +28,7 @@
 %global version_opt     $version_opt
 # If we need to rev the package for something outside of what the
 # Corretto team is doing, we can define release_ext.
-# %global release_ext  1
+%global release_ext  1
 
 %global java_home %{_jvmdir}/%{name}.%{_arch}
 %global java_lib  %{java_home}/lib
@@ -38,7 +38,7 @@
 %global java_imgdir build/linux-%{_arch}-normal-server-release/images/
 
 # Higher numbers win for the alternatives program.
-%global alternatives_priority 2
+%global alternatives_priority %( printf '%02d%02d%02d%02d' %{java_major_version} %{java_security_version} %{build_id} %{release_id} )
 
 # Instruct rpmbuild to copy jars rather than de-compress and re-compress.
 %global __jar_repack 0
@@ -54,12 +54,18 @@
 %global script 'use File::Spec; print File::Spec->abs2rel(\$ARGV[0], \$ARGV[1])'
 %global abs2rel %{__perl} -e %{script}
 
+# Filter out private libraries so RPM does not list them as provided/required
+%global _privatelibs libjli[.]so.*
+%global __provides_exclude ^(%{_privatelibs})\$
+%global __requires_exclude ^(%{_privatelibs})\$
+
+
 # By default install a bootstrap jdk. If one is already available,
 # this can be skipped using --without bootjdk
 %bcond_without bootjdk
 
 Summary: Amazon Corretto development environment
-Name: java-11-amazon-corretto
+Name: java-%{java_major_version}-amazon-corretto
 # Matches the 'full version' from Java's release notes:
 # https://www.oracle.com/technetwork/java/javase/11-0-2-relnotes-5188746.html
 # Eg: 11.0.2+7
@@ -101,7 +107,7 @@ BuildRequires: pkgconfig
 BuildRequires: xorg-x11-proto-devel
 
 %if %{with bootjdk}
-BuildRequires: java-11-devel
+BuildRequires: java-%{java_major_version}-devel
 %endif
 
 Requires: libX11
@@ -122,37 +128,35 @@ Requires: dejavu-sans-mono-fonts
 Requires: %{name}-headless%{?_isa} = %{epoch}:%{version}-%{release}
 
 Provides: java = %{epoch}:%{java_version}
-Provides: java-11 = %{epoch}:%{java_version}
-Provides: java-11 = %{epoch}:%{version}-%{release}
-Provides: java-11-devel = %{epoch}:%{java_version}
-Provides: java-11-devel = %{epoch}:%{version}-%{release}
+Provides: java-%{java_major_version} = %{epoch}:%{java_version}
+Provides: java-%{java_major_version} = %{epoch}:%{version}-%{release}
 Provides: jre = %{java_version}
-Provides: jre-11 = %{epoch}:%{version}-%{release}
-Provides: jre-11-amazon-corretto = %{epoch}:%{version}-%{release}
+Provides: jre-%{java_major_version} = %{epoch}:%{version}-%{release}
+Provides: jre-%{java_major_version}-amazon-corretto = %{epoch}:%{version}-%{release}
 
 %description
 Amazon Corretto's packaging of the runtime core elements of the
-OpenJDK 11 code.
+OpenJDK %{java_major_version} code.
 
 %package headless
 Summary: Amazon Corretto headless development environment
 Group:   Development/Tools
-AutoReqProv: 0
+AutoReqProv: no
 
 Requires: jpackage-utils
 Requires: zlib
 Requires: fontconfig
 Requires: freetype
 Requires: ca-certificates
-Requires: log4j-cve-2021-44228-cve-mitigations
+#Requires: log4j-cve-2021-44228-cve-mitigations
 Requires(post): chkconfig
 Requires(postun): chkconfig
 
 Provides: java-headless = %{epoch}:%{java_version}
-Provides: java-11-headless = %{epoch}:%{version}-%{release}
+Provides: java-%{java_major_version}-headless = %{epoch}:%{version}-%{release}
 Provides: jre-headless = %{epoch}:%{java_version}
-Provides: jre-11-headless = %{epoch}:%{version}-%{release}
-Provides: jre-11-amazon-corretto-headless = %{epoch}:%{version}-%{release}
+Provides: jre-%{java_major_version}-headless = %{epoch}:%{version}-%{release}
+Provides: jre-%{java_major_version}-amazon-corretto-headless = %{epoch}:%{version}-%{release}
 
 %description headless
 Amazon Corretto's packaging of the runtime core elements of the
@@ -167,6 +171,30 @@ Provides: java-11-javadoc = %{epoch}:%{version}-%{release}
 
 %description javadoc
 Amazon Corretto's packaging of the OpenJDK 11 API documentation.
+
+%package devel
+Summary: Amazon Corretto %{java_major_version} development tools
+Group: Development
+AutoReqProv: no
+
+Provides: java-%{java_major_version}-devel = %{epoch}:%{java_version}
+Provides: java-%{java_major_version}-devel = %{epoch}:%{version}-%{release}
+Requires: %{name}-headless%{?1}%{?_isa} = %{epoch}:%{version}-%{release}
+
+%description devel
+Amazon Corretto's packaging of the OpenJDK %{java_major_version} development tools.
+
+%package jmods
+Summary: Amazon Corretto %{java_major_version} jmods
+Group: Development
+
+Provides: java-%{java_major_version}-jmods = %{epoch}:%{java_version}
+Provides: java-%{java_major_version}-jmods = %{epoch}:%{version}-%{release}
+# Require devel package.
+Requires: %{name}-devel%{?1}%{?_isa} = %{epoch}:%{version}-%{release}
+
+%description jmods
+Amazon Corretto's packaging of the OpenJDK %{java_major_version} jmods.
 
 %prep
 %setup -q
@@ -226,7 +254,10 @@ if [ \$1 -eq 1 ] ; then
                --slave %{_mandir}/man1/rmid.1 rmid.1 %{java_home}/man/man1/rmid.1 \\
                --slave %{_mandir}/man1/rmiregistry.1 rmiregistry.1 %{java_home}/man/man1/rmiregistry.1 \\
                --slave %{_mandir}/man1/unpack200.1 unpack200.1 %{java_home}/man/man1/unpack200.1
+fi
 
+%post devel
+if [ \$1 -eq 1 ] ; then
   alternatives --install %{_bindir}/javac javac %{java_home}/bin/javac %{alternatives_priority} \\
                --slave %{_bindir}/jaotc jaotc %{java_home}/bin/jaotc \\
                --slave %{_bindir}/jar jar %{java_home}/bin/jar \\
@@ -280,6 +311,10 @@ fi
 %postun headless
 if [ \$1 -eq 0 ] ; then
   alternatives --remove java %{java_home}/bin/java
+fi
+
+%postun devel
+if [ \$1 -eq 0 ] ; then
   alternatives --remove javac %{java_home}/bin/javac
 fi
 
@@ -292,7 +327,32 @@ fi
 %{java_inc}/linux/jawt_md.h
 
 %files headless
-%{java_home}
+%{java_home}/bin/java
+%{java_home}/bin/jjs
+%{java_home}/bin/keytool
+%{java_home}/bin/pack200
+%{java_home}/bin/rmid
+%{java_home}/bin/rmiregistry
+%{java_home}/bin/unpack200
+%{java_home}/conf
+%{java_home}/legal
+%{java_home}/lib
+%{java_home}/man/man1/java.1
+%{java_home}/man/man1/jjs.1
+%{java_home}/man/man1/keytool.1
+%{java_home}/man/man1/pack200.1
+%{java_home}/man/man1/rmid.1
+%{java_home}/man/man1/rmiregistry.1
+%{java_home}/man/man1/unpack200.1
+%{java_home}/man/ja
+%{java_home}/man/ja_JP.UTF-8/man1/java.1
+%{java_home}/man/ja_JP.UTF-8/man1/jjs.1
+%{java_home}/man/ja_JP.UTF-8/man1/keytool.1
+%{java_home}/man/ja_JP.UTF-8/man1/pack200.1
+%{java_home}/man/ja_JP.UTF-8/man1/rmid.1
+%{java_home}/man/ja_JP.UTF-8/man1/rmiregistry.1
+%{java_home}/man/ja_JP.UTF-8/man1/unpack200.1
+%{java_home}/release
 
 # Keep the libs and includes that need X11 in the main package
 %exclude %{java_lib}/libawt_xawt.so
@@ -302,6 +362,74 @@ fi
 %exclude %{java_inc}/jawt.h
 %exclude %{java_inc}/linux/jawt_md.h
 
+%files devel
+%{java_home}/bin/jaotc
+%{java_home}/bin/jar
+%{java_home}/bin/jarsigner
+%{java_home}/bin/javac
+%{java_home}/bin/javadoc
+%{java_home}/bin/javap
+%{java_home}/bin/jcmd
+%{java_home}/bin/jconsole
+%{java_home}/bin/jdb
+%{java_home}/bin/jdeprscan
+%{java_home}/bin/jdeps
+%{java_home}/bin/jfr
+%{java_home}/bin/jhsdb
+%{java_home}/bin/jimage
+%{java_home}/bin/jinfo
+%{java_home}/bin/jlink
+%{java_home}/bin/jmap
+%{java_home}/bin/jmod
+%{java_home}/bin/jps
+%{java_home}/bin/jrunscript
+%{java_home}/bin/jshell
+%{java_home}/bin/jstack
+%{java_home}/bin/jstat
+%{java_home}/bin/jstatd
+%{java_home}/bin/rmic
+%{java_home}/bin/serialver
+%{java_home}/include
+%{java_home}/man/man1/jar.1
+%{java_home}/man/man1/jarsigner.1
+%{java_home}/man/man1/javac.1
+%{java_home}/man/man1/javadoc.1
+%{java_home}/man/man1/javap.1
+%{java_home}/man/man1/jcmd.1
+%{java_home}/man/man1/jconsole.1
+%{java_home}/man/man1/jdb.1
+%{java_home}/man/man1/jdeps.1
+%{java_home}/man/man1/jinfo.1
+%{java_home}/man/man1/jmap.1
+%{java_home}/man/man1/jps.1
+%{java_home}/man/man1/jrunscript.1
+%{java_home}/man/man1/jstack.1
+%{java_home}/man/man1/jstat.1
+%{java_home}/man/man1/jstatd.1
+%{java_home}/man/man1/rmic.1
+%{java_home}/man/man1/serialver.1
+%{java_home}/man/ja_JP.UTF-8/man1/jar.1
+%{java_home}/man/ja_JP.UTF-8/man1/jarsigner.1
+%{java_home}/man/ja_JP.UTF-8/man1/javac.1
+%{java_home}/man/ja_JP.UTF-8/man1/javadoc.1
+%{java_home}/man/ja_JP.UTF-8/man1/javap.1
+%{java_home}/man/ja_JP.UTF-8/man1/jcmd.1
+%{java_home}/man/ja_JP.UTF-8/man1/jconsole.1
+%{java_home}/man/ja_JP.UTF-8/man1/jdb.1
+%{java_home}/man/ja_JP.UTF-8/man1/jdeps.1
+%{java_home}/man/ja_JP.UTF-8/man1/jinfo.1
+%{java_home}/man/ja_JP.UTF-8/man1/jmap.1
+%{java_home}/man/ja_JP.UTF-8/man1/jps.1
+%{java_home}/man/ja_JP.UTF-8/man1/jrunscript.1
+%{java_home}/man/ja_JP.UTF-8/man1/jstack.1
+%{java_home}/man/ja_JP.UTF-8/man1/jstat.1
+%{java_home}/man/ja_JP.UTF-8/man1/jstatd.1
+%{java_home}/man/ja_JP.UTF-8/man1/rmic.1
+%{java_home}/man/ja_JP.UTF-8/man1/serialver.1
+
+%files jmods
+%{java_home}/jmods
+
 %files javadoc
 %doc %{java_imgdir}/docs/index.html
 %doc %{java_imgdir}/docs/api
@@ -310,6 +438,9 @@ fi
 %license %{java_imgdir}/docs/legal
 
 %changelog
+* Wed Jan 12 2022 Dan Lutker <lutkerd@amazon.com>
+- Modularize the package adding devel and jmods
+
 * Thu Dec 16 2021 Clive Verghese <verghese@amazon.com>
 - Add requires for log4j CVE-2021-44228 static mitigation
 
