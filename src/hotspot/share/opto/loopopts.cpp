@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1999, 2019, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -2715,7 +2715,7 @@ int PhaseIdealLoop::clone_for_use_outside_loop( IdealLoopTree *loop, Node* n, No
     assert(!loop->is_member(get_loop(use_c)), "should be outside loop");
     get_loop(use_c)->_body.push(n_clone);
     _igvn.register_new_node_with_optimizer(n_clone);
-#if !defined(PRODUCT)
+#ifndef PRODUCT
     if (TracePartialPeeling) {
       tty->print_cr("loop exit cloning old: %d new: %d newbb: %d", n->_idx, n_clone->_idx, get_ctrl(n_clone)->_idx);
     }
@@ -2753,7 +2753,7 @@ void PhaseIdealLoop::clone_for_special_use_inside_loop( IdealLoopTree *loop, Nod
     set_ctrl(n_clone, get_ctrl(n));
     sink_list.push(n_clone);
     not_peel <<= n_clone->_idx;  // add n_clone to not_peel set.
-#if !defined(PRODUCT)
+#ifndef PRODUCT
     if (TracePartialPeeling) {
       tty->print_cr("special not_peeled cloning old: %d new: %d", n->_idx, n_clone->_idx);
     }
@@ -3082,16 +3082,16 @@ bool PhaseIdealLoop::partial_peel( IdealLoopTree *loop, Node_List &old_new ) {
 
   assert(!loop->_head->is_CountedLoop(), "Non-counted loop only");
   if (!loop->_head->is_Loop()) {
-    return false;  }
-
-  LoopNode *head  = loop->_head->as_Loop();
+    return false;
+  }
+  LoopNode *head = loop->_head->as_Loop();
 
   if (head->is_partial_peel_loop() || head->partial_peel_has_failed()) {
     return false;
   }
 
   // Check for complex exit control
-  for(uint ii = 0; ii < loop->_body.size(); ii++ ) {
+  for (uint ii = 0; ii < loop->_body.size(); ii++) {
     Node *n = loop->_body.at(ii);
     int opc = n->Opcode();
     if (n->is_Call()        ||
@@ -3099,7 +3099,7 @@ bool PhaseIdealLoop::partial_peel( IdealLoopTree *loop, Node_List &old_new ) {
         opc == Op_CatchProj ||
         opc == Op_Jump      ||
         opc == Op_JumpProj) {
-#if !defined(PRODUCT)
+#ifndef PRODUCT
       if (TracePartialPeeling) {
         tty->print_cr("\nExit control too complex: lp: %d", head->_idx);
       }
@@ -3118,12 +3118,12 @@ bool PhaseIdealLoop::partial_peel( IdealLoopTree *loop, Node_List &old_new ) {
   IfNode *peel_if_cmpu = NULL;
 
   Node *iff = loop->tail();
-  while( iff != head ) {
-    if( iff->is_If() ) {
+  while (iff != head) {
+    if (iff->is_If()) {
       Node *ctrl = get_ctrl(iff->in(1));
       if (ctrl->is_top()) return false; // Dead test on live IF.
       // If loop-varying exit-test, check for induction variable
-      if( loop->is_member(get_loop(ctrl)) &&
+      if (loop->is_member(get_loop(ctrl)) &&
           loop->is_loop_exit(iff) &&
           is_possible_iv_test(iff)) {
         Node* cmp = iff->in(1)->in(1);
@@ -3137,6 +3137,7 @@ bool PhaseIdealLoop::partial_peel( IdealLoopTree *loop, Node_List &old_new ) {
     }
     iff = idom(iff);
   }
+
   // Prefer signed compare over unsigned compare.
   IfNode* new_peel_if = NULL;
   if (peel_if == NULL) {
@@ -3155,7 +3156,7 @@ bool PhaseIdealLoop::partial_peel( IdealLoopTree *loop, Node_List &old_new ) {
     return false;
   }
 
-#if !defined(PRODUCT)
+#ifndef PRODUCT
   if (TraceLoopOpts) {
     tty->print("PartialPeel  ");
     loop->dump_head();
@@ -3184,6 +3185,11 @@ bool PhaseIdealLoop::partial_peel( IdealLoopTree *loop, Node_List &old_new ) {
   Node_List worklist(area);
   Node_List sink_list(area);
 
+  uint estimate = loop->est_loop_clone_sz(1);
+  if (exceeding_node_budget(estimate)) {
+    return false;
+  }
+
   // Set of cfg nodes to peel are those that are executable from
   // the head through last_peel.
   assert(worklist.size() == 0, "should be empty");
@@ -3205,8 +3211,7 @@ bool PhaseIdealLoop::partial_peel( IdealLoopTree *loop, Node_List &old_new ) {
 
   // Set of non-cfg nodes to peel are those that are control
   // dependent on the cfg nodes.
-  uint i;
-  for(i = 0; i < loop->_body.size(); i++ ) {
+  for (uint i = 0; i < loop->_body.size(); i++) {
     Node *n = loop->_body.at(i);
     Node *n_c = has_ctrl(n) ? get_ctrl(n) : n;
     if (peel.test(n_c->_idx)) {
@@ -3221,7 +3226,7 @@ bool PhaseIdealLoop::partial_peel( IdealLoopTree *loop, Node_List &old_new ) {
 
   // Get a post order schedule of nodes in the peel region
   // Result in right-most operand.
-  scheduled_nodelist(loop, peel, peel_list );
+  scheduled_nodelist(loop, peel, peel_list);
 
   assert(is_valid_loop_partition(loop, peel, peel_list, not_peel), "bad partition");
 
@@ -3232,7 +3237,7 @@ bool PhaseIdealLoop::partial_peel( IdealLoopTree *loop, Node_List &old_new ) {
     if (use->is_Phi()) old_phi_cnt++;
   }
 
-#if !defined(PRODUCT)
+#ifndef PRODUCT
   if (TracePartialPeeling) {
     tty->print_cr("\npeeled list");
   }
@@ -3241,31 +3246,27 @@ bool PhaseIdealLoop::partial_peel( IdealLoopTree *loop, Node_List &old_new ) {
   // Evacuate nodes in peel region into the not_peeled region if possible
   uint new_phi_cnt = 0;
   uint cloned_for_outside_use = 0;
-  for (i = 0; i < peel_list.size();) {
+  for (uint i = 0; i < peel_list.size();) {
     Node* n = peel_list.at(i);
-#if !defined(PRODUCT)
+#ifndef PRODUCT
   if (TracePartialPeeling) n->dump();
 #endif
     bool incr = true;
-    if ( !n->is_CFG() ) {
-
-      if ( has_use_in_set(n, not_peel) ) {
-
+    if (!n->is_CFG()) {
+      if (has_use_in_set(n, not_peel)) {
         // If not used internal to the peeled region,
         // move "n" from peeled to not_peeled region.
-
-        if ( !has_use_internal_to_set(n, peel, loop) ) {
-
+        if (!has_use_internal_to_set(n, peel, loop)) {
           // if not pinned and not a load (which maybe anti-dependent on a store)
           // and not a CMove (Matcher expects only bool->cmove).
           if ( n->in(0) == NULL && !n->is_Load() && !n->is_CMove() ) {
-            cloned_for_outside_use += clone_for_use_outside_loop( loop, n, worklist );
+            cloned_for_outside_use += clone_for_use_outside_loop(loop, n, worklist);
             sink_list.push(n);
             peel     >>= n->_idx; // delete n from peel set.
             not_peel <<= n->_idx; // add n to not_peel set.
             peel_list.remove(i);
             incr = false;
-#if !defined(PRODUCT)
+#ifndef PRODUCT
             if (TracePartialPeeling) {
               tty->print_cr("sink to not_peeled region: %d newbb: %d",
                             n->_idx, get_ctrl(n)->_idx);
@@ -3275,7 +3276,7 @@ bool PhaseIdealLoop::partial_peel( IdealLoopTree *loop, Node_List &old_new ) {
         } else {
           // Otherwise check for special def-use cases that span
           // the peel/not_peel boundary such as bool->if
-          clone_for_special_use_inside_loop( loop, n, not_peel, sink_list, worklist );
+          clone_for_special_use_inside_loop(loop, n, not_peel, sink_list, worklist);
           new_phi_cnt++;
         }
       }
@@ -3283,8 +3284,12 @@ bool PhaseIdealLoop::partial_peel( IdealLoopTree *loop, Node_List &old_new ) {
     if (incr) i++;
   }
 
-  if (new_phi_cnt > old_phi_cnt + PartialPeelNewPhiDelta) {
-#if !defined(PRODUCT)
+  estimate += cloned_for_outside_use + new_phi_cnt;
+  bool exceed_node_budget = !may_require_nodes(estimate);
+  bool exceed_phi_limit = new_phi_cnt > old_phi_cnt + PartialPeelNewPhiDelta;
+
+  if (exceed_node_budget || exceed_phi_limit) {
+#ifndef PRODUCT
     if (TracePartialPeeling) {
       tty->print_cr("\nToo many new phis: %d  old %d new cmpi: %c",
                     new_phi_cnt, old_phi_cnt, new_peel_if != NULL?'T':'F');
@@ -3331,7 +3336,7 @@ bool PhaseIdealLoop::partial_peel( IdealLoopTree *loop, Node_List &old_new ) {
 
   const uint clone_exit_idx = 1;
   const uint orig_exit_idx  = 2;
-  assert(is_valid_clone_loop_form( loop, peel_list, orig_exit_idx, clone_exit_idx ), "bad clone loop");
+  assert(is_valid_clone_loop_form(loop, peel_list, orig_exit_idx, clone_exit_idx), "bad clone loop");
 
   Node* head_clone             = old_new[head->_idx];
   LoopNode* new_head_clone     = old_new[new_head->_idx]->as_Loop();
@@ -3339,7 +3344,7 @@ bool PhaseIdealLoop::partial_peel( IdealLoopTree *loop, Node_List &old_new ) {
 
   // Add phi if "def" node is in peel set and "use" is not
 
-  for(i = 0; i < peel_list.size(); i++ ) {
+  for (uint i = 0; i < peel_list.size(); i++) {
     Node *def  = peel_list.at(i);
     if (!def->is_CFG()) {
       for (DUIterator_Fast jmax, j = def->fast_outs(jmax); j < jmax; j++) {
@@ -3395,7 +3400,7 @@ bool PhaseIdealLoop::partial_peel( IdealLoopTree *loop, Node_List &old_new ) {
   //          cloned-not_peeled  in(0)    in(0)
   //          orig-peeled
 
-  for(i = 0; i < loop->_body.size(); i++ ) {
+  for (uint i = 0; i < loop->_body.size(); i++) {
     Node *n = loop->_body.at(i);
     if (!n->is_CFG()           && n->in(0) != NULL        &&
         not_peel.test(n->_idx) && peel.test(n->in(0)->_idx)) {
@@ -3442,7 +3447,7 @@ bool PhaseIdealLoop::partial_peel( IdealLoopTree *loop, Node_List &old_new ) {
   C->set_major_progress();
   loop->record_for_igvn();
 
-#if !defined(PRODUCT)
+#ifndef PRODUCT
   if (TracePartialPeeling) {
     tty->print_cr("\nafter partial peel one iteration");
     Node_List wl(area);
@@ -3482,10 +3487,10 @@ void PhaseIdealLoop::reorg_offsets(IdealLoopTree *loop) {
   Node *exit = cle->proj_out(false);
   Node *phi = cl->phi();
 
-  // Check for the special case of folks using the pre-incremented
-  // trip-counter on the fall-out path (forces the pre-incremented
-  // and post-incremented trip counter to be live at the same time).
-  // Fix this by adjusting to use the post-increment trip counter.
+  // Check for the special case when using the pre-incremented trip-counter on
+  // the fall-out  path (forces the pre-incremented  and post-incremented trip
+  // counter to be live  at the same time).  Fix this by  adjusting to use the
+  // post-increment trip counter.
 
   bool progress = true;
   while (progress) {

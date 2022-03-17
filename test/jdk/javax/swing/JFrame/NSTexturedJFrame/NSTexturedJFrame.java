@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2013, 2018, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -28,16 +28,18 @@ import java.awt.image.BufferedImage;
 
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
-import jdk.testlibrary.OSInfo;
+
+import jdk.test.lib.Platform;
 
 /**
  * @test
  * @key headful
  * @bug 7124513
+ * @requires (os.family == "mac")
  * @summary We should support NSTexturedBackgroundWindowMask style on OSX.
- * @author Sergey Bylokhov
- * @library ../../../../lib/testlibrary
- * @build ExtendedRobot jdk.testlibrary.OSInfo
+ * @library /test/lib
+ *          /test/jdk/lib/testlibrary/
+ * @build ExtendedRobot jdk.test.lib.Platform
  * @run main NSTexturedJFrame
  */
 
@@ -52,7 +54,7 @@ public final class NSTexturedJFrame {
     private static ExtendedRobot robot;
 
     public static void main(final String[] args) throws Exception {
-        if (OSInfo.getOSType() != OSInfo.OSType.MACOSX) {
+        if (!Platform.isOSX()) {
             System.out.println("This test is for OSX, considered passed.");
             return;
         }
