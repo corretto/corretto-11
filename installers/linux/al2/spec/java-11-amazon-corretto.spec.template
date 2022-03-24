@@ -292,6 +292,21 @@ fi
 %{java_inc}/linux/jawt_md.h
 
 %files headless
+%config(noreplace) %{java_home}/conf/logging.properties
+%config(noreplace) %{java_home}/conf/net.properties
+%config(noreplace) %{java_home}/conf/sound.properties
+%config(noreplace) %{java_home}/conf/management/jmxremote.access
+%config(noreplace) %{java_home}/conf/management/management.properties
+%config(noreplace) %{java_home}/conf/security/java.policy
+%config(noreplace) %{java_home}/conf/security/java.security
+%config(noreplace) %{java_home}/conf/security/policy/limited/exempt_local.policy
+%config(noreplace) %{java_home}/conf/security/policy/limited/default_local.policy
+%config(noreplace) %{java_home}/conf/security/policy/limited/default_US_export.policy
+%config(noreplace) %{java_home}/conf/security/policy/unlimited/default_local.policy
+%config(noreplace) %{java_home}/conf/security/policy/unlimited/default_US_export.policy
+%config(noreplace) %{java_home}/lib/security/blocked.certs
+%config(noreplace) %{java_home}/lib/security/default.policy
+%config(noreplace) %{java_home}/lib/security/public_suffix_list.dat
 %{java_home}
 
 # Keep the libs and includes that need X11 in the main package
