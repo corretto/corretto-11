@@ -129,8 +129,15 @@ task generateJdkRpm(type: Rpm) {
     provides('java-11-openjdk', "${epoch}:${version}-${release}", EQUAL)
 
     from(jdkBinaryDir) {
+        include(project.configurationFiles)
+        fileType CONFIG | NOREPLACE
+        into jdkHome
+    }
+
+    from(jdkBinaryDir) {
         into jdkHome
         exclude 'legal'
+        exclude(project.configurationFiles)
     }
 
     // Copy legal directory specifically to set permission correctly.

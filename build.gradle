@@ -68,6 +68,24 @@ allprojects {
         caCerts = "cacerts"
         sourceTar = "amazon-corretto-source-${project.version.full}.tar.gz"
 
+        configurationFiles = [
+            'conf/logging.properties',
+            'conf/net.properties',
+            'conf/sound.properties',
+            'conf/security/policy/limited/default_local.policy',
+            'conf/security/policy/limited/exempt_local.policy',
+            'conf/security/policy/limited/default_US_export.policy',
+            'conf/security/policy/unlimited/default_local.policy',
+            'conf/security/policy/unlimited/default_US_export.policy',
+            'conf/security/java.policy',
+            'conf/security/java.security',
+            'conf/management/jmxremote.access',
+            'conf/management/management.properties',
+            'lib/security/blocked.certs',
+            'lib/security/default.policy',
+            'lib/security/public_suffix_list.dat'
+            ];
+
         versionOpt = project.findProperty("corretto.versionOpt") ?: "LTS"
         correttoCommonFlags = [
                 "--with-freetype=bundled",
