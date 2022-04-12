@@ -44,7 +44,7 @@ if (project.correttoArch == 'armv7') {
         ]
 }
 
-def imageDir= "$buildRoot/build/${project.jdkImageName}/images"
+def imageDir = "$buildRoot/build/${project.jdkImageName}/images"
 def jdkResultingImage = "${imageDir}/jdk"
 def testResultingImage = "${imageDir}/test"
 
