@@ -1,10 +1,12 @@
 /*
- * Copyright (c) 2017, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, 2020, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 2 only, as
- * published by the Free Software Foundation.
+ * published by the Free Software Foundation.  Oracle designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Oracle in the LICENSE file that accompanied this code.
  *
  * This code is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
@@ -20,22 +22,19 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
+package jdk.jfr.event.gc.detailed;
 
-
-/*
+/**
  * @test
- * @key gc
- *
- * @summary converted from VM Testbase vm/gc/kind/parOld.
- * VM Testbase keywords: [quick, gc]
- * VM Testbase readme:
- * DESCRIPTION
- *     The test verifies that ParallelOldGC is used for the old generation by default when ParallelGC is selected by VM.
- *     (previously the Parallel Scavenger + PS MarkSweep pair was used)
- *
- * @library /vmTestbase
- *          /test/lib
- * @run driver jdk.test.lib.FileInstaller . .
- * @run shell test.sh
+ * @key randomness
+ * @requires vm.hasJFR
+ * @requires vm.gc == "null" | vm.gc == "G1"
+ * @library /test/lib /test/jdk
+ * @run main/othervm -XX:+UseG1GC -Xmx64m jdk.jfr.event.gc.detailed.TestStressAllocationGCEventsWithG1
  */
+public class TestStressAllocationGCEventsWithG1 {
 
+    public static void main(String[] args) throws Exception {
+        new StressAllocationGCEvents().run(args);
+    }
+}

@@ -21,39 +21,41 @@
  * questions.
  */
 
+package gc.epsilon;
+
 /**
  * @test TestElasticTLABDecay
- * @key gc
+ * @key gc randomness
  * @requires vm.gc.Epsilon & !vm.graal.enabled
  * @summary Epsilon is able to work with/without elastic TLABs
+ * @library /test/lib
  *
  * @run main/othervm -Xmx256m
  *                   -XX:+UnlockExperimentalVMOptions -XX:+UseEpsilonGC
  *                   -XX:+EpsilonElasticTLAB -XX:-EpsilonElasticTLABDecay
- *                   TestElasticTLABDecay
+ *                    gc.epsilon.TestElasticTLABDecay
  *
  * @run main/othervm -Xmx256m
  *                   -XX:+UnlockExperimentalVMOptions -XX:+UseEpsilonGC
  *                   -XX:+EpsilonElasticTLAB -XX:+EpsilonElasticTLABDecay -XX:EpsilonTLABDecayTime=1
- *                   TestElasticTLABDecay
+ *                    gc.epsilon.TestElasticTLABDecay
  *
  * @run main/othervm -Xmx256m
  *                   -XX:+UnlockExperimentalVMOptions -XX:+UseEpsilonGC
  *                   -XX:+EpsilonElasticTLAB -XX:+EpsilonElasticTLABDecay -XX:EpsilonTLABDecayTime=100
- *                   TestElasticTLABDecay
+ *                    gc.epsilon.TestElasticTLABDecay
  */
 
 import java.util.Random;
+import jdk.test.lib.Utils;
 
 public class TestElasticTLABDecay {
-
-  static long SEED = Long.getLong("seed", System.nanoTime());
   static int COUNT = Integer.getInteger("count", 500); // ~100 MB allocation
 
   static byte[][] arr;
 
   public static void main(String[] args) throws Exception {
-    Random r = new Random(SEED);
+    Random r = Utils.getRandomInstance();
 
     arr = new byte[COUNT * 100][];
     for (int c = 0; c < COUNT; c++) {
@@ -64,7 +66,7 @@ public class TestElasticTLABDecay {
       Thread.sleep(5);
     }
 
-    r = new Random(SEED);
+    r = new Random(Utils.SEED);
     for (int c = 0; c < COUNT; c++) {
       byte[] b = arr[c];
       if (b.length != (c * 100)) {

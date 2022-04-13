@@ -33,8 +33,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import jdk.test.lib.apps.LingeredApp;
-import jdk.testlibrary.JDKToolLauncher;
-import jdk.testlibrary.Utils;
+import jdk.test.lib.JDKToolLauncher;
+import jdk.test.lib.Utils;
 
 public class TmtoolTestScenario {
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, 2020, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -26,12 +26,13 @@ package jdk.jfr.event.gc.detailed;
 
 /**
  * @test
+ * @key randomness
  * @requires vm.hasJFR
  * @requires vm.gc == "null" | vm.gc == "Parallel"
  * @library /test/lib /test/jdk
- * @run main/othervm -XX:+UseParallelGC -Xmx256m jdk.jfr.event.gc.detailed.TestStressBigAllocationGCEventsWithParallel 1048576
+ * @run main/othervm -XX:+UseParallelGC -Xmx64m jdk.jfr.event.gc.detailed.TestStressAllocationGCEventsWithParallel
  */
-public class TestStressBigAllocationGCEventsWithParallel {
+public class TestStressAllocationGCEventsWithParallel {
 
     public static void main(String[] args) throws Exception {
         new StressAllocationGCEvents().run(args);

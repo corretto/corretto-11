@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, 2019, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -21,16 +21,18 @@
  * questions.
  */
 
+package gc.arguments;
+
 /*
  * @test TestSelectDefaultGC
  * @summary Test selection of GC when no GC option is specified
  * @bug 8068582
  * @key gc
  * @library /test/lib
- * @requires vm.gc=="null"
+ * @requires vm.gc.Serial & vm.gc.G1
  * @modules java.base/jdk.internal.misc
  *          java.management
- * @run driver TestSelectDefaultGC
+ * @run driver gc.arguments.TestSelectDefaultGC
  */
 
 import jdk.test.lib.Platform;

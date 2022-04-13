@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2022, Red Hat, Inc. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -21,17 +21,33 @@
  * questions.
  */
 
-package gc.huge.quicklook.largeheap.MemOptions;
-
 /**
- * This program simply prints statistics about JVM memory.
+ * @test
+ * @bug 8279062
+ * @summary C2: assert(t->meet(t0) == t) failed: Not monotonic after JDK-8278413
+ *
+ * @run main/othervm -XX:-BackgroundCompilation TestCCPAllocateArray
+ *
  */
-public class MemStat {
-        public static void main(String [] args) {
-                Runtime runtime = Runtime.getRuntime();
-                System.out.println("Max memory   : "  + runtime.maxMemory());
-                System.out.println("Total memory : "  + runtime.totalMemory());
-                System.out.println("Free memory  : "  + runtime.freeMemory());
-                System.exit(0);
+
+public class TestCCPAllocateArray {
+    public static void main(String[] args) {
+        for (int i = 0; i < 20_000; i++) {
+            try {
+                test();
+            } catch (OutOfMemoryError e) {
+            }
+            length(42);
         }
+    }
+
+    private static int[] test() {
+        int i = 2;
+        for (; i < 4; i *= 2);
+        return new int[length(i)];
+    }
+
+    private static int length(int i) {
+        return i == 4 ? Integer.MAX_VALUE : 0;
+    }
 }

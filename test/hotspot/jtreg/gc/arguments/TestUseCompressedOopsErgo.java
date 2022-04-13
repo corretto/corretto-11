@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2013, 2019, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -21,22 +21,55 @@
  * questions.
  */
 
+package gc.arguments;
+
 /*
- * @test TestUseCompressedOopsErgo
+ * @test TestUseCompressedOopsErgoSerial
  * @key gc
  * @bug 8010722
  * @summary Tests ergonomics for UseCompressedOops.
- * @requires vm.gc=="null"
+ * @requires vm.gc.Serial
  * @library /test/lib
+ * @library /
  * @modules java.base/jdk.internal.misc
  *          java.management/sun.management
  * @build sun.hotspot.WhiteBox
  * @run driver ClassFileInstaller sun.hotspot.WhiteBox
  *                              sun.hotspot.WhiteBox$WhiteBoxPermission
- * @run main/othervm TestUseCompressedOopsErgo -XX:+UseG1GC
- * @run main/othervm TestUseCompressedOopsErgo -XX:+UseParallelGC
- * @run main/othervm TestUseCompressedOopsErgo -XX:+UseParallelGC -XX:-UseParallelOldGC
- * @run main/othervm TestUseCompressedOopsErgo -XX:+UseSerialGC
+ * @run main/othervm gc.arguments.TestUseCompressedOopsErgo -XX:+UseSerialGC
+ */
+
+/*
+ * @test TestUseCompressedOopsErgoParallel
+ * @key gc
+ * @bug 8010722
+ * @summary Tests ergonomics for UseCompressedOops.
+ * @requires vm.gc.Parallel
+ * @library /test/lib
+ * @library /
+ * @modules java.base/jdk.internal.misc
+ *          java.management/sun.management
+ * @build sun.hotspot.WhiteBox
+ * @run driver ClassFileInstaller sun.hotspot.WhiteBox
+ *                              sun.hotspot.WhiteBox$WhiteBoxPermission
+ * @run main/othervm gc.arguments.TestUseCompressedOopsErgo -XX:+UseParallelGC
+ * @run main/othervm gc.arguments.TestUseCompressedOopsErgo -XX:+UseParallelGC -XX:-UseParallelOldGC
+ */
+
+/*
+ * @test TestUseCompressedOopsErgoG1
+ * @key gc
+ * @bug 8010722
+ * @summary Tests ergonomics for UseCompressedOops.
+ * @requires vm.gc.G1
+ * @library /test/lib
+ * @library /
+ * @modules java.base/jdk.internal.misc
+ *          java.management/sun.management
+ * @build sun.hotspot.WhiteBox
+ * @run driver ClassFileInstaller sun.hotspot.WhiteBox
+ *                              sun.hotspot.WhiteBox$WhiteBoxPermission
+ * @run main/othervm gc.arguments.TestUseCompressedOopsErgo -XX:+UseG1GC
  */
 
 /*
@@ -44,14 +77,15 @@
  * @key gc
  * @bug 8010722
  * @comment Graal does not support CMS
- * @requires vm.gc=="null" & !vm.graal.enabled
+ * @requires vm.gc.ConcMarkSweep & !vm.graal.enabled
  * @library /test/lib
+ * @library /
  * @modules java.base/jdk.internal.misc
  *          java.management/sun.management
  * @build sun.hotspot.WhiteBox
  * @run driver ClassFileInstaller sun.hotspot.WhiteBox
  *                              sun.hotspot.WhiteBox$WhiteBoxPermission
- * @run main/othervm TestUseCompressedOopsErgo -XX:+UseConcMarkSweepGC
+ * @run main/othervm gc.arguments.TestUseCompressedOopsErgo -XX:+UseConcMarkSweepGC
  */
 
 /*
@@ -61,12 +95,13 @@
  * @comment Graal does not support Shenandoah
  * @requires vm.gc.Shenandoah & !vm.graal.enabled
  * @library /test/lib
+ * @library /
  * @modules java.base/jdk.internal.misc
  *          java.management/sun.management
  * @build sun.hotspot.WhiteBox
  * @run driver ClassFileInstaller sun.hotspot.WhiteBox
  *                              sun.hotspot.WhiteBox$WhiteBoxPermission
- * @run main/othervm TestUseCompressedOopsErgo -XX:+UnlockExperimentalVMOptions -XX:+UseShenandoahGC
+ * @run main/othervm gc.arguments.TestUseCompressedOopsErgo -XX:+UnlockExperimentalVMOptions -XX:+UseShenandoahGC
  */
 
 public class TestUseCompressedOopsErgo {

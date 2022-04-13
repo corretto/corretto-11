@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2022, Red Hat, Inc. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -21,19 +21,22 @@
  * questions.
  */
 
+import java.io.NullClassCache;
 
-/*
+/**
  * @test
- * @key gc
- *
- * @summary converted from VM Testbase gc/huge/quicklook/largeheap/MemOptions.
- * VM Testbase keywords: [gc, nonconcurrent]
- *
- * @library /vmTestbase
- *          /test/lib
- * @run driver jdk.test.lib.FileInstaller . .
- * @build nsk.share.PrintProperties
- *        gc.huge.quicklook.largeheap.MemOptions.MemStat
- * @run shell MemOptions.sh
+ * @bug 8280041
+ * @summary Test that ClassCache throws on trying to pass null value
+ * @compile/module=java.base java/io/NullClassCache.java
+ * @run main NullValueTest
  */
-
+public class NullValueTest {
+    public static void main(String... args) throws Throwable {
+        try {
+            new NullClassCache().get(Object.class);
+            throw new IllegalStateException("Should have failed");
+        } catch (NullPointerException npe) {
+            // Expected
+        }
+    }
+}

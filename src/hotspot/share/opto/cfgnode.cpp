@@ -1657,6 +1657,43 @@ bool PhiNode::is_unsafe_data_reference(Node *in) const {
   return false; // The phi is not reachable from its inputs
 }
 
+// Is this Phi's region or some inputs to the region enqueued for IGVN
+// and so could cause the region to be optimized out?
+bool PhiNode::wait_for_region_igvn(PhaseGVN* phase) {
+  PhaseIterGVN* igvn = phase->is_IterGVN();
+  Unique_Node_List& worklist = igvn->_worklist;
+  bool delay = false;
+  Node* r = in(0);
+  for (uint j = 1; j < req(); j++) {
+    Node* rc = r->in(j);
+    Node* n = in(j);
+    if (rc != NULL &&
+        rc->is_Proj()) {
+      if (worklist.member(rc)) {
+        delay = true;
+      } else if (rc->in(0) != NULL &&
+                 rc->in(0)->is_If()) {
+        if (worklist.member(rc->in(0))) {
+          delay = true;
+        } else if (rc->in(0)->in(1) != NULL &&
+                   rc->in(0)->in(1)->is_Bool()) {
+          if (worklist.member(rc->in(0)->in(1))) {
+            delay = true;
+          } else if (rc->in(0)->in(1)->in(1) != NULL &&
+                     rc->in(0)->in(1)->in(1)->is_Cmp()) {
+            if (worklist.member(rc->in(0)->in(1)->in(1))) {
+              delay = true;
+            }
+          }
+        }
+      }
+    }
+  }
+  if (delay) {
+    worklist.push(this);
+  }
+  return delay;
+}
 
 //------------------------------Ideal------------------------------------------
 // Return a node which is more "ideal" than the current node.  Must preserve
@@ -1710,7 +1747,10 @@ Node *PhiNode::Ideal(PhaseGVN *phase, bool can_reshape) {
 
   bool uncasted = false;
   Node* uin = unique_input(phase, false);
-  if (uin == NULL && can_reshape) {
+  if (uin == NULL && can_reshape &&
+      // If there is a chance that the region can be optimized out do
+      // not add a cast node that we can't remove yet.
+      !wait_for_region_igvn(phase)) {
     uncasted = true;
     uin = unique_input(phase, true);
   }
@@ -2312,6 +2352,17 @@ const Type* CatchNode::Value(PhaseGVN* phase) const {
       // Rethrows always throw exceptions, never return
       if (call->entry_point() == OptoRuntime::rethrow_stub()) {
         f[CatchProjNode::fall_through_index] = Type::TOP;
+      } else if (call->is_AllocateArray()) {
+        Node* klass_node = call->in(AllocateNode::KlassNode);
+        Node* length = call->in(AllocateNode::ALength);
+        const Type* length_type = phase->type(length);
+        const Type* klass_type = phase->type(klass_node);
+        Node* valid_length_test = call->in(AllocateNode::ValidLengthTest);
+        const Type* valid_length_test_t = phase->type(valid_length_test);
+        if (length_type == Type::TOP || klass_type == Type::TOP || valid_length_test_t == Type::TOP ||
+            valid_length_test_t->is_int()->is_con(0)) {
+          f[CatchProjNode::fall_through_index] = Type::TOP;
+        }
       } else if( call->req() > TypeFunc::Parms ) {
         const Type *arg0 = phase->type( call->in(TypeFunc::Parms) );
         // Check for null receiver to virtual or interface calls

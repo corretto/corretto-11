@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, 2020, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -26,18 +26,13 @@ package jdk.jfr.event.gc.detailed;
 
 /**
  * @test
- * @summary Test allocates humongous objects with G1 GC. Objects
- * considered humongous when it allocates equals or more than one region. As
- * we're passing the size of byte array we need adjust it that entire structure
- * fits exactly to one region, if not - G1 will allocate another almost empty
- * region as a continue of humongous. Thus we will exhaust memory very fast and
- * test will fail with OOME.
+ * @key randomness
  * @requires vm.hasJFR
- * @requires vm.gc == "null" | vm.gc == "G1"
+ * @requires vm.gc == "null" | vm.gc == "Serial"
  * @library /test/lib /test/jdk
- * @run main/othervm -XX:+UseG1GC -XX:MaxNewSize=5m -Xmx256m -XX:G1HeapRegionSize=1048576 jdk.jfr.event.gc.detailed.TestStressBigAllocationGCEventsWithG1 1048544
+ * @run main/othervm -XX:+UseSerialGC -Xmx64m jdk.jfr.event.gc.detailed.TestStressAllocationGCEventsWithDefNew
  */
-public class TestStressBigAllocationGCEventsWithG1 {
+public class TestStressAllocationGCEventsWithDefNew {
 
     public static void main(String[] args) throws Exception {
         new StressAllocationGCEvents().run(args);

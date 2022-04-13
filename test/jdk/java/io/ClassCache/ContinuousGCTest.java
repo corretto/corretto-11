@@ -1,12 +1,10 @@
 /*
- * Copyright (c) 2015, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2022, Red Hat, Inc. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 2 only, as
- * published by the Free Software Foundation.  Oracle designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Oracle in the LICENSE file that accompanied this code.
+ * published by the Free Software Foundation.
  *
  * This code is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
@@ -22,18 +20,31 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
-package jdk.jfr.event.gc.detailed;
+
+import java.io.NameClassCache;
 
 /**
  * @test
- * @requires vm.hasJFR
- * @requires vm.gc == "null" | vm.gc == "Parallel"
- * @library /test/lib /test/jdk
- * @run main/othervm -XX:+UseParallelGC -Xmx64m jdk.jfr.event.gc.detailed.TestStressAllocationGCEventsWithParallel
+ * @bug 8280041
+ * @summary Sanity test for ClassCache under continuous GC
+ * @compile/module=java.base java/io/NameClassCache.java
+ * @run main ContinuousGCTest
  */
-public class TestStressAllocationGCEventsWithParallel {
+public class ContinuousGCTest {
+    static final NameClassCache CACHE = new NameClassCache();
+    static final String VALUE = "ClassCache-ContinuousGCTest";
 
-    public static void main(String[] args) throws Exception {
-        new StressAllocationGCEvents().run(args);
+    public static void main(String... args) throws Throwable {
+        for (int c = 0; c < 1000; c++) {
+            test();
+            System.gc();
+        }
+    }
+
+    public static void test() {
+        String cached = CACHE.get(ContinuousGCTest.class);
+        if (!cached.equals(VALUE)) {
+            throw new IllegalStateException("Cache failure, got: " + cached);
+        }
     }
 }

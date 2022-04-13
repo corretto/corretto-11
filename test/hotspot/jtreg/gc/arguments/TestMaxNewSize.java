@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2013, 2019, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -21,19 +21,47 @@
  * questions.
  */
 
+package gc.arguments;
+
 /*
- * @test TestMaxNewSize
+ * @test TestMaxNewSizeSerial
  * @key gc
  * @bug 7057939
  * @summary Make sure that MaxNewSize always has a useful value after argument
  * processing.
- * @requires vm.gc=="null"
+ * @requires vm.gc.Serial
  * @library /test/lib
  * @modules java.base/jdk.internal.misc
  *          java.management
- * @run main TestMaxNewSize -XX:+UseSerialGC
- * @run main TestMaxNewSize -XX:+UseParallelGC
- * @run main TestMaxNewSize -XX:+UseG1GC
+ * @run main gc.arguments.TestMaxNewSize -XX:+UseSerialGC
+ * @author thomas.schatzl@oracle.com, jesper.wilhelmsson@oracle.com
+ */
+
+/*
+ * @test TestMaxNewSizeParallel
+ * @key gc
+ * @bug 7057939
+ * @summary Make sure that MaxNewSize always has a useful value after argument
+ * processing.
+ * @requires vm.gc.Parallel
+ * @library /test/lib
+ * @modules java.base/jdk.internal.misc
+ *          java.management
+ * @run main gc.arguments.TestMaxNewSize -XX:+UseParallelGC
+ * @author thomas.schatzl@oracle.com, jesper.wilhelmsson@oracle.com
+ */
+
+/*
+ * @test TestMaxNewSizeG1
+ * @key gc
+ * @bug 7057939
+ * @summary Make sure that MaxNewSize always has a useful value after argument
+ * processing.
+ * @requires vm.gc.G1
+ * @library /test/lib
+ * @modules java.base/jdk.internal.misc
+ *          java.management
+ * @run main gc.arguments.TestMaxNewSize -XX:+UseG1GC
  * @author thomas.schatzl@oracle.com, jesper.wilhelmsson@oracle.com
  */
 
@@ -42,11 +70,11 @@
  * @key gc
  * @bug 7057939
  * @comment Graal does not support CMS
- * @requires vm.gc=="null" & !vm.graal.enabled
+ * @requires vm.gc.ConcMarkSweep & !vm.graal.enabled
  * @library /test/lib
  * @modules java.base/jdk.internal.misc
  *          java.management
- * @run main TestMaxNewSize -XX:+UseConcMarkSweepGC
+ * @run main gc.arguments.TestMaxNewSize -XX:+UseConcMarkSweepGC
  */
 
 import java.util.regex.Matcher;
