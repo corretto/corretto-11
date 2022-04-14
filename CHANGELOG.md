@@ -16,6 +16,7 @@ Release Date: April 19, 2022
 +  Alpine-based Linux, x86_64
 +  Windows 7 or later, x86_64
 +  macOS 10.13 and later, x86_64
++  macOS 11.0 and later, aarch64
 
 The following CVEs are addressed in 17.0.3.6.1
  
