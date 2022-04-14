@@ -22,6 +22,7 @@ The following CVEs are addressed in 17.0.3.6.1
  
 | CVE | CVSS | Component |
 | --- | --- | --- |
+| CVE-2022-21476 | 7.5 | security-libs/java.security |
 | CVE-2022-21496 | 5.3 | core-libs/javax.naming |
 | CVE-2022-21434 | 5.3 | core-libs/java.lang |
 | CVE-2022-21426 | 5.3 | xml/jaxp |
