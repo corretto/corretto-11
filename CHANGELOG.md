@@ -2,6 +2,36 @@
 
 The following sections describe the changes for each release of Amazon Corretto 11.
 
+## Corretto version: 11.0.15.9.1
+
+Release Date: April 19, 2022
+
+**Target Platforms**
+
++  RPM-based Linux using glibc 2.12 or later, x86, x86_64
++  Debian-based Linux using glibc 2.12 or later, x86, x86_64
++  RPM-based Linux using glibc 2.17 or later, aarch64
++  Debian-based Linux using glibc 2.17 or later, aarch64
++  Linux using glibc 2.25 or later, Arm
++  Alpine-based Linux, x86_64
++  Windows 7 or later, x86_64
++  macOS 10.13 and later, x86_64
++  macOS 11.0 and later, aarch64
+
+The following CVEs are addressed in 11.0.15.9.1
+ 
+| CVE | CVSS | Component |
+| --- | --- | --- |
+| CVE-2022-21476 | 7.5 | security-libs/java.security |
+| CVE-2022-21496 | 5.3 | core-libs/javax.naming |
+| CVE-2022-21434 | 5.3 | core-libs/java.lang |
+| CVE-2022-21426 | 5.3 | xml/jaxp |
+| CVE-2022-21443 | 3.7 | security-libs/java.security |
+
+# Change Log for Amazon Corretto 11
+
+The following sections describe the changes for each release of Amazon Corretto 11.
+
 ## Corretto version: 11.0.14.10.1
 
 Release Date: February 8, 2022
