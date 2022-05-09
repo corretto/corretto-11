@@ -21,23 +21,28 @@
  *
  */
 
+package gc.shenandoah.jni;
+
 import java.util.Random;
+import jdk.test.lib.Utils;
+
+import gc.shenandoah.jni.CriticalNative;
 
 /* @test
+ * @key randomness
+ * @library /test/lib
  * @requires (os.arch =="x86_64" | os.arch == "amd64" | os.arch=="x86" | os.arch=="i386") & !vm.graal.enabled & vm.gc.Shenandoah
  *
- * @run main/othervm/native -XX:+UnlockDiagnosticVMOptions -XX:+UnlockExperimentalVMOptions -XX:+UseShenandoahGC -XX:ShenandoahGCMode=passive    -XX:+ShenandoahDegeneratedGC -Xcomp -Xmx512M -XX:+CriticalJNINatives CriticalNativeStress
- * @run main/othervm/native -XX:+UnlockDiagnosticVMOptions -XX:+UnlockExperimentalVMOptions -XX:+UseShenandoahGC -XX:ShenandoahGCMode=passive    -XX:-ShenandoahDegeneratedGC -Xcomp -Xmx512M -XX:+CriticalJNINatives CriticalNativeStress
+ * @run main/othervm/native -XX:+UnlockDiagnosticVMOptions -XX:+UnlockExperimentalVMOptions -XX:+UseShenandoahGC -XX:ShenandoahGCMode=passive    -XX:+ShenandoahDegeneratedGC -Xcomp -Xmx512M -XX:+CriticalJNINatives gc.shenandoah.jni.CriticalNativeStress
+ * @run main/othervm/native -XX:+UnlockDiagnosticVMOptions -XX:+UnlockExperimentalVMOptions -XX:+UseShenandoahGC -XX:ShenandoahGCMode=passive    -XX:-ShenandoahDegeneratedGC -Xcomp -Xmx512M -XX:+CriticalJNINatives gc.shenandoah.jni.CriticalNativeStress
  *
- * @run main/othervm/native -XX:+UnlockDiagnosticVMOptions -XX:+UnlockExperimentalVMOptions -XX:+UseShenandoahGC -XX:ShenandoahGCHeuristics=aggressive -Xcomp -Xmx512M -XX:+CriticalJNINatives CriticalNativeStress
+ * @run main/othervm/native -XX:+UnlockDiagnosticVMOptions -XX:+UnlockExperimentalVMOptions -XX:+UseShenandoahGC -XX:ShenandoahGCHeuristics=aggressive -Xcomp -Xmx512M -XX:+CriticalJNINatives gc.shenandoah.jni.CriticalNativeStress
  *
- * @run main/othervm/native -XX:+UnlockDiagnosticVMOptions -XX:+UnlockExperimentalVMOptions -XX:+UseShenandoahGC                                       -Xcomp -Xmx256M -XX:+CriticalJNINatives CriticalNativeStress
- * @run main/othervm/native -XX:+UnlockDiagnosticVMOptions -XX:+UnlockExperimentalVMOptions -XX:+UseShenandoahGC -XX:ShenandoahGCMode=iu        -Xcomp -Xmx512M -XX:+CriticalJNINatives CriticalNativeStress
- * @run main/othervm/native -XX:+UnlockDiagnosticVMOptions -XX:+UnlockExperimentalVMOptions -XX:+UseShenandoahGC -XX:ShenandoahGCMode=iu -XX:ShenandoahGCHeuristics=aggressive -Xcomp -Xmx512M -XX:+CriticalJNINatives CriticalNativeStress
+ * @run main/othervm/native -XX:+UnlockDiagnosticVMOptions -XX:+UnlockExperimentalVMOptions -XX:+UseShenandoahGC                                       -Xcomp -Xmx256M -XX:+CriticalJNINatives gc.shenandoah.jni.CriticalNativeStress
+ * @run main/othervm/native -XX:+UnlockDiagnosticVMOptions -XX:+UnlockExperimentalVMOptions -XX:+UseShenandoahGC -XX:ShenandoahGCMode=iu        -Xcomp -Xmx512M -XX:+CriticalJNINatives gc.shenandoah.jni.CriticalNativeStress
+ * @run main/othervm/native -XX:+UnlockDiagnosticVMOptions -XX:+UnlockExperimentalVMOptions -XX:+UseShenandoahGC -XX:ShenandoahGCMode=iu -XX:ShenandoahGCHeuristics=aggressive -Xcomp -Xmx512M -XX:+CriticalJNINatives gc.shenandoah.jni.CriticalNativeStress
  */
 public class CriticalNativeStress {
-    private static Random rand = new Random();
-
     static {
         System.loadLibrary("CriticalNative");
     }
@@ -77,7 +82,7 @@ public class CriticalNativeStress {
         garbage_array = array;
     }
 
-    static void run_test_case1() {
+    static void run_test_case1(Random rand) {
         int length = rand.nextInt(50) + 1;
         long[] arr = new long[length];
         for (int index = 0; index < length; index++) {
@@ -98,7 +103,7 @@ public class CriticalNativeStress {
         }
     }
 
-    static void run_test_case2() {
+    static void run_test_case2(Random rand) {
         int index;
         long a1 = rand.nextLong() % 10245;
 
@@ -141,25 +146,29 @@ public class CriticalNativeStress {
     }
 
     static class Case1Runner extends Thread {
+        private final Random rand;
         public Case1Runner() {
+            rand = new Random(Utils.getRandomInstance().nextLong());
             start();
         }
 
         public void run() {
             for (int index = 0; index < CYCLES; index++) {
-                run_test_case1();
+                run_test_case1(rand);
             }
         }
     }
 
     static class Case2Runner extends Thread {
+        private final Random rand;
         public Case2Runner() {
+            rand = new Random(Utils.getRandomInstance().nextLong());
             start();
         }
 
         public void run() {
             for (int index = 0; index < CYCLES; index++) {
-                run_test_case2();
+                run_test_case2(rand);
             }
         }
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2019, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -21,13 +21,15 @@
  * questions.
  */
 
+package gc.class_unloading;
+
 /*
- * @test
+ * @test TestClassUnloadingDisabledSerial
  * @key gc
  * @bug 8114823
- * @requires vm.gc == null
  * @requires vm.opt.ExplicitGCInvokesConcurrent != true
  * @requires vm.opt.ClassUnloading != true
+ * @requires vm.gc.Serial
  * @library /test/lib
  * @modules java.base/jdk.internal.misc
  *          java.management
@@ -36,22 +38,54 @@
  *                              sun.hotspot.WhiteBox$WhiteBoxPermission
  *
  * @run main/othervm -Xbootclasspath/a:. -XX:+UnlockDiagnosticVMOptions -XX:+WhiteBoxAPI
- *                   -XX:-ClassUnloading -XX:+UseG1GC TestClassUnloadingDisabled
- *
- * @run main/othervm -Xbootclasspath/a:. -XX:+UnlockDiagnosticVMOptions -XX:+WhiteBoxAPI
- *                   -XX:-ClassUnloading -XX:+UseSerialGC TestClassUnloadingDisabled
- *
- * @run main/othervm -Xbootclasspath/a:. -XX:+UnlockDiagnosticVMOptions -XX:+WhiteBoxAPI
- *                   -XX:-ClassUnloading -XX:+UseParallelGC TestClassUnloadingDisabled
+ *                   -XX:-ClassUnloading -XX:+UseSerialGC gc.class_unloading.TestClassUnloadingDisabled
  *
  */
 
 /*
- * @test
+ * @test TestClassUnloadingDisabledParallel
+ * @key gc
+ * @bug 8114823
+ * @requires vm.opt.ExplicitGCInvokesConcurrent != true
+ * @requires vm.opt.ClassUnloading != true
+ * @requires vm.gc.Parallel
+ * @library /test/lib
+ * @modules java.base/jdk.internal.misc
+ *          java.management
+ * @build sun.hotspot.WhiteBox
+ * @run driver ClassFileInstaller sun.hotspot.WhiteBox
+ *                              sun.hotspot.WhiteBox$WhiteBoxPermission
+ *
+ * @run main/othervm -Xbootclasspath/a:. -XX:+UnlockDiagnosticVMOptions -XX:+WhiteBoxAPI
+ *                   -XX:-ClassUnloading -XX:+UseParallelGC gc.class_unloading.TestClassUnloadingDisabled
+ *
+ */
+
+/*
+ * @test TestClassUnloadingDisabledG1
+ * @key gc
+ * @bug 8114823
+ * @requires vm.opt.ExplicitGCInvokesConcurrent != true
+ * @requires vm.opt.ClassUnloading != true
+ * @requires vm.gc.G1
+ * @library /test/lib
+ * @modules java.base/jdk.internal.misc
+ *          java.management
+ * @build sun.hotspot.WhiteBox
+ * @run driver ClassFileInstaller sun.hotspot.WhiteBox
+ *                              sun.hotspot.WhiteBox$WhiteBoxPermission
+ *
+ * @run main/othervm -Xbootclasspath/a:. -XX:+UnlockDiagnosticVMOptions -XX:+WhiteBoxAPI
+ *                   -XX:-ClassUnloading -XX:+UseG1GC gc.class_unloading.TestClassUnloadingDisabled
+ *
+ */
+
+/*
+ * @test TestClassUnloadingDisabledCMS
  * @key gc
  * @bug 8114823
  * @comment Graal does not support CMS
- * @requires vm.gc=="null" & !vm.graal.enabled
+ * @requires vm.gc.ConcMarkSweep & !vm.graal.enabled
  * @requires vm.opt.ExplicitGCInvokesConcurrent != true
  * @requires vm.opt.ClassUnloading != true
  * @library /test/lib
@@ -61,7 +95,7 @@
  * @run driver ClassFileInstaller sun.hotspot.WhiteBox
  *                              sun.hotspot.WhiteBox$WhiteBoxPermission
  * @run main/othervm -Xbootclasspath/a:. -XX:+UnlockDiagnosticVMOptions -XX:+WhiteBoxAPI
- *                   -XX:-ClassUnloading -XX:+UseConcMarkSweepGC TestClassUnloadingDisabled
+ *                   -XX:-ClassUnloading -XX:+UseConcMarkSweepGC gc.class_unloading.TestClassUnloadingDisabled
  */
 
 /*
@@ -79,7 +113,7 @@
  * @run driver ClassFileInstaller sun.hotspot.WhiteBox
  *                              sun.hotspot.WhiteBox$WhiteBoxPermission
  * @run main/othervm -Xbootclasspath/a:. -XX:+UnlockDiagnosticVMOptions -XX:+WhiteBoxAPI
- *                   -XX:-ClassUnloading -XX:+UnlockExperimentalVMOptions -XX:+UseShenandoahGC TestClassUnloadingDisabled
+ *                   -XX:-ClassUnloading -XX:+UnlockExperimentalVMOptions -XX:+UseShenandoahGC gc.class_unloading.TestClassUnloadingDisabled
  */
 
 import java.io.File;
@@ -98,7 +132,7 @@ public class TestClassUnloadingDisabled {
         // Fetch the dir where the test class and the class
         // to be loaded resides.
         String classDir = TestClassUnloadingDisabled.class.getProtectionDomain().getCodeSource().getLocation().getPath();
-        String className = "ClassToLoadUnload";
+        String className = "gc.class_unloading.ClassToLoadUnload"; // can not use ClassToLoadUnload.class.getName() as that would load the class
 
         assertFalse(wb.isClassAlive(className), "Should not be loaded yet");
 

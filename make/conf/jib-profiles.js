@@ -415,7 +415,7 @@ var getJibProfilesProfiles = function (input, common, data) {
             target_cpu: "x64",
             dependencies: ["devkit", "graalunit_lib"],
             configure_args: concat(common.configure_args_64bit, "--with-zlib=system",
-                "--with-macosx-version-max=10.9.0"),
+                "--with-macosx-version-max=10.12.00"),
         },
 
         "solaris-x64": {
@@ -598,11 +598,7 @@ var getJibProfilesProfiles = function (input, common, data) {
             profiles[bootcyclePrebuiltName].default_make_targets = [ "product-images" ];
         });
 
-    //
     // Define artifacts for profiles
-    //
-    // Macosx bundles are named osx
-    // tar.gz.
     var artifactData = {
         "linux-x64": {
             platform: "linux-x64",
@@ -611,7 +607,7 @@ var getJibProfilesProfiles = function (input, common, data) {
             platform: "linux-x86",
         },
         "macosx-x64": {
-            platform: "osx-x64",
+            platform: "macos-x64",
             jdk_subdir: "jdk-" + data.version +  ".jdk/Contents/Home",
         },
         "solaris-x64": {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, 2019, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -21,36 +21,60 @@
  * questions.
  */
 
+package gc;
+
 import static jdk.test.lib.Asserts.*;
 import gc.testlibrary.PerfCounter;
 import gc.testlibrary.PerfCounters;
 
 
-/* @test TestGenerationPerfCounter
+/* @test TestGenerationPerfCounterSerial
  * @bug 8080345
- * @requires vm.gc=="null"
+ * @requires vm.gc.Serial
  * @library /test/lib /
  * @summary Tests that the sun.gc.policy.generations returns 2 for all GCs.
  * @modules java.base/jdk.internal.misc
  *          java.compiler
  *          java.management/sun.management
  *          jdk.internal.jvmstat/sun.jvmstat.monitor
- * @run main/othervm -XX:+UsePerfData -XX:+UseSerialGC TestGenerationPerfCounter
- * @run main/othervm -XX:+UsePerfData -XX:+UseParallelGC TestGenerationPerfCounter
- * @run main/othervm -XX:+UsePerfData -XX:+UseG1GC TestGenerationPerfCounter
+ * @run main/othervm -XX:+UsePerfData -XX:+UseSerialGC gc.TestGenerationPerfCounter
+ */
+
+/* @test TestGenerationPerfCounterParallel
+ * @bug 8080345
+ * @requires vm.gc.Parallel
+ * @library /test/lib /
+ * @summary Tests that the sun.gc.policy.generations returns 2 for all GCs.
+ * @modules java.base/jdk.internal.misc
+ *          java.compiler
+ *          java.management/sun.management
+ *          jdk.internal.jvmstat/sun.jvmstat.monitor
+ * @run main/othervm -XX:+UsePerfData -XX:+UseParallelGC gc.TestGenerationPerfCounter
+ */
+
+/* @test TestGenerationPerfCounterG1
+ * @bug 8080345
+ * @requires vm.gc.G1
+ * @library /test/lib /
+ * @summary Tests that the sun.gc.policy.generations returns 2 for all GCs.
+ * @modules java.base/jdk.internal.misc
+ *          java.compiler
+ *          java.management/sun.management
+ *          jdk.internal.jvmstat/sun.jvmstat.monitor
+ * @run main/othervm -XX:+UsePerfData -XX:+UseG1GC gc.TestGenerationPerfCounter
  */
 
 /* @test TestGenerationPerfCounterCMS
  * @bug 8080345
  * @comment Graal does not support CMS
- * @requires vm.gc=="null" & !vm.graal.enabled
+ * @requires vm.gc.ConcMarkSweep & !vm.graal.enabled
  * @library /test/lib /
  * @summary Tests that the sun.gc.policy.generations returns 2 for all GCs.
  * @modules java.base/jdk.internal.misc
  *          java.compiler
  *          java.management/sun.management
  *          jdk.internal.jvmstat/sun.jvmstat.monitor
- * @run main/othervm -XX:+UsePerfData -XX:+UseConcMarkSweepGC TestGenerationPerfCounter
+ * @run main/othervm -XX:+UsePerfData -XX:+UseConcMarkSweepGC gc.TestGenerationPerfCounter
  */
 
 public class TestGenerationPerfCounter {

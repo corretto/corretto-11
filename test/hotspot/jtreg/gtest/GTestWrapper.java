@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, 2017 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2021 Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -25,6 +25,7 @@
  * @summary a jtreg wrapper for gtest tests
  * @library /test/lib
  * @modules java.base/jdk.internal.misc
+ * @requires vm.flagless
  * @run main/native GTestWrapper
  */
 
@@ -34,6 +35,7 @@ import java.util.Map;
 import java.util.stream.Stream;
 import java.util.stream.Collectors;
 
+import java.io.File;
 import java.nio.file.Paths;
 import java.nio.file.Path;
 
@@ -69,14 +71,10 @@ public class GTestWrapper {
         // may have set LD_LIBRARY_PATH or LIBPATH to point to the jdk libjvm. In
         // that case, prepend the path with the location of the gtest library."
 
-        String ldLibraryPath = System.getenv("LD_LIBRARY_PATH");
+        String pathVar = Platform.sharedLibraryPathVariableName();
+        String ldLibraryPath = System.getenv(pathVar);
         if (ldLibraryPath != null) {
-            env.put("LD_LIBRARY_PATH", path + ":" + ldLibraryPath);
-        }
-
-        String libPath = System.getenv("LIBPATH");
-        if (libPath != null) {
-            env.put("LIBPATH", path + ":" + libPath);
+            env.put(pathVar, path + File.pathSeparator + ldLibraryPath);
         }
 
         pb.command(new String[] {

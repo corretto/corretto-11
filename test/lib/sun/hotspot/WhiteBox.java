@@ -538,6 +538,9 @@ public class WhiteBox {
 
   // Container testing
   public native boolean isContainerized();
+  public native int validateCgroup(String procCgroups,
+                                   String procSelfCgroup,
+                                   String procSelfMountinfo);
   public native void printOsInfo();
 
   // Decoder
@@ -545,4 +548,7 @@ public class WhiteBox {
 
   // Number of loaded AOT libraries
   public native int aotLibrariesCount();
+
+  // libc name
+  public native String getLibcName();
 }

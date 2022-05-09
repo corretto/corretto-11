@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, 2019, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -21,34 +21,51 @@
  * questions.
  */
 
+package gc.ergonomics;
+
 /*
  * @test TestInitialGCThreadLogging
  * @bug 8157240
  * @summary Check trace logging of initial GC threads.
- * @requires vm.gc=="null"
  * @key gc
  * @modules java.base/jdk.internal.misc
  * @library /test/lib
  * @build sun.hotspot.WhiteBox
  * @run driver ClassFileInstaller sun.hotspot.WhiteBox sun.hotspot.WhiteBox$WhiteBoxPermission
- * @run main/othervm -Xbootclasspath/a:. -XX:+UnlockDiagnosticVMOptions -XX:+WhiteBoxAPI TestInitialGCThreadLogging
+ * @run main/othervm -Xbootclasspath/a:. -XX:+UnlockDiagnosticVMOptions -XX:+WhiteBoxAPI gc.ergonomics.TestInitialGCThreadLogging
  */
 
 import jdk.test.lib.process.ProcessTools;
 import jdk.test.lib.process.OutputAnalyzer;
+import jtreg.SkippedException;
 import sun.hotspot.gc.GC;
 
 public class TestInitialGCThreadLogging {
   public static void main(String[] args) throws Exception {
+    boolean noneGCSupported = true;
 
-    testInitialGCThreadLogging("UseConcMarkSweepGC", "GC Thread");
+    if (GC.ConcMarkSweep.isSupported()) {
+      noneGCSupported = false;
+      testInitialGCThreadLogging("UseConcMarkSweepGC", "GC Thread");
+    }
 
-    testInitialGCThreadLogging("UseG1GC", "GC Thread");
+    if (GC.G1.isSupported()) {
+      noneGCSupported = false;
+      testInitialGCThreadLogging("UseG1GC", "GC Thread");
+    }
 
-    testInitialGCThreadLogging("UseParallelGC", "ParGC Thread");
+    if (GC.Parallel.isSupported()) {
+      noneGCSupported = false;
+      testInitialGCThreadLogging("UseParallelGC", "ParGC Thread");
+    }
 
     if (GC.Shenandoah.isSupported()) {
-        testInitialGCThreadLogging("UseShenandoahGC", "Shenandoah GC Thread");
+      noneGCSupported = false;
+      testInitialGCThreadLogging("UseShenandoahGC", "Shenandoah GC Thread");
+    }
+
+    if (noneGCSupported) {
+      throw new SkippedException("Skipping test because none of ConcMarkSweep/G1/Parallel/Shenandoah is supported.");
     }
   }
 

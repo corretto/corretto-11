@@ -229,6 +229,28 @@ const char* Abstract_VM_Version::internal_vm_info_string() {
         #define HOTSPOT_BUILD_COMPILER "MS VC++ 15.7 (VS2017)"
       #elif _MSC_VER == 1915
         #define HOTSPOT_BUILD_COMPILER "MS VC++ 15.8 (VS2017)"
+      #elif _MSC_VER == 1916
+        #define HOTSPOT_BUILD_COMPILER "MS VC++ 15.9 (VS2017)"
+      #elif _MSC_VER == 1920
+        #define HOTSPOT_BUILD_COMPILER "MS VC++ 16.0 (VS2019)"
+      #elif _MSC_VER == 1921
+        #define HOTSPOT_BUILD_COMPILER "MS VC++ 16.1 (VS2019)"
+      #elif _MSC_VER == 1922
+        #define HOTSPOT_BUILD_COMPILER "MS VC++ 16.2 (VS2019)"
+      #elif _MSC_VER == 1923
+        #define HOTSPOT_BUILD_COMPILER "MS VC++ 16.3 (VS2019)"
+      #elif _MSC_VER == 1924
+        #define HOTSPOT_BUILD_COMPILER "MS VC++ 16.4 (VS2019)"
+      #elif _MSC_VER == 1925
+        #define HOTSPOT_BUILD_COMPILER "MS VC++ 16.5 (VS2019)"
+      #elif _MSC_VER == 1926
+        #define HOTSPOT_BUILD_COMPILER "MS VC++ 16.6 (VS2019)"
+      #elif _MSC_VER == 1927
+        #define HOTSPOT_BUILD_COMPILER "MS VC++ 16.7 (VS2019)"
+      #elif _MSC_VER == 1928
+        #define HOTSPOT_BUILD_COMPILER "MS VC++ 16.8 / 16.9 (VS2019)"
+      #elif _MSC_VER == 1929
+        #define HOTSPOT_BUILD_COMPILER "MS VC++ 16.10 / 16.11 (VS2019)"
       #else
         #define HOTSPOT_BUILD_COMPILER "unknown MS VC++:" XSTR(_MSC_VER)
       #endif
@@ -265,8 +287,14 @@ const char* Abstract_VM_Version::internal_vm_info_string() {
     #define FLOAT_ARCH_STR XSTR(FLOAT_ARCH)
   #endif
 
+  #ifdef MUSL_LIBC
+    #define LIBC_STR "-" XSTR(LIBC)
+  #else
+    #define LIBC_STR ""
+  #endif
+
   #define INTERNAL_VERSION_SUFFIX VM_RELEASE ")" \
-         " for " OS "-" CPU FLOAT_ARCH_STR \
+         " for " OS "-" CPU FLOAT_ARCH_STR LIBC_STR \
          " JRE (" VERSION_STRING "), built on " __DATE__ " " __TIME__ \
          " by " XSTR(HOTSPOT_BUILD_USER) " with " HOTSPOT_BUILD_COMPILER
 

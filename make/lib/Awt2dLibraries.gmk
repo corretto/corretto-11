@@ -542,6 +542,8 @@ ifeq ($(USE_EXTERNAL_HARFBUZZ), true)
 else
   LIBFONTMANAGER_EXTRA_SRC = libharfbuzz
   HARFBUZZ_CFLAGS := -DHAVE_OT -DHAVE_FALLBACK -DHAVE_UCDN -DHAVE_ROUND
+  # Modern HarfBuzz requires c++11.
+  HARFBUZZ_CXXFLAGS := -std=c++11
 
   ifneq ($(OPENJDK_TARGET_OS), windows)
     HARFBUZZ_CFLAGS += -DGETPAGESIZE -DHAVE_MPROTECT -DHAVE_PTHREAD \
@@ -559,10 +561,10 @@ else
 
   HARFBUZZ_DISABLED_WARNINGS_gcc := type-limits missing-field-initializers strict-aliasing
   HARFBUZZ_DISABLED_WARNINGS_CXX_gcc := reorder delete-non-virtual-dtor strict-overflow \
-       maybe-uninitialized class-memaccess
+       maybe-uninitialized class-memaccess unused-result extra
   HARFBUZZ_DISABLED_WARNINGS_clang := unused-value incompatible-pointer-types \
        tautological-constant-out-of-range-compare int-to-pointer-cast \
-       undef missing-field-initializers deprecated-declarations c++11-narrowing
+       undef missing-field-initializers deprecated-declarations c++11-narrowing range-loop-analysis
   HARFBUZZ_DISABLED_WARNINGS_microsoft := 4267 4244 4090 4146 4334 4819 4101 4068 4805 4138
   HARFBUZZ_DISABLED_WARNINGS_C_solstudio := \
         E_INTEGER_OVERFLOW_DETECTED \
@@ -624,7 +626,7 @@ $(eval $(call SetupJdkLibrary, BUILD_LIBFONTMANAGER, \
         AccelGlyphCache.c, \
     TOOLCHAIN := TOOLCHAIN_LINK_CXX, \
     CFLAGS := $(CFLAGS_JDKLIB) $(LIBFONTMANAGER_CFLAGS), \
-    CXXFLAGS := $(CXXFLAGS_JDKLIB) $(LIBFONTMANAGER_CFLAGS), \
+    CXXFLAGS := $(CXXFLAGS_JDKLIB) $(LIBFONTMANAGER_CFLAGS) $(HARFBUZZ_CXXFLAGS), \
     OPTIMIZATION := $(LIBFONTMANAGER_OPTIMIZATION), \
     CFLAGS_windows = -DCC_NOEX, \
     EXTRA_HEADER_DIRS := $(LIBFONTMANAGER_EXTRA_HEADER_DIRS), \

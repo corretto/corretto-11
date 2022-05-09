@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009, 2019, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -25,10 +25,24 @@
  * @test
  * @bug 4780570 4731671 6354700 6367077 6670965 4882974
  * @summary Checks for LD_LIBRARY_PATH and execution  on *nixes
+ * @requires os.family != "windows" & !vm.musl & os.family != "aix"
+ * @library /test/lib
  * @modules jdk.compiler
  *          jdk.zipfs
  * @compile -XDignore.symbol.file ExecutionEnvironment.java
- * @run main/othervm ExecutionEnvironment
+ * @run main/othervm -DexpandedLdLibraryPath=false ExecutionEnvironment
+ */
+
+/*
+ * @test
+ * @bug 4780570 4731671 6354700 6367077 6670965 4882974
+ * @summary Checks for LD_LIBRARY_PATH and execution  on *nixes
+ * @requires os.family == "aix" | vm.musl
+ * @library /test/lib
+ * @modules jdk.compiler
+ *          jdk.zipfs
+ * @compile -XDignore.symbol.file ExecutionEnvironment.java
+ * @run main/othervm -DexpandedLdLibraryPath=true ExecutionEnvironment
  */
 
 /*
@@ -54,6 +68,9 @@
  *         launcher may add as implementation details.
  *      b. add a pldd for solaris to ensure only one libjvm.so is linked
  */
+
+import jdk.test.lib.Platform;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
@@ -62,11 +79,7 @@ import java.util.List;
 import java.util.Map;
 
 public class ExecutionEnvironment extends TestHelper {
-    static final String LD_LIBRARY_PATH    = TestHelper.isMacOSX
-            ? "DYLD_LIBRARY_PATH"
-            : TestHelper.isAIX
-                    ? "LIBPATH"
-                    : "LD_LIBRARY_PATH";
+    static final String LD_LIBRARY_PATH    = Platform.sharedLibraryPathVariableName();
     static final String LD_LIBRARY_PATH_32 = LD_LIBRARY_PATH + "_32";
     static final String LD_LIBRARY_PATH_64 = LD_LIBRARY_PATH + "_64";
 
@@ -82,6 +95,9 @@ public class ExecutionEnvironment extends TestHelper {
     };
 
     static final File testJarFile = new File("EcoFriendly.jar");
+
+    static final boolean IS_EXPANDED_LD_LIBRARY_PATH =
+            Boolean.getBoolean("expandedLdLibraryPath");
 
     public ExecutionEnvironment() {
         createTestJar();
@@ -137,14 +153,16 @@ public class ExecutionEnvironment extends TestHelper {
 
         for (String x : LD_PATH_STRINGS) {
             if (!tr.contains(x)) {
-                if (TestHelper.isAIX && x.startsWith(LD_LIBRARY_PATH)) {
+                if (IS_EXPANDED_LD_LIBRARY_PATH && x.startsWith(LD_LIBRARY_PATH)) {
                     // AIX does not support the '-rpath' linker options so the
                     // launchers have to prepend the jdk library path to 'LIBPATH'.
-                    String aixLibPath = LD_LIBRARY_PATH + "=" +
+                    // The musl library loader requires LD_LIBRARY_PATH to be set in
+                    // order to correctly resolve the dependency libjava.so has on libjvm.so.
+                    String libPath = LD_LIBRARY_PATH + "=" +
                         System.getenv(LD_LIBRARY_PATH) +
                         System.getProperty("path.separator") + LD_LIBRARY_PATH_VALUE;
-                    if (!tr.matches(aixLibPath)) {
-                        flagError(tr, "FAIL: did not get <" + aixLibPath + ">");
+                    if (!tr.matches(libPath)) {
+                        flagError(tr, "FAIL: did not get <" + libPath + ">");
                     }
                 }
                 else {
@@ -282,10 +300,6 @@ public class ExecutionEnvironment extends TestHelper {
         }
     }
     public static void main(String... args) throws Exception {
-        if (isWindows) {
-            System.err.println("Warning: test not applicable to windows");
-            return;
-        }
         ExecutionEnvironment ee = new ExecutionEnvironment();
         ee.run(args);
     }

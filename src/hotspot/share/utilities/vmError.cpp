@@ -96,7 +96,7 @@ const char *env_list[] = {
   "DYLD_INSERT_LIBRARIES",
 
   // defined on Windows
-  "OS", "PROCESSOR_IDENTIFIER", "_ALT_JAVA_HOME_DIR",
+  "OS", "PROCESSOR_IDENTIFIER", "_ALT_JAVA_HOME_DIR", "TMP", "TEMP",
 
   (const char *)0
 };
@@ -1796,6 +1796,12 @@ void VMError::controlled_crash(int how) {
   funcPtr = (const void(*)()) &functionDescriptor;
 #else
   funcPtr = (const void(*)()) 0xF;
+#endif
+
+#ifdef __APPLE__
+  // 12 is unreliable on this platform, may just yield us a "Trap" message on stdout
+  // Use 14 instead, which seems to work always
+  if (how == 12) { how = 14; }
 #endif
 
   // Keep this in sync with test/hotspot/jtreg/runtime/ErrorHandling/ErrorHandler.java

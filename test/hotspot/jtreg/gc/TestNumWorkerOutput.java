@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2019, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -21,17 +21,19 @@
  * questions.
  */
 
+package gc;
+
 /*
- * @test TestNumWorkerOutput
+ * @test TestNumWorkerOutputG1
  * @bug 8165292
  * @summary Check that when PrintGCDetails is enabled, gc,task output is printed only once per collection.
  * @key gc
- * @requires vm.gc=="null"
+ * @requires vm.gc.G1
  * @modules java.base/jdk.internal.misc
  * @library /test/lib
  * @build sun.hotspot.WhiteBox
  * @run driver ClassFileInstaller sun.hotspot.WhiteBox
- * @run main/othervm -XX:+UseG1GC TestNumWorkerOutput UseG1GC
+ * @run main/othervm -XX:+UseG1GC gc.TestNumWorkerOutput UseG1GC
  */
 
 /*
@@ -39,12 +41,12 @@
  * @bug 8165292
  * @key gc
  * @comment Graal does not support CMS
- * @requires vm.gc=="null" & !vm.graal.enabled
+ * @requires vm.gc.ConcMarkSweep & !vm.graal.enabled
  * @modules java.base/jdk.internal.misc
  * @library /test/lib
  * @build sun.hotspot.WhiteBox
  * @run driver ClassFileInstaller sun.hotspot.WhiteBox
- * @run main/othervm -XX:+UseConcMarkSweepGC TestNumWorkerOutput UseConcMarkSweepGC
+ * @run main/othervm -XX:+UseConcMarkSweepGC gc.TestNumWorkerOutput UseConcMarkSweepGC
  */
 
 import sun.hotspot.WhiteBox;
