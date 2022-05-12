@@ -71,7 +71,9 @@
 # include <pwd.h>
 # include <poll.h>
 # include <ucontext.h>
+#if defined __GLIBC__
 # include <fpu_control.h>
+#endif
 # include <asm/ptrace.h>
 
 #define SPELL_REG_SP  "sp"
@@ -101,6 +103,7 @@ char* os::non_memory_address_word() {
 
 #else
 
+#if defined __GLIBC__
 #if NGREG == 16
 // These definitions are based on the observation that until
 // the certain version of GCC mcontext_t was defined as
@@ -112,6 +115,7 @@ char* os::non_memory_address_word() {
 #define arm_fp gregs[11]
 #define arm_r0 gregs[0]
 #endif
+#endif // __GLIBC__
 
 #define ARM_REGS_IN_CONTEXT  16
 
