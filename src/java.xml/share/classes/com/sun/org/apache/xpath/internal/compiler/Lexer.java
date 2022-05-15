@@ -32,7 +32,7 @@ import jdk.xml.internal.XMLSecurityManager.Limit;
  * This class is in charge of lexical processing of the XPath
  * expression into tokens.
  *
- * @LastModified: Jan 2022
+ * @LastModified: Apr 2022
  */
 class Lexer
 {
@@ -360,7 +360,7 @@ class Lexer
 
         addToTokenQueue(pat.substring(i, i + 1));
         break;
-      case Token.COLON_CHAR:
+      case Token.COLON :
         if (i>0)
         {
           if (posOfNSSep == (i - 1))
@@ -615,7 +615,7 @@ class Lexer
         resetTokenMark(tokPos + 1);
       }
 
-      if (m_processor.lookahead(Token.COLON_CHAR, 1))
+      if (m_processor.lookahead(Token.COLON, 1))
       {
         tokPos += 2;
       }
