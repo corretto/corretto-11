@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2019, Amazon.com, Inc. or its affiliates. All Rights Reserved.
+* Copyright (c) 2019, 2022, Amazon.com, Inc. or its affiliates. All Rights Reserved.
 * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
 *
 * This code is free software; you can redistribute it and/or modify it
@@ -39,10 +39,22 @@ if (project.correttoArch == 'armv7') {
     archSpecificFlags += [
             '--with-sysroot=/opt/sysroot/',
             '--with-toolchain-path=/opt/sysroot/',
-            '--openjdk-target=arm-linux-gnueabihf',
             '--disable-warnings-as-errors'
+    ]
+    if (project.is_musl) {
+        archSpecificFlags += [
+                '--openjdk-target=arm-unknown-linux-musleabihf',
+                '--enable-headless-only=yes',
+                '--with-stdc++lib=static',
+                '--with-extra-cflags=-DMUSL_LIBC'
         ]
+    } else {
+        archSpecificFlags += [
+                '--openjdk-target=arm-linux-gnueabihf'
+        ]
+    }
 }
+
 
 def imageDir = "$buildRoot/build/${project.jdkImageName}/images"
 def jdkResultingImage = "${imageDir}/jdk"
