@@ -44,7 +44,6 @@ if (project.correttoArch == 'armv7') {
     if (project.is_musl) {
         archSpecificFlags += [
                 '--openjdk-target=arm-unknown-linux-musleabihf',
-                '--enable-headless-only=yes',
                 '--with-stdc++lib=static',
                 '--with-extra-cflags=-DMUSL_LIBC'
         ]
