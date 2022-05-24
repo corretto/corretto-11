@@ -107,6 +107,7 @@ allprojects {
         is_x86 = project.hasProperty("x86") ? Boolean.valueOf("${project.getProperty('x86')}") : false
         is_armv7 = project.hasProperty("armv7") ? Boolean.valueOf("${project.getProperty('armv7')}") : false
         is_musl = project.hasProperty("musl") ? Boolean.valueOf("${project.getProperty('musl')}") : false
+        is_headless = project.hasProperty("headless") ? Boolean.valueOf("${project.getProperty('headless')}") : false
 
         if (is_x86) {
             correttoCommonFlags += ["--with-target-bits=32"]
@@ -115,6 +116,8 @@ allprojects {
             // flag, which is in conflict with '--with-target-bits'.
             correttoCommonFlags += ["--with-target-bits=64"]
         }
+
+        correttoCommonFlags += '--enable-headless-only=' + (is_headless ? "yes" : "no")
 
         // Valid value: null, release, debug, fastdebug, slowdebug
         def correttoDebugLevel = "release" // Default: release
@@ -203,16 +206,17 @@ allprojects {
 
         // Call toString explicitly to avoid lazy evaluation
         jdkImageName = "${os}-${jdkArch}-normal-server-${correttoDebugLevel}".toString()
-        archPostfix = is_musl ? "-musl" : ""
+        archSuffix = is_musl ? "-musl" : ""
+        headless = is_headless ? "-headless" : ""
         // no debug level suffix for release build
         if (correttoDebugLevel == "release") {
-            correttoJdkArchiveName = "amazon-corretto-${project.version.full}-${os}-${correttoArch}${archPostfix}".toString()
+            correttoJdkArchiveName = "amazon-corretto${headless}-${project.version.full}-${os}-${correttoArch}${archSuffix}".toString()
         } else {
             correttoJdkArchiveName =
-                    "amazon-corretto-${project.version.full}-${os}-${correttoArch}${archPostfix}-${correttoDebugLevel}".toString()
+                    "amazon-corretto${headless}-${project.version.full}-${os}-${correttoArch}${archSuffix}-${correttoDebugLevel}".toString()
         }
-        correttoDebugSymbolsArchiveName = "amazon-corretto-debugsymbols-${project.version.full}-${os}-${correttoArch}${archPostfix}".toString()
-        correttoTestImageArchiveName = "amazon-corretto-testimage-${project.version.full}-${os}-${correttoArch}${archPostfix}".toString()
+        correttoDebugSymbolsArchiveName = "amazon-corretto-debugsymbols-${project.version.full}-${os}-${correttoArch}${archSuffix}".toString()
+        correttoTestImageArchiveName = "amazon-corretto-testimage-${project.version.full}-${os}-${correttoArch}${archSuffix}".toString()
     }
 }
 
