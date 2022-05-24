@@ -46,11 +46,11 @@ task inflatePkgTemplate {
     dependsOn copyResources
     doLast {
         copy {
-            from('templates/CorrettoPkg.pkgproj.template') {
+            from('templates/distribution.xml.template') {
                 rename { file -> file.replace('.template', '') }
-                filter(org.apache.tools.ant.filters.ReplaceTokens, tokens: ["full": project.version["full"], "major": project.version["major"], "arch": correttoArch, "macos-arch": (correttoArch == "aarch64" ? "arm64" : "x86_64")])
+                filter(org.apache.tools.ant.filters.ReplaceTokens, tokens: ["full": project.version.full, "major": project.version.major, "macos-arch": (correttoArch == "aarch64" ? "arm64" : "x86_64")])
             }
-            into buildRoot
+            into "${buildRoot}/resources"
         }
 
         copy {
@@ -66,18 +66,54 @@ task inflatePkgTemplate {
     
 }
 
+task setupDirectories {
+    dependsOn retrieveArtifacts
+    doLast {
+        exec {
+            workingDir buildRoot
+            commandLine "mkdir", "-p", "pkgroot/Library/Java/JavaVirtualMachines"
+        }
+
+        exec {
+            workingDir buildRoot
+            commandLine "cp", "-Rf", "amazon-corretto-${project.version.major}.jdk", "pkgroot/Library/Java/JavaVirtualMachines/"
+        }
+
+        exec {
+            workingDir buildRoot
+            commandLine "mkdir", "-p", "build/components"
+        }
+    }
+}
+
 task generateInstaller {
     dependsOn retrieveArtifacts
     dependsOn copyResources
     dependsOn inflatePkgTemplate
+    dependsOn setupDirectories
     outputs.dir distributionDir
 
     doLast {
         exec {
             workingDir buildRoot
-            // Generation of the installer depends on the utility tool Packages:
-            // http://s.sudre.free.fr/Software/Packages/about.html
-            commandLine "packagesbuild", "-v", "--build-folder", distributionDir, "CorrettoPkg.pkgproj"
+            commandLine "pkgbuild",
+                "--root", "pkgroot",
+                "--identifier", "com.amazon.corretto.${project.version.major}",
+                "--version", project.version.full,
+                "--ownership", "recommended",
+                "--scripts", "resources",
+                "--install-location", "/Library/Java/JavaVirtualMachines/amazon-corretto-${project.version.major}.jdk",
+                "build/components/amazon-corretto-${project.version.major}.jdk.pkg"
+        }
+
+        exec {
+            workingDir buildRoot
+            commandLine "productbuild",
+            "--distribution", "resources/distribution.xml",
+            "--resources", "resources",
+            "--package-path", "build/components",
+            "--version", project.version.full,
+            "${distributionDir}/amazon-corretto-${project.version.full}-macosx-${correttoArch}.pkg"
         }
     }
 }
