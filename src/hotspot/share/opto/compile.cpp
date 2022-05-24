@@ -683,8 +683,8 @@ Compile::Compile( ciEnv* ci_env, C2Compiler* compiler, ciMethod* target, int osr
 #ifndef PRODUCT
                   _trace_opto_output(directive->TraceOptoOutputOption),
                   _in_dump_cnt(0),
-                  _printer(IdealGraphPrinter::printer()),
 #endif
+                  NOT_PRODUCT(_printer(NULL) COMMA)
                   _congraph(NULL),
                   _comp_arena(mtCompiler),
                   _node_arena(mtCompiler),
@@ -707,11 +707,6 @@ Compile::Compile( ciEnv* ci_env, C2Compiler* compiler, ciMethod* target, int osr
                   _do_cleanup(false),
                   _has_reserved_stack_access(target->has_reserved_stack_access()) {
   C = this;
-#ifndef PRODUCT
-  if (_printer != NULL) {
-    _printer->set_compile(this);
-  }
-#endif
   CompileWrapper cw(this);
 
   if (CITimeVerbose) {
@@ -870,7 +865,7 @@ Compile::Compile( ciEnv* ci_env, C2Compiler* compiler, ciMethod* target, int osr
   // Drain the list.
   Finish_Warm();
 #ifndef PRODUCT
-  if (_printer && _printer->should_print(1)) {
+  if (should_print(1)) {
     _printer->print_inlining();
   }
 #endif
@@ -1003,8 +998,8 @@ Compile::Compile( ciEnv* ci_env,
 #ifndef PRODUCT
     _trace_opto_output(directive->TraceOptoOutputOption),
     _in_dump_cnt(0),
-    _printer(NULL),
 #endif
+    NOT_PRODUCT(_printer(NULL) COMMA)
     _comp_arena(mtCompiler),
     _node_arena(mtCompiler),
     _old_arena(mtCompiler),
