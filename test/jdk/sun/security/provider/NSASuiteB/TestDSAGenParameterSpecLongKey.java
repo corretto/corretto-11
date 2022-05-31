@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2021, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -23,12 +23,14 @@
 
 /*
  * @test
- * @summary Run of ShortResponseBody with -Djdk.httpclient.enableAllMethodRetry
- * @library /lib/testlibrary
- * @build jdk.testlibrary.SimpleSSLContext
- * @build ShortResponseBody
- * @run testng/othervm
- *       -Djdk.httpclient.HttpClient.log=headers,errors,channel
- *       -Djdk.httpclient.enableAllMethodRetry
- *       ShortResponseBody
+ * @bug 8075286 8163498
+ * @summary Verify that DSAGenParameterSpec can and can only be used to generate
+ *          DSA within some certain range of key sizes as described in the class
+ *          specification (L, N) as (1024, 160), (2048, 224), (2048, 256) and
+ *          (3072, 256) should be OK for DSAGenParameterSpec.
+ *          This test has been split based on lower/higher key sizes in order to
+ *          reduce individual execution times and run in parallel
+ *          (see TestDSAGenParameterSpec.java)
+ * @run main/timeout=700 TestDSAGenParameterSpec 3072 256 true
+ * @run main TestDSAGenParameterSpec 4096 256
  */
