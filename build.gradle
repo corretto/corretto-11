@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2019, Amazon.com, Inc. or its affiliates. All Rights Reserved.
+* Copyright (c) 2019, 2022, Amazon.com, Inc. or its affiliates. All Rights Reserved.
 * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
 *
 * This code is free software; you can redistribute it and/or modify it
@@ -104,14 +104,11 @@ allprojects {
             correttoCommonFlags += ["--with-version-date=${versionDate}"]
         }
 
-        is_x86 = false
-        is_armv7 = false
-        if (project.hasProperty("x86")) {
-            is_x86 = Boolean.valueOf("${project.getProperty('x86')}")
-        }
-        if (project.hasProperty("armv7")) {
-            is_armv7 = Boolean.valueOf("${project.getProperty('armv7')}")
-        }
+        is_x86 = project.hasProperty("x86") ? Boolean.valueOf("${project.getProperty('x86')}") : false
+        is_armv7 = project.hasProperty("armv7") ? Boolean.valueOf("${project.getProperty('armv7')}") : false
+        is_musl = project.hasProperty("musl") ? Boolean.valueOf("${project.getProperty('musl')}") : false
+        is_headless = project.hasProperty("headless") ? Boolean.valueOf("${project.getProperty('headless')}") : false
+
         if (is_x86) {
             correttoCommonFlags += ["--with-target-bits=32"]
         } else if (!is_armv7) {
@@ -119,6 +116,8 @@ allprojects {
             // flag, which is in conflict with '--with-target-bits'.
             correttoCommonFlags += ["--with-target-bits=64"]
         }
+
+        correttoCommonFlags += '--enable-headless-only=' + (is_headless ? "yes" : "no")
 
         // Valid value: null, release, debug, fastdebug, slowdebug
         def correttoDebugLevel = "release" // Default: release
@@ -207,15 +206,17 @@ allprojects {
 
         // Call toString explicitly to avoid lazy evaluation
         jdkImageName = "${os}-${jdkArch}-normal-server-${correttoDebugLevel}".toString()
+        archSuffix = is_musl ? "-musl" : ""
+        headless = is_headless ? "-headless" : ""
         // no debug level suffix for release build
         if (correttoDebugLevel == "release") {
-            correttoJdkArchiveName = "amazon-corretto-${project.version.full}-${os}-${correttoArch}".toString()
+            correttoJdkArchiveName = "amazon-corretto${headless}-${project.version.full}-${os}-${correttoArch}${archSuffix}".toString()
         } else {
             correttoJdkArchiveName =
-                    "amazon-corretto-${project.version.full}-${os}-${correttoArch}-${correttoDebugLevel}".toString()
+                    "amazon-corretto${headless}-${project.version.full}-${os}-${correttoArch}${archSuffix}-${correttoDebugLevel}".toString()
         }
-        correttoDebugSymbolsArchiveName = "amazon-corretto-debugsymbols-${project.version.full}-${os}-${correttoArch}".toString()
-        correttoTestImageArchiveName = "amazon-corretto-testimage-${project.version.full}-${os}-${correttoArch}".toString()
+        correttoDebugSymbolsArchiveName = "amazon-corretto${headless}-debugsymbols-${project.version.full}-${os}-${correttoArch}${archSuffix}".toString()
+        correttoTestImageArchiveName = "amazon-corretto${headless}-testimage-${project.version.full}-${os}-${correttoArch}${archSuffix}".toString()
     }
 }
 
