@@ -210,13 +210,13 @@ allprojects {
         headless = is_headless ? "-headless" : ""
         // no debug level suffix for release build
         if (correttoDebugLevel == "release") {
-            correttoJdkArchiveName = "amazon-corretto${headless}-${project.version.full}-${os}-${correttoArch}${archSuffix}".toString()
+            correttoJdkArchiveName = "amazon-corretto-${project.version.full}-${os}-${correttoArch}${archSuffix}${headless}".toString()
         } else {
             correttoJdkArchiveName =
-                    "amazon-corretto${headless}-${project.version.full}-${os}-${correttoArch}${archSuffix}-${correttoDebugLevel}".toString()
+                    "amazon-corretto-${project.version.full}-${os}-${correttoArch}${archSuffix}${headless}-${correttoDebugLevel}".toString()
         }
-        correttoDebugSymbolsArchiveName = "amazon-corretto${headless}-debugsymbols-${project.version.full}-${os}-${correttoArch}${archSuffix}".toString()
-        correttoTestImageArchiveName = "amazon-corretto${headless}-testimage-${project.version.full}-${os}-${correttoArch}${archSuffix}".toString()
+        correttoDebugSymbolsArchiveName = "amazon-corretto-debugsymbols-${project.version.full}-${os}-${correttoArch}${archSuffix}${headless}".toString()
+        correttoTestImageArchiveName = "amazon-corretto-testimage-${project.version.full}-${os}-${correttoArch}${archSuffix}${headless}".toString()
     }
 }
 
