@@ -10,7 +10,7 @@ on:
       platforms:
         description: "Platform(s) to execute on"
         required: true
-        default: "Linux additional (hotspot only), Linux x64, Linux x86, Windows x64, macOS x64"
+        default: "Linux additional (hotspot only), Linux x64, Linux x86, Windows x64, macOS x64, macOS aarch64"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -23,6 +23,7 @@ jobs:
     outputs:
       should_run: ${{ steps.check_submit.outputs.should_run }}
       bundle_id: ${{ steps.check_bundle_id.outputs.bundle_id }}
+      jdk_version: ${{ steps.check_jdk_versions.outputs.jdk_version }}
       platform_linux_additional: ${{ steps.check_platforms.outputs.platform_linux_additional }}
       platform_linux_x64: ${{ steps.check_platforms.outputs.platform_linux_x64 }}
       platform_linux_x86: ${{ steps.check_platforms.outputs.platform_linux_x86 }}
@@ -66,6 +67,26 @@ jobs:
 
       - name: Print extracted dependencies to the log
         run: "echo '${{ steps.check_deps.outputs.dependencies }}'"
+        if: steps.check_submit.outputs.should_run != 'false'
+
+      - name: Determine full JDK versions
+        id: check_jdk_versions
+        shell: bash
+        run: |
+          FEATURE=${{ fromJson(steps.check_deps.outputs.dependencies).DEFAULT_VERSION_FEATURE }}
+          INTERIM=${{ fromJson(steps.check_deps.outputs.dependencies).DEFAULT_VERSION_INTERIM }}
+          UPDATE=${{ fromJson(steps.check_deps.outputs.dependencies).DEFAULT_VERSION_UPDATE }}
+          PATCH=${{ fromJson(steps.check_deps.outputs.dependencies).DEFAULT_VERSION_PATCH }}
+          if [ "x${PATCH}" != "x0" ]; then
+             V=${FEATURE}.${INTERIM}.${UPDATE}.${PATCH}
+          elif [ "x${UPDATE}" != "x0" ]; then
+             V=${FEATURE}.${INTERIM}.${UPDATE}
+          elif [ "x${INTERIM}" != "x0" ]; then
+             V={FEATURE}.${INTERIM}
+          else
+             V=${FEATURE}
+          fi
+          echo "::set-output name=jdk_version::${V}"
         if: steps.check_submit.outputs.should_run != 'false'
 
       - name: Determine the jtreg ref to checkout
@@ -131,7 +152,7 @@ jobs:
             artifact: -debug
 
     env:
-      JDK_VERSION: "${{ fromJson(needs.prerequisites.outputs.dependencies).DEFAULT_VERSION_FEATURE }}.${{ fromJson(needs.prerequisites.outputs.dependencies).DEFAULT_VERSION_INTERIM }}.${{ fromJson(needs.prerequisites.outputs.dependencies).DEFAULT_VERSION_UPDATE }}"
+      JDK_VERSION: "${{ needs.prerequisites.outputs.jdk_version }}"
       BOOT_JDK_VERSION: "${{ fromJson(needs.prerequisites.outputs.dependencies).BOOT_JDK_VERSION }}"
       BOOT_JDK_FILENAME: "${{ fromJson(needs.prerequisites.outputs.dependencies).LINUX_X64_BOOT_JDK_FILENAME }}"
       BOOT_JDK_URL: "${{ fromJson(needs.prerequisites.outputs.dependencies).LINUX_X64_BOOT_JDK_URL }}"
@@ -256,7 +277,7 @@ jobs:
             artifact: -debug
 
     env:
-      JDK_VERSION: "${{ fromJson(needs.prerequisites.outputs.dependencies).DEFAULT_VERSION_FEATURE }}.${{ fromJson(needs.prerequisites.outputs.dependencies).DEFAULT_VERSION_INTERIM }}.${{ fromJson(needs.prerequisites.outputs.dependencies).DEFAULT_VERSION_UPDATE }}"
+      JDK_VERSION: "${{ needs.prerequisites.outputs.jdk_version }}"
       BOOT_JDK_VERSION: "${{ fromJson(needs.prerequisites.outputs.dependencies).BOOT_JDK_VERSION }}"
       BOOT_JDK_FILENAME: "${{ fromJson(needs.prerequisites.outputs.dependencies).LINUX_X64_BOOT_JDK_FILENAME }}"
       BOOT_JDK_URL: "${{ fromJson(needs.prerequisites.outputs.dependencies).LINUX_X64_BOOT_JDK_URL }}"
@@ -445,7 +466,7 @@ jobs:
             gnu-arch: powerpc64le
 
     env:
-      JDK_VERSION: "${{ fromJson(needs.prerequisites.outputs.dependencies).DEFAULT_VERSION_FEATURE }}.${{ fromJson(needs.prerequisites.outputs.dependencies).DEFAULT_VERSION_INTERIM }}.${{ fromJson(needs.prerequisites.outputs.dependencies).DEFAULT_VERSION_UPDATE }}"
+      JDK_VERSION: "${{ needs.prerequisites.outputs.jdk_version }}"
       BOOT_JDK_VERSION: "${{ fromJson(needs.prerequisites.outputs.dependencies).BOOT_JDK_VERSION }}"
       BOOT_JDK_FILENAME: "${{ fromJson(needs.prerequisites.outputs.dependencies).LINUX_X64_BOOT_JDK_FILENAME }}"
       BOOT_JDK_URL: "${{ fromJson(needs.prerequisites.outputs.dependencies).LINUX_X64_BOOT_JDK_URL }}"
@@ -593,7 +614,7 @@ jobs:
 
     # Reduced 32-bit build uses the same boot JDK as 64-bit build
     env:
-      JDK_VERSION: "${{ fromJson(needs.prerequisites.outputs.dependencies).DEFAULT_VERSION_FEATURE }}.${{ fromJson(needs.prerequisites.outputs.dependencies).DEFAULT_VERSION_INTERIM }}.${{ fromJson(needs.prerequisites.outputs.dependencies).DEFAULT_VERSION_UPDATE }}"
+      JDK_VERSION: "${{ needs.prerequisites.outputs.jdk_version }}"
       BOOT_JDK_VERSION: "${{ fromJson(needs.prerequisites.outputs.dependencies).BOOT_JDK_VERSION }}"
       BOOT_JDK_FILENAME: "${{ fromJson(needs.prerequisites.outputs.dependencies).LINUX_X64_BOOT_JDK_FILENAME }}"
       BOOT_JDK_URL: "${{ fromJson(needs.prerequisites.outputs.dependencies).LINUX_X64_BOOT_JDK_URL }}"
@@ -726,7 +747,7 @@ jobs:
 
     # Reduced 32-bit build uses the same boot JDK as 64-bit build
     env:
-      JDK_VERSION: "${{ fromJson(needs.prerequisites.outputs.dependencies).DEFAULT_VERSION_FEATURE }}.${{ fromJson(needs.prerequisites.outputs.dependencies).DEFAULT_VERSION_INTERIM }}.${{ fromJson(needs.prerequisites.outputs.dependencies).DEFAULT_VERSION_UPDATE }}"
+      JDK_VERSION: "${{ needs.prerequisites.outputs.jdk_version }}"
       BOOT_JDK_VERSION: "${{ fromJson(needs.prerequisites.outputs.dependencies).BOOT_JDK_VERSION }}"
       BOOT_JDK_FILENAME: "${{ fromJson(needs.prerequisites.outputs.dependencies).LINUX_X64_BOOT_JDK_FILENAME }}"
       BOOT_JDK_URL: "${{ fromJson(needs.prerequisites.outputs.dependencies).LINUX_X64_BOOT_JDK_URL }}"
@@ -879,7 +900,7 @@ jobs:
             artifact: -debug
 
     env:
-      JDK_VERSION: "${{ fromJson(needs.prerequisites.outputs.dependencies).DEFAULT_VERSION_FEATURE }}.${{ fromJson(needs.prerequisites.outputs.dependencies).DEFAULT_VERSION_INTERIM }}.${{ fromJson(needs.prerequisites.outputs.dependencies).DEFAULT_VERSION_UPDATE }}"
+      JDK_VERSION: "${{ needs.prerequisites.outputs.jdk_version }}"
       BOOT_JDK_VERSION: "${{ fromJson(needs.prerequisites.outputs.dependencies).BOOT_JDK_VERSION }}"
       BOOT_JDK_FILENAME: "${{ fromJson(needs.prerequisites.outputs.dependencies).WINDOWS_X64_BOOT_JDK_FILENAME }}"
       BOOT_JDK_URL: "${{ fromJson(needs.prerequisites.outputs.dependencies).WINDOWS_X64_BOOT_JDK_URL }}"
@@ -1034,7 +1055,7 @@ jobs:
             artifact: -debug
 
     env:
-      JDK_VERSION: "${{ fromJson(needs.prerequisites.outputs.dependencies).DEFAULT_VERSION_FEATURE }}.${{ fromJson(needs.prerequisites.outputs.dependencies).DEFAULT_VERSION_INTERIM }}.${{ fromJson(needs.prerequisites.outputs.dependencies).DEFAULT_VERSION_UPDATE }}"
+      JDK_VERSION: "${{ needs.prerequisites.outputs.jdk_version }}"
       BOOT_JDK_VERSION: "${{ fromJson(needs.prerequisites.outputs.dependencies).BOOT_JDK_VERSION }}"
       BOOT_JDK_FILENAME: "${{ fromJson(needs.prerequisites.outputs.dependencies).WINDOWS_X64_BOOT_JDK_FILENAME }}"
       BOOT_JDK_URL: "${{ fromJson(needs.prerequisites.outputs.dependencies).WINDOWS_X64_BOOT_JDK_URL }}"
@@ -1221,7 +1242,7 @@ jobs:
             artifact: -debug
 
     env:
-      JDK_VERSION: "${{ fromJson(needs.prerequisites.outputs.dependencies).DEFAULT_VERSION_FEATURE }}.${{ fromJson(needs.prerequisites.outputs.dependencies).DEFAULT_VERSION_INTERIM }}.${{ fromJson(needs.prerequisites.outputs.dependencies).DEFAULT_VERSION_UPDATE }}"
+      JDK_VERSION: "${{ needs.prerequisites.outputs.jdk_version }}"
       BOOT_JDK_VERSION: "${{ fromJson(needs.prerequisites.outputs.dependencies).BOOT_JDK_VERSION }}"
       BOOT_JDK_FILENAME: "${{ fromJson(needs.prerequisites.outputs.dependencies).MACOS_X64_BOOT_JDK_FILENAME }}"
       BOOT_JDK_URL: "${{ fromJson(needs.prerequisites.outputs.dependencies).MACOS_X64_BOOT_JDK_URL }}"
@@ -1319,7 +1340,7 @@ jobs:
             artifact: -debug
 
     env:
-      JDK_VERSION: "${{ fromJson(needs.prerequisites.outputs.dependencies).DEFAULT_VERSION_FEATURE }}"
+      JDK_VERSION: "${{ needs.prerequisites.outputs.jdk_version }}"
       BOOT_JDK_VERSION: "${{ fromJson(needs.prerequisites.outputs.dependencies).BOOT_JDK_VERSION }}"
       BOOT_JDK_FILENAME: "${{ fromJson(needs.prerequisites.outputs.dependencies).MACOS_X64_BOOT_JDK_FILENAME }}"
       BOOT_JDK_URL: "${{ fromJson(needs.prerequisites.outputs.dependencies).MACOS_X64_BOOT_JDK_URL }}"
@@ -1446,7 +1467,7 @@ jobs:
             artifact: -debug
 
     env:
-      JDK_VERSION: "${{ fromJson(needs.prerequisites.outputs.dependencies).DEFAULT_VERSION_FEATURE }}.${{ fromJson(needs.prerequisites.outputs.dependencies).DEFAULT_VERSION_INTERIM }}.${{ fromJson(needs.prerequisites.outputs.dependencies).DEFAULT_VERSION_UPDATE }}"
+      JDK_VERSION: "${{ needs.prerequisites.outputs.jdk_version }}"
       BOOT_JDK_VERSION: "${{ fromJson(needs.prerequisites.outputs.dependencies).BOOT_JDK_VERSION }}"
       BOOT_JDK_FILENAME: "${{ fromJson(needs.prerequisites.outputs.dependencies).MACOS_X64_BOOT_JDK_FILENAME }}"
       BOOT_JDK_URL: "${{ fromJson(needs.prerequisites.outputs.dependencies).MACOS_X64_BOOT_JDK_URL }}"
