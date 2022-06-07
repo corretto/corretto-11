@@ -144,7 +144,9 @@ Requires: zlib
 Requires: fontconfig
 Requires: freetype
 Requires: ca-certificates
+%if "%{dist}" == ".amzn2"
 Requires: log4j-cve-2021-44228-cve-mitigations
+%endif
 Requires(post): chkconfig
 Requires(postun): chkconfig
 
