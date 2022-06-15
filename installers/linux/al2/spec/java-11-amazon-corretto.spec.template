@@ -171,7 +171,7 @@ Provides: java-11-javadoc = %{epoch}:%{version}-%{release}
 Amazon Corretto's packaging of the OpenJDK 11 API documentation.
 
 %prep
-%setup -q
+%setup -q -n src -c
 
 %build
 bash ./configure \\
