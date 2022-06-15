@@ -199,7 +199,7 @@ Requires: %{name}-devel%{?1}%{?_isa} = %{epoch}:%{version}-%{release}
 Amazon Corretto's packaging of the OpenJDK %{java_major_version} jmods.
 
 %prep
-%setup -q
+%setup -q -n src -c
 
 %build
 bash ./configure \\
