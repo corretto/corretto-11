@@ -144,7 +144,9 @@ Requires: zlib
 Requires: fontconfig
 Requires: freetype
 Requires: ca-certificates
+%if "%{dist}" == ".amzn2"
 Requires: log4j-cve-2021-44228-cve-mitigations
+%endif
 Requires(post): chkconfig
 Requires(postun): chkconfig
 
@@ -169,7 +171,7 @@ Provides: java-11-javadoc = %{epoch}:%{version}-%{release}
 Amazon Corretto's packaging of the OpenJDK 11 API documentation.
 
 %prep
-%setup -q
+%setup -q -n src -c
 
 %build
 bash ./configure \\

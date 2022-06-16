@@ -148,7 +148,9 @@ Requires: zlib
 Requires: fontconfig
 Requires: freetype
 Requires: ca-certificates
-#Requires: log4j-cve-2021-44228-cve-mitigations
+%if "%{dist}" == ".amzn2"
+Requires: log4j-cve-2021-44228-cve-mitigations
+%endif
 Requires(post): chkconfig
 Requires(postun): chkconfig
 
@@ -197,7 +199,7 @@ Requires: %{name}-devel%{?1}%{?_isa} = %{epoch}:%{version}-%{release}
 Amazon Corretto's packaging of the OpenJDK %{java_major_version} jmods.
 
 %prep
-%setup -q
+%setup -q -n src -c
 
 %build
 bash ./configure \\

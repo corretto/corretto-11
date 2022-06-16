@@ -63,8 +63,9 @@ task copySourceTar(type: Tar) {
         include "java-${project.version.major}-amazon-corretto.spec"
         into 'rpm'
     }
-    from tarTree(project.configurations.compile.singleFile)
-    into "$tarName-$tarVersion"
+    from(tarTree(project.configurations.compile.singleFile)) {
+        into '/'
+    }
 }
 
 task rpmBuild(type: Exec) {
@@ -116,8 +117,9 @@ task copySourceTarModular(type: Tar) {
         include "java-${project.version.major}-amazon-corretto-modular.spec"
         into 'rpm'
     }
-    from tarTree(project.configurations.compile.singleFile)
-    into "$tarName-$tarVersion"
+    from(tarTree(project.configurations.compile.singleFile)) {
+        into '/'
+    }
 }
 
 task rpmBuildModular(type: Exec) {
