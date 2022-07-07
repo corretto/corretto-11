@@ -79,6 +79,9 @@ Vendor: Amazon
 Url: https://github.com/corretto/corretto-11
 Source0: amazon-corretto-source-%{java_version}.%{build_id}.%{release_id}.tar.gz
 
+# jpackage-utils/javapackages-filesystem is required for both build and runtime.
+# For build, it provides the jvmdir macro. For runtime,
+# it provides the /usr/lib/jvm directory.
 %if "%{dist}" == ".amzn2"
 BuildRequires: jpackage-utils
 %else
@@ -250,6 +253,8 @@ popd
 if [ \$1 -eq 1 ] ; then
   alternatives --install %{_bindir}/java java %{java_home}/bin/java %{alternatives_priority} \\
                --slave %{_jvmdir}/jre jre %{java_home} \\
+               --slave %{_jvmdir}/jre-%{java_major_version} jre-%{java_major_version} %{java_home} \\
+               --slave %{_jvmdir}/jre-%{java_major_version}-openjdk jre-%{java_major_version}-openjdk %{java_home} \\
                --slave %{_bindir}/keytool keytool %{java_home}/bin/keytool \\
                --slave %{_bindir}/pack200 pack200 %{java_home}/bin/pack200 \\
                --slave %{_bindir}/rmid rmid %{java_home}/bin/rmid \\
@@ -266,6 +271,10 @@ fi
 %post devel
 if [ \$1 -eq 1 ] ; then
   alternatives --install %{_bindir}/javac javac %{java_home}/bin/javac %{alternatives_priority} \\
+               --slave %{_jvmdir}/%{name} %{name} %{java_home} \\
+               --slave %{_jvmdir}/java java %{java_home} \\
+               --slave %{_jvmdir}/java-%{java_major_version} java-%{java_major_version} %{java_home} \\
+               --slave %{_jvmdir}/java-%{java_major_version}-openjdk java-%{java_major_version}-openjdk %{java_home} \\
                --slave %{_bindir}/jaotc jaotc %{java_home}/bin/jaotc \\
                --slave %{_bindir}/jar jar %{java_home}/bin/jar \\
                --slave %{_bindir}/jarsigner jarsigner %{java_home}/bin/jarsigner \\
@@ -291,9 +300,6 @@ if [ \$1 -eq 1 ] ; then
                --slave %{_bindir}/jstatd jstatd %{java_home}/bin/jstatd \\
                --slave %{_bindir}/rmic rmic %{java_home}/bin/rmic \\
                --slave %{_bindir}/serialver serialver %{java_home}/bin/serialver \\
-               --slave %{_jvmdir}/jre-openjdk jre-openjdk %{java_home} \\
-               --slave %{_jvmdir}/jre-11 jre-11 %{java_home} \\
-               --slave %{_jvmdir}/jre-11-openjdk jre-11-openjdk %{java_home} \\
                --slave %{_mandir}/man1/jar.1 jar.1 %{java_home}/man/man1/jar.1 \\
                --slave %{_mandir}/man1/jarsigner.1 jarsigner.1 %{java_home}/man/man1/jarsigner.1 \\
                --slave %{_mandir}/man1/javac.1 javac.1 %{java_home}/man/man1/javac.1 \\
@@ -460,6 +466,9 @@ fi
 %license %{java_imgdir}/docs/legal
 
 %changelog
+* Thu Jun 30 2022 Dan Lutker <lutkerd@amazon.com>
+- Fixup java/jre symlinks
+
 * Wed Jan 12 2022 Dan Lutker <lutkerd@amazon.com>
 - Modularize the package adding devel and jmods
 
