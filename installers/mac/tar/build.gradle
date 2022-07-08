@@ -69,6 +69,9 @@ task configureBuild(type: Exec) {
     def command = ['bash', 'configure',
             "--with-cacerts-file=${depsMap[caCerts]}"
     ]
+    if (project.correttoArch == "aarch64") {
+        command += "--with-zlib=bundled"
+    }
     // Common flags
     command += project.correttoCommonFlags
     commandLine command.flatten()
