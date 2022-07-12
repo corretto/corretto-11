@@ -225,8 +225,6 @@ popd
 if [ \$1 -eq 1 ] ; then
   alternatives --install %{_bindir}/java java %{java_home}/bin/java %{alternatives_priority} \\
                --slave %{_jvmdir}/jre jre %{java_home} \\
-               --slave %{_jvmdir}/jre-%{java_major_version} jre-%{java_major_version} %{java_home} \\
-               --slave %{_jvmdir}/jre-%{java_major_version}-openjdk jre-%{java_major_version}-openjdk %{java_home} \\
                --slave %{_bindir}/keytool keytool %{java_home}/bin/keytool \\
                --slave %{_bindir}/pack200 pack200 %{java_home}/bin/pack200 \\
                --slave %{_bindir}/rmid rmid %{java_home}/bin/rmid \\
@@ -239,9 +237,12 @@ if [ \$1 -eq 1 ] ; then
                --slave %{_mandir}/man1/rmiregistry.1 rmiregistry.1 %{java_home}/man/man1/rmiregistry.1 \\
                --slave %{_mandir}/man1/unpack200.1 unpack200.1 %{java_home}/man/man1/unpack200.1
 
+  alternatives --install %{_jvmdir}/jre-%{java_major_version} jre_%{java_major_version} %{java_home} \\
+              --slave %{_jvmdir}/jre-%{java_major_version}-openjdk jre_%{java_major_version}_openjdk %{java_home}
+
   alternatives --install %{_bindir}/javac javac %{java_home}/bin/javac %{alternatives_priority} \\
                --slave %{_jvmdir}/%{name} %{name} %{java_home} \\
-               --slave %{_jvmdir}/java java %{java_home} \\
+               --slave %{_jvmdir}/java java_sdk %{java_home} \\
                --slave %{_jvmdir}/java-%{java_major_version} java-%{java_major_version} %{java_home} \\
                --slave %{_bindir}/jaotc jaotc %{java_home}/bin/jaotc \\
                --slave %{_bindir}/jar jar %{java_home}/bin/jar \\
@@ -287,12 +288,17 @@ if [ \$1 -eq 1 ] ; then
                --slave %{_mandir}/man1/jstatd.1 jstatd.1 %{java_home}/man/man1/jstatd.1 \\
                --slave %{_mandir}/man1/rmic.1 rmic.1 %{java_home}/man/man1/rmic.1 \\
                --slave %{_mandir}/man1/serialver.1 serialver.1 %{java_home}/man/man1/serialver.1
+
+    alternatives --install %{_jvmdir}/java-%{java_major_version} java_sdk_%{java_major_version} %{java_home} %{alternatives_priority} \
+               --slave %{_jvmdir}/java-%{java_major_version}-openjdk java_sdk_%{java_major_version}_openjdk %{java_home}
 fi
 
 %postun headless
 if [ \$1 -eq 0 ] ; then
   alternatives --remove java %{java_home}/bin/java
   alternatives --remove javac %{java_home}/bin/javac
+  alternatives --remove java_sdk_%{java_major_version} %{java_home}
+  alternatives --remove jre_%{java_major_version} %{java_home}
 fi
 
 %files

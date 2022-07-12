@@ -253,8 +253,6 @@ popd
 if [ \$1 -eq 1 ] ; then
   alternatives --install %{_bindir}/java java %{java_home}/bin/java %{alternatives_priority} \\
                --slave %{_jvmdir}/jre jre %{java_home} \\
-               --slave %{_jvmdir}/jre-%{java_major_version} jre-%{java_major_version} %{java_home} \\
-               --slave %{_jvmdir}/jre-%{java_major_version}-openjdk jre-%{java_major_version}-openjdk %{java_home} \\
                --slave %{_bindir}/keytool keytool %{java_home}/bin/keytool \\
                --slave %{_bindir}/pack200 pack200 %{java_home}/bin/pack200 \\
                --slave %{_bindir}/rmid rmid %{java_home}/bin/rmid \\
@@ -266,15 +264,16 @@ if [ \$1 -eq 1 ] ; then
                --slave %{_mandir}/man1/rmid.1 rmid.1 %{java_home}/man/man1/rmid.1 \\
                --slave %{_mandir}/man1/rmiregistry.1 rmiregistry.1 %{java_home}/man/man1/rmiregistry.1 \\
                --slave %{_mandir}/man1/unpack200.1 unpack200.1 %{java_home}/man/man1/unpack200.1
+
+    alternatives --install %{_jvmdir}/jre-%{java_major_version} jre_%{java_major_version} %{java_home} %{alternatives_priority} \\
+               --slave %{_jvmdir}/jre-%{java_major_version}-openjdk jre_%{java_major_version}_openjdk %{java_home}
 fi
 
 %post devel
 if [ \$1 -eq 1 ] ; then
   alternatives --install %{_bindir}/javac javac %{java_home}/bin/javac %{alternatives_priority} \\
                --slave %{_jvmdir}/%{name} %{name} %{java_home} \\
-               --slave %{_jvmdir}/java java %{java_home} \\
-               --slave %{_jvmdir}/java-%{java_major_version} java-%{java_major_version} %{java_home} \\
-               --slave %{_jvmdir}/java-%{java_major_version}-openjdk java-%{java_major_version}-openjdk %{java_home} \\
+               --slave %{_jvmdir}/java java_sdk %{java_home} \\
                --slave %{_bindir}/jaotc jaotc %{java_home}/bin/jaotc \\
                --slave %{_bindir}/jar jar %{java_home}/bin/jar \\
                --slave %{_bindir}/jarsigner jarsigner %{java_home}/bin/jarsigner \\
@@ -319,25 +318,27 @@ if [ \$1 -eq 1 ] ; then
                --slave %{_mandir}/man1/jstatd.1 jstatd.1 %{java_home}/man/man1/jstatd.1 \\
                --slave %{_mandir}/man1/rmic.1 rmic.1 %{java_home}/man/man1/rmic.1 \\
                --slave %{_mandir}/man1/serialver.1 serialver.1 %{java_home}/man/man1/serialver.1
+
+  alternatives --install %{_jvmdir}/java-%{java_major_version} java_sdk_%{java_major_version} %{java_home} %{alternatives_priority} \
+               --slave %{_jvmdir}/java-%{java_major_version}-openjdk java_sdk_%{java_major_version}_openjdk %{java_home}
 fi
 
 %postun headless
 if [ \$1 -eq 0 ] ; then
   alternatives --remove java %{java_home}/bin/java
+  alternatives --remove jre_%{java_major_version} %{java_home}
 fi
 
 %postun devel
 if [ \$1 -eq 0 ] ; then
   alternatives --remove javac %{java_home}/bin/javac
+  alternatives --remove java_sdk_%{java_major_version} %{java_home}
 fi
 
 %files
 %{java_lib}/libawt_xawt.so
 %{java_lib}/libjawt.so
 %{java_lib}/libsplashscreen.so
-
-%{java_inc}/jawt.h
-%{java_inc}/linux/jawt_md.h
 
 %files headless
 %config(noreplace) %{java_home}/conf/logging.properties
@@ -355,6 +356,8 @@ fi
 %config(noreplace) %{java_home}/lib/security/blocked.certs
 %config(noreplace) %{java_home}/lib/security/default.policy
 %config(noreplace) %{java_home}/lib/security/public_suffix_list.dat
+%dir %{java_home}
+%dir %{java_home}/bin
 %{java_home}/bin/java
 %{java_home}/bin/jjs
 %{java_home}/bin/keytool
@@ -365,6 +368,8 @@ fi
 %{java_home}/conf
 %{java_home}/legal
 %{java_home}/lib
+%dir %{java_home}/man
+%dir %{java_home}/man/man1
 %{java_home}/man/man1/java.1
 %{java_home}/man/man1/jjs.1
 %{java_home}/man/man1/keytool.1
@@ -373,6 +378,8 @@ fi
 %{java_home}/man/man1/rmiregistry.1
 %{java_home}/man/man1/unpack200.1
 %{java_home}/man/ja
+%dir %{java_home}/man/ja_JP.UTF-8
+%dir %{java_home}/man/ja_JP.UTF-8/man1
 %{java_home}/man/ja_JP.UTF-8/man1/java.1
 %{java_home}/man/ja_JP.UTF-8/man1/jjs.1
 %{java_home}/man/ja_JP.UTF-8/man1/keytool.1
@@ -382,13 +389,10 @@ fi
 %{java_home}/man/ja_JP.UTF-8/man1/unpack200.1
 %{java_home}/release
 
-# Keep the libs and includes that need X11 in the main package
+# Keep the libs that need X11 in the main package
 %exclude %{java_lib}/libawt_xawt.so
 %exclude %{java_lib}/libjawt.so
 %exclude %{java_lib}/libsplashscreen.so
-
-%exclude %{java_inc}/jawt.h
-%exclude %{java_inc}/linux/jawt_md.h
 
 %files devel
 %{java_home}/bin/jaotc
@@ -417,7 +421,7 @@ fi
 %{java_home}/bin/jstatd
 %{java_home}/bin/rmic
 %{java_home}/bin/serialver
-%{java_home}/include
+%{java_inc}
 %{java_home}/man/man1/jar.1
 %{java_home}/man/man1/jarsigner.1
 %{java_home}/man/man1/javac.1
