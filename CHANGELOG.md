@@ -2,6 +2,38 @@
 
 The following sections describe the changes for each release of Amazon Corretto 11.
 
+## Corretto version: 11.0.16.8.1
+
+Release Date: July 19, 2022
+
+**Target Platforms**
+
++  RPM-based Linux using glibc 2.12 or later, x86, x86_64
++  Debian-based Linux using glibc 2.12 or later, x86, x86_64
++  RPM-based Linux using glibc 2.17 or later, aarch64
++  Debian-based Linux using glibc 2.17 or later, aarch64
++  Linux using glibc 2.25 or later, Arm
++  Alpine-based Linux, x86_64
++  Windows 7 or later, x86_64
++  macOS 10.13 and later, x86_64
++  macOS 11.0 and later, aarch64
+
+The following issues are addressed in 11.0.16.8.1.
+
+| Issue Name                                   | Platform | Description                                                                           | Link                                                                          |
+|----------------------------------------------|----------|---------------------------------------------------------------------------------------|-------------------------------------------------------------------------------|
+| Import jdk-11.0.16+8                         | All      | Update Corretto baseline to OpenJDK 11.0.16+8                                         | [jdk-11.0.16+8](https://github.com/openjdk/jdk11u/releases/tag/jdk-11.0.16+8) |
+| Enable bundled zlib library on macOS aarch64 | MacOS    | Updates to use bundled (not the system) version of the zlib library on macOS aarch64  | [#36](https://github.com/corretto/corretto-18/pull/36)                        |
+| Update amazon cacerts                        | All      | Update amazon cacerts file from amazonlinux                                           |                                                                               |
+
+The following CVEs are addressed in 11.0.16.8.1
+
+| CVE            | CVSS | Component        |
+|----------------|------|------------------|
+| CVE-2022-34169 | 7.5  | xml/jaxp         |
+| CVE-2022-21541 | 5.9  | hotspot/runtime  |
+| CVE-2022-21540 | 5.3  | hotspot/compiler | 
+
 ## Corretto version: 11.0.15.9.1
 
 Release Date: April 19, 2022
@@ -27,10 +59,6 @@ The following CVEs are addressed in 11.0.15.9.1
 | CVE-2022-21434 | 5.3 | core-libs/java.lang |
 | CVE-2022-21426 | 5.3 | xml/jaxp |
 | CVE-2022-21443 | 3.7 | security-libs/java.security |
-
-# Change Log for Amazon Corretto 11
-
-The following sections describe the changes for each release of Amazon Corretto 11.
 
 ## Corretto version: 11.0.14.10.1
 
