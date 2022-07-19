@@ -15,7 +15,7 @@ Release Date: July 19, 2022
 +  Linux using glibc 2.25 or later, Arm
 +  Alpine-based Linux, x86_64
 +  Windows 7 or later, x86_64
-+  macOS 10.13 and later, x86_64
++  macOS 10.15 and later, x86_64
 +  macOS 11.0 and later, aarch64
 
 The following issues are addressed in 11.0.16.8.1.
