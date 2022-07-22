@@ -187,6 +187,7 @@ Summary: Amazon Corretto %{java_major_version} development tools
 Group: Development
 AutoReqProv: no
 
+Provides: java-devel = %{epoch}:%{java_version}
 Provides: java-%{java_major_version}-devel = %{epoch}:%{java_version}
 Provides: java-%{java_major_version}-devel = %{epoch}:%{version}-%{release}
 Requires: %{name}-headless%{?1}%{?_isa} = %{epoch}:%{version}-%{release}
@@ -470,6 +471,9 @@ fi
 %license %{java_imgdir}/docs/legal
 
 %changelog
+* Fri Jul 22 2022 Dan Lutker <lutkerd@amazon.com>
+- Add provides java-devel
+
 * Thu Jun 30 2022 Dan Lutker <lutkerd@amazon.com>
 - Fixup java/jre symlinks
 
