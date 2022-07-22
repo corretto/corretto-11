@@ -125,6 +125,7 @@ Requires: %{name}-headless%{?_isa} = %{epoch}:%{version}-%{release}
 Provides: java = %{epoch}:%{java_version}
 Provides: java-11 = %{epoch}:%{java_version}
 Provides: java-11 = %{epoch}:%{version}-%{release}
+Provides: java-devel = %{epoch}:%{java_version}
 Provides: java-11-devel = %{epoch}:%{java_version}
 Provides: java-11-devel = %{epoch}:%{version}-%{release}
 Provides: jre = %{java_version}
@@ -343,6 +344,9 @@ fi
 %license %{java_imgdir}/docs/legal
 
 %changelog
+* Fri Jul 22 2022 Dan Lutker <lutkerd@amazon.com>
+- Add provides java-devel
+
 * Thu Jun 30 2022 Dan Lutker <lutkerd@amazon.com>
 - Fixup java/jre symlinks
 
