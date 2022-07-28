@@ -2,7 +2,24 @@
 
 The following sections describe the changes for each release of Amazon Corretto 11.
 
+## Corretto version: 11.0.16.8.3
+Release Date: July 28, 2022
+
+**Target Platforms**
+
++  macOS 10.15 and later, x86_64
++  macOS 11.0 and later, aarch64
+
+The following issues are addressed in 11.0.16.8.3
+
+| Issue Name                                            | Platform | Description                                                                           | Link                                                       |
+|-------------------------------------------------------|----------|---------------------------------------------------------------------------------------|------------------------------------------------------------|
+| jlink error Hash of java.rmi differs to expected hash | macOS    | jlink mods contained hashes calculated using the older format, no code changes        | [#280](https://github.com/corretto/corretto-11/issues/280) |
+| Fix macOS packaging                                   | macOS    | Update macos packaging logic to avoid duplicate paths after installation              | [#277](https://github.com/corretto/corretto-11/pull/277)   |
+
+
 ## Corretto version: 11.0.16.8.2
+
 Release Date: July 25, 2022
  
 **Target Platforms**
