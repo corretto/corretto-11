@@ -2532,13 +2532,14 @@ uint IdealLoopTree::est_loop_flow_merge_sz() const {
 
     for (uint k = 0; k < outcnt; k++) {
       Node* out = node->raw_out(k);
-
+      if (out == NULL) continue;
       if (out->is_CFG()) {
         if (!is_member(_phase->get_loop(out))) {
           ctrl_edge_out_cnt++;
         }
-      } else {
+      } else if (_phase->has_ctrl(out)) {
         Node* ctrl = _phase->get_ctrl(out);
+        assert(ctrl != NULL, "must be");
         assert(ctrl->is_CFG(), "must be");
         if (!is_member(_phase->get_loop(ctrl))) {
           data_edge_out_cnt++;
@@ -2554,6 +2555,17 @@ uint IdealLoopTree::est_loop_flow_merge_sz() const {
   }
   return 0;
 }
+
+#ifdef ASSERT
+bool IdealLoopTree::has_reduction_nodes() const {
+  for (uint i = 0; i < _body.size(); i++) {
+    if (_body[i]->is_reduction()) {
+      return true;
+    }
+  }
+  return false;
+}
+#endif // ASSERT
 
 #ifndef PRODUCT
 //------------------------------dump_head--------------------------------------
@@ -3152,6 +3164,12 @@ void PhaseIdealLoop::build_and_optimize() {
     // all the code before the peeled area, so the verify pass will always
     // complain about it.
   }
+
+  // Check for bailout, and return
+  if (C->failing()) {
+    return;
+  }
+
   // Do verify graph edges in any case
   NOT_PRODUCT( C->verify_graph_edges(); );
 

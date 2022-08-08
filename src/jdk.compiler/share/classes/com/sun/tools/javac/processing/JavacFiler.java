@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2020, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -53,6 +53,7 @@ import static javax.tools.StandardLocation.CLASS_OUTPUT;
 import com.sun.tools.javac.code.Lint;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.ModuleSymbol;
+import com.sun.tools.javac.code.Symbol.TypeSymbol;
 import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.comp.Modules;
 import com.sun.tools.javac.model.JavacElements;
@@ -274,6 +275,13 @@ public class JavacFiler implements Filer, Closeable {
             this.fileObject = fileObject;
         }
 
+        @Override
+        public void write(byte b[], int off, int len) throws IOException {
+            Objects.checkFromIndexSize(off, len, b.length);
+            out.write(b, off, len);
+        }
+
+        @Override
         public synchronized void close() throws IOException {
             if (!closed) {
                 closed = true;
@@ -311,6 +319,7 @@ public class JavacFiler implements Filer, Closeable {
             this.fileObject = fileObject;
         }
 
+        @Override
         public synchronized void close() throws IOException {
             if (!closed) {
                 closed = true;
@@ -717,7 +726,7 @@ public class JavacFiler implements Filer, Closeable {
         boolean alreadySeen = aggregateGeneratedSourceNames.contains(Pair.of(mod, typename)) ||
                               aggregateGeneratedClassNames.contains(Pair.of(mod, typename)) ||
                               initialClassNames.contains(typename) ||
-                              (existing != null && initialInputs.contains(existing.sourcefile));
+                              containedInInitialInputs(typename);
         if (alreadySeen) {
             if (lint)
                 log.warning(Warnings.ProcTypeRecreate(typename));
@@ -729,6 +738,22 @@ public class JavacFiler implements Filer, Closeable {
         if (!mod.isUnnamed() && !typename.contains(".")) {
             throw new FilerException("Attempt to create a type in unnamed package of a named module: " + typename);
         }
+    }
+
+    private boolean containedInInitialInputs(String typename) {
+        // Name could be a type name or the name of a package-info file
+        JavaFileObject sourceFile = null;
+
+        ClassSymbol existingClass = elementUtils.getTypeElement(typename);
+        if (existingClass != null) {
+            sourceFile = existingClass.sourcefile;
+        } else if (typename.endsWith(".package-info")) {
+            String targetName = typename.substring(0, typename.length() - ".package-info".length());
+            PackageSymbol existingPackage = elementUtils.getPackageElement(targetName);
+            if (existingPackage != null)
+                sourceFile = existingPackage.sourcefile;
+        }
+        return (sourceFile == null) ? false : initialInputs.contains(sourceFile);
     }
 
     /**

@@ -2166,10 +2166,8 @@ void Compile::inline_incrementally(PhaseIterGVN& igvn) {
 
 bool Compile::optimize_loops(int& loop_opts_cnt, PhaseIterGVN& igvn, LoopOptsMode mode) {
   if(loop_opts_cnt > 0) {
-    debug_only( int cnt = 0; );
-    while(major_progress() && (loop_opts_cnt > 0)) {
+    while (major_progress() && (loop_opts_cnt > 0)) {
       TracePhase tp("idealLoop", &timers[_t_idealLoop]);
-      assert( cnt++ < 40, "infinite cycle in loop optimization" );
       PhaseIdealLoop ideal_loop(igvn, mode);
       loop_opts_cnt--;
       if (failing())  return false;
@@ -2482,7 +2480,11 @@ void Compile::Code_Gen() {
   {
     TracePhase tp("matcher", &timers[_t_matcher]);
     matcher.match();
+    if (failing()) {
+      return;
+    }
   }
+
   // In debug mode can dump m._nodes.dump() for mapping of ideal to machine
   // nodes.  Mapping is only valid at the root of each matched subtree.
   NOT_PRODUCT( verify_graph_edges(); )
@@ -3444,7 +3446,7 @@ void Compile::final_graph_reshaping_impl( Node *n, Final_Reshape_Counts &frc) {
       n->set_req(MemBarNode::Precedent, top());
       while (wq.size() > 0) {
         Node* m = wq.pop();
-        if (m->outcnt() == 0) {
+        if (m->outcnt() == 0 && m != top()) {
           for (uint j = 0; j < m->req(); j++) {
             Node* in = m->in(j);
             if (in != NULL) {

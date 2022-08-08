@@ -27,6 +27,7 @@ package sun.security.util;
 
 import sun.security.validator.Validator;
 
+import java.lang.ref.SoftReference;
 import java.security.AlgorithmParameters;
 import java.security.CryptoPrimitive;
 import java.security.Key;
@@ -39,7 +40,6 @@ import java.security.spec.InvalidParameterSpecException;
 import java.security.spec.MGF1ParameterSpec;
 import java.security.spec.NamedParameterSpec;
 import java.security.spec.PSSParameterSpec;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -53,6 +53,7 @@ import java.util.Set;
 import java.util.Collection;
 import java.util.StringTokenizer;
 import java.util.TimeZone;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
@@ -100,6 +101,8 @@ public class DisabledAlgorithmConstraints extends AbstractAlgorithmConstraints {
 
     private final Set<String> disabledAlgorithms;
     private final Constraints algorithmConstraints;
+    private volatile SoftReference<Map<String, Boolean>> cacheRef =
+            new SoftReference<>(null);
 
     public static DisabledAlgorithmConstraints certPathConstraints() {
         return CertPathHolder.CONSTRAINTS;
@@ -152,7 +155,10 @@ public class DisabledAlgorithmConstraints extends AbstractAlgorithmConstraints {
     @Override
     public final boolean permits(Set<CryptoPrimitive> primitives,
             String algorithm, AlgorithmParameters parameters) {
-        if (!checkAlgorithm(disabledAlgorithms, algorithm, decomposer)) {
+        if (algorithm == null || algorithm.isEmpty()) {
+            throw new IllegalArgumentException("No algorithm name specified");
+        }
+        if (!cachedCheckAlgorithm(algorithm)) {
             return false;
         }
 
@@ -235,7 +241,7 @@ public class DisabledAlgorithmConstraints extends AbstractAlgorithmConstraints {
         // Check if named curves in the key are disabled.
         for (Key key : cp.getKeys()) {
             for (String curve : getNamedCurveFromKey(key)) {
-                if (!checkAlgorithm(disabledAlgorithms, curve, decomposer)) {
+                if (!cachedCheckAlgorithm(curve)) {
                     throw new CertPathValidatorException(
                             "Algorithm constraints check failed on disabled " +
                                     "algorithm: " + curve,
@@ -679,8 +685,6 @@ public class DisabledAlgorithmConstraints extends AbstractAlgorithmConstraints {
      */
     private static class DenyAfterConstraint extends Constraint {
         private Date denyAfterDate;
-        private static final SimpleDateFormat dateFormat =
-                new SimpleDateFormat("EEE, MMM d HH:mm:ss z yyyy");
 
         DenyAfterConstraint(String algo, int year, int month, int day) {
             Calendar c;
@@ -714,7 +718,7 @@ public class DisabledAlgorithmConstraints extends AbstractAlgorithmConstraints {
             denyAfterDate = c.getTime();
             if (debug != null) {
                 debug.println("DenyAfterConstraint date set to: " +
-                        dateFormat.format(denyAfterDate));
+                        denyAfterDate);
             }
         }
 
@@ -745,8 +749,8 @@ public class DisabledAlgorithmConstraints extends AbstractAlgorithmConstraints {
                 throw new CertPathValidatorException(
                         "denyAfter constraint check failed: " + algorithm +
                         " used with Constraint date: " +
-                        dateFormat.format(denyAfterDate) + "; params date: " +
-                        dateFormat.format(currentDate) + cp.extendedExceptionMsg(),
+                        denyAfterDate + "; params date: " +
+                        currentDate + cp.extendedExceptionMsg(),
                         null, null, -1, BasicReason.ALGORITHM_CONSTRAINED);
             }
         }
@@ -950,6 +954,25 @@ public class DisabledAlgorithmConstraints extends AbstractAlgorithmConstraints {
 
             return true;
         }
+    }
+
+    private boolean cachedCheckAlgorithm(String algorithm) {
+        Map<String, Boolean> cache;
+        if ((cache = cacheRef.get()) == null) {
+            synchronized (this) {
+                if ((cache = cacheRef.get()) == null) {
+                    cache = new ConcurrentHashMap<>();
+                    cacheRef = new SoftReference<>(cache);
+                }
+            }
+        }
+        Boolean result = cache.get(algorithm);
+        if (result != null) {
+            return result;
+        }
+        result = checkAlgorithm(disabledAlgorithms, algorithm, decomposer);
+        cache.put(algorithm, result);
+        return result;
     }
 
     /*

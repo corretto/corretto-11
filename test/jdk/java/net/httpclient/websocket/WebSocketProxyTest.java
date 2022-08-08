@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019, 2021, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -49,6 +49,7 @@ import java.net.http.WebSocketHandshakeException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -148,6 +149,47 @@ public class WebSocketProxyTest {
         };
     }
 
+    private static class Bytes {
+        private final byte[] bytes;
+        public Bytes(byte[] bytes) {
+            this.bytes = bytes;
+        }
+        public byte[] getBytes() {
+            return bytes;
+        }
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o instanceof byte[]) {
+                return Arrays.equals(bytes, (byte[]) o);
+            }
+            if (o instanceof Bytes) {
+                return Arrays.equals(bytes, ((Bytes) o).getBytes());
+            }
+            return false;
+        }
+        @Override
+        public int hashCode() { return Arrays.hashCode(bytes); }
+        public String toString() {
+            StringBuilder builder = new StringBuilder("0x");
+            for (byte aByte : bytes) {
+                builder.append(String.format("%X", aByte).toUpperCase());
+            }
+            return builder.toString();
+        }
+    }
+
+    static List<Bytes> ofBytes(List<byte[]> bytes) {
+        return bytes.stream().map(WebSocketProxyTest.Bytes::new).collect(Collectors.toList());
+    }
+
+    static String diagnose(List<byte[]> a, List<byte[]> b) {
+        var actual = ofBytes(a);
+        var expected = ofBytes(b);
+        var message = actual.equals(expected) ? "match" : "differ";
+        return String.format("%s and %s %s", actual, expected, message);
+    }
+
     @Test(dataProvider = "servers")
     public void simpleAggregatingBinaryMessages
             (Function<int[],DummySecureWebSocketServer> serverSupplier,
@@ -236,7 +278,7 @@ public class WebSocketProxyTest {
                     .join();
 
             List<byte[]> a = actual.join();
-            assertEquals(a, expected);
+            assertEquals(ofBytes(a), ofBytes(expected), diagnose(a, expected));
         }
     }
 

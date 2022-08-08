@@ -2450,9 +2450,22 @@ void os::Linux::print_uptime_info(outputStream* st) {
   }
 }
 
+static void print_container_helper(outputStream* st, jlong j, const char* metrics) {
+  st->print("%s: ", metrics);
+  if (j > 0) {
+    if (j >= 1024) {
+      st->print_cr(UINT64_FORMAT " k", uint64_t(j) / 1024);
+    } else {
+      st->print_cr(UINT64_FORMAT, uint64_t(j));
+    }
+  } else {
+    st->print_cr("%s", j == OSCONTAINER_ERROR ? "not supported" : "unlimited");
+  }
+}
 
 void os::Linux::print_container_info(outputStream* st) {
   if (!OSContainer::is_containerized()) {
+    st->print_cr("container information not found.");
     return;
   }
 
@@ -2505,45 +2518,30 @@ void os::Linux::print_container_info(outputStream* st) {
     st->print("%s\n", i == OSCONTAINER_ERROR ? "not supported" : "no shares");
   }
 
-  jlong j = OSContainer::memory_limit_in_bytes();
-  st->print("memory_limit_in_bytes: ");
+  print_container_helper(st, OSContainer::memory_limit_in_bytes(), "memory_limit_in_bytes");
+  print_container_helper(st, OSContainer::memory_and_swap_limit_in_bytes(), "memory_and_swap_limit_in_bytes");
+  print_container_helper(st, OSContainer::memory_soft_limit_in_bytes(), "memory_soft_limit_in_bytes");
+  print_container_helper(st, OSContainer::memory_usage_in_bytes(), "memory_usage_in_bytes");
+  print_container_helper(st, OSContainer::memory_max_usage_in_bytes(), "memory_max_usage_in_bytes");
+
+  jlong j = OSContainer::pids_max();
+  st->print("maximum number of tasks: ");
   if (j > 0) {
-    st->print(JLONG_FORMAT "\n", j);
+    st->print_cr(JLONG_FORMAT, j);
   } else {
-    st->print("%s\n", j == OSCONTAINER_ERROR ? "not supported" : "unlimited");
+    st->print_cr("%s", j == OSCONTAINER_ERROR ? "not supported" : "unlimited");
   }
 
-  j = OSContainer::memory_and_swap_limit_in_bytes();
-  st->print("memory_and_swap_limit_in_bytes: ");
+  j = OSContainer::pids_current();
+  st->print("current number of tasks: ");
   if (j > 0) {
-    st->print(JLONG_FORMAT "\n", j);
+    st->print_cr(JLONG_FORMAT, j);
   } else {
-    st->print("%s\n", j == OSCONTAINER_ERROR ? "not supported" : "unlimited");
+    if (j == OSCONTAINER_ERROR) {
+      st->print_cr("not supported");
+    }
   }
 
-  j = OSContainer::memory_soft_limit_in_bytes();
-  st->print("memory_soft_limit_in_bytes: ");
-  if (j > 0) {
-    st->print(JLONG_FORMAT "\n", j);
-  } else {
-    st->print("%s\n", j == OSCONTAINER_ERROR ? "not supported" : "unlimited");
-  }
-
-  j = OSContainer::OSContainer::memory_usage_in_bytes();
-  st->print("memory_usage_in_bytes: ");
-  if (j > 0) {
-    st->print(JLONG_FORMAT "\n", j);
-  } else {
-    st->print("%s\n", j == OSCONTAINER_ERROR ? "not supported" : "unlimited");
-  }
-
-  j = OSContainer::OSContainer::memory_max_usage_in_bytes();
-  st->print("memory_max_usage_in_bytes: ");
-  if (j > 0) {
-    st->print(JLONG_FORMAT "\n", j);
-  } else {
-    st->print("%s\n", j == OSCONTAINER_ERROR ? "not supported" : "unlimited");
-  }
   st->cr();
 }
 
@@ -5646,7 +5644,8 @@ static int _cpu_count(const cpu_set_t* cpus) {
 // dynamic check - see 6515172 for details.
 // If anything goes wrong we fallback to returning the number of online
 // processors - which can be greater than the number available to the process.
-int os::Linux::active_processor_count() {
+static int get_active_processor_count() {
+  // Note: keep this function, with its CPU_xx macros, *outside* the os namespace (see JDK-8289477).
   cpu_set_t cpus;  // can represent at most 1024 (CPU_SETSIZE) processors
   cpu_set_t* cpus_p = &cpus;
   int cpus_size = sizeof(cpu_set_t);
@@ -5716,6 +5715,10 @@ int os::Linux::active_processor_count() {
 
   assert(cpu_count > 0 && cpu_count <= os::processor_count(), "sanity check");
   return cpu_count;
+}
+
+int os::Linux::active_processor_count() {
+  return get_active_processor_count();
 }
 
 // Determine the active processor count from one of

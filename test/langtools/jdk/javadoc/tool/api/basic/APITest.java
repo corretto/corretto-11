@@ -198,13 +198,9 @@ class APITest {
             "help-doc.html",
             "index-all.html",
             "index.html",
-            "jquery/jquery-3.5.1.js",
-            "jquery/jquery-ui.js",
-            "jquery/jquery-ui.css",
+            "jquery/jquery-3.6.0.min.js",
             "jquery/jquery-ui.min.js",
             "jquery/jquery-ui.min.css",
-            "jquery/jquery-ui.structure.min.css",
-            "jquery/jquery-ui.structure.css",
             "jquery/external/jquery/jquery.js",
             "jquery/jszip/dist/jszip.js",
             "jquery/jszip/dist/jszip.min.js",
@@ -212,17 +208,6 @@ class APITest {
             "jquery/jszip-utils/dist/jszip-utils.min.js",
             "jquery/jszip-utils/dist/jszip-utils-ie.js",
             "jquery/jszip-utils/dist/jszip-utils-ie.min.js",
-            "jquery/images/ui-bg_glass_65_dadada_1x400.png",
-            "jquery/images/ui-icons_454545_256x240.png",
-            "jquery/images/ui-bg_glass_95_fef1ec_1x400.png",
-            "jquery/images/ui-bg_glass_75_dadada_1x400.png",
-            "jquery/images/ui-bg_highlight-soft_75_cccccc_1x100.png",
-            "jquery/images/ui-icons_888888_256x240.png",
-            "jquery/images/ui-icons_2e83ff_256x240.png",
-            "jquery/images/ui-icons_cd0a0a_256x240.png",
-            "jquery/images/ui-bg_glass_55_fbf9ee_1x400.png",
-            "jquery/images/ui-icons_222222_256x240.png",
-            "jquery/images/ui-bg_glass_75_e6e6e6_1x400.png",
             "member-search-index.js",
             "member-search-index.zip",
             "overview-tree.html",
@@ -236,15 +221,22 @@ class APITest {
             "resources/x.png",
             "script.js",
             "search.js",
+            "jquery-ui.overrides.css",
             "stylesheet.css",
             "type-search-index.js",
             "type-search-index.zip"
     ));
 
     protected static Set<String> noIndexFiles = standardExpectFiles.stream()
-            .filter(s -> !s.startsWith("jquery") && !s.startsWith("resources") && !s.endsWith("zip")
-            && !s.equals("index-all.html") && !s.equals("search.js") && !s.endsWith("-search-index.js")
-            && !s.equals("allclasses-index.html") && !s.equals("allpackages-index.html"))
+            .filter(s ->    !s.startsWith("jquery")
+                         && !s.startsWith("resources")
+                         && !s.endsWith("zip")
+                         && !s.endsWith("-search-index.js")
+                         && !s.equals("index-all.html")
+                         && !s.equals("search.js")
+                         && !s.equals("jquery-ui.overrides.css")
+                         && !s.equals("allclasses-index.html")
+                         && !s.equals("allpackages-index.html"))
             .collect(Collectors.toSet());
 }
 

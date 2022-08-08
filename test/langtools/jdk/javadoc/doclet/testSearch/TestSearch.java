@@ -394,14 +394,14 @@ public class TestSearch extends JavadocTester {
     void checkSearchOutput(String fileName, boolean expectedOutput, boolean moduleDirectoriesVar) {
         // Test for search related markup
         checkOutput(fileName, expectedOutput,
-                "<link rel=\"stylesheet\" type=\"text/css\" href=\"jquery/jquery-ui.css\" title=\"Style\">\n",
+                "<link rel=\"stylesheet\" type=\"text/css\" href=\"jquery/jquery-ui.min.css\" title=\"Style\">\n",
                 "<script type=\"text/javascript\" src=\"jquery/jszip/dist/jszip.min.js\"></script>\n",
                 "<script type=\"text/javascript\" src=\"jquery/jszip-utils/dist/jszip-utils.min.js\"></script>\n",
                 "<!--[if IE]>\n",
                 "<script type=\"text/javascript\" src=\"jquery/jszip-utils/dist/jszip-utils-ie.min.js\"></script>\n",
                 "<![endif]-->\n",
-                "<script type=\"text/javascript\" src=\"jquery/jquery-3.5.1.js\"></script>\n",
-                "<script type=\"text/javascript\" src=\"jquery/jquery-ui.js\"></script>",
+                "<script type=\"text/javascript\" src=\"jquery/jquery-3.6.0.min.js\"></script>\n",
+                "<script type=\"text/javascript\" src=\"jquery/jquery-ui.min.js\"></script>",
                 "var pathtoroot = \"./\";\n"
                 + "var useModuleDirectories = " + moduleDirectoriesVar + ";\n"
                 + "loadScripts(document, 'script');",
@@ -592,13 +592,10 @@ public class TestSearch extends JavadocTester {
     void checkJqueryAndImageFiles(boolean expectedOutput) {
         checkFiles(expectedOutput,
                 "search.js",
-                "jquery/jquery-3.5.1.js",
-                "jquery/jquery-ui.js",
-                "jquery/jquery-ui.css",
+                "jquery-ui.overrides.css",
+                "jquery/jquery-3.6.0.min.js",
                 "jquery/jquery-ui.min.js",
                 "jquery/jquery-ui.min.css",
-                "jquery/jquery-ui.structure.min.css",
-                "jquery/jquery-ui.structure.css",
                 "jquery/external/jquery/jquery.js",
                 "jquery/jszip/dist/jszip.js",
                 "jquery/jszip/dist/jszip.min.js",
@@ -606,17 +603,6 @@ public class TestSearch extends JavadocTester {
                 "jquery/jszip-utils/dist/jszip-utils.min.js",
                 "jquery/jszip-utils/dist/jszip-utils-ie.js",
                 "jquery/jszip-utils/dist/jszip-utils-ie.min.js",
-                "jquery/images/ui-bg_glass_65_dadada_1x400.png",
-                "jquery/images/ui-icons_454545_256x240.png",
-                "jquery/images/ui-bg_glass_95_fef1ec_1x400.png",
-                "jquery/images/ui-bg_glass_75_dadada_1x400.png",
-                "jquery/images/ui-bg_highlight-soft_75_cccccc_1x100.png",
-                "jquery/images/ui-icons_888888_256x240.png",
-                "jquery/images/ui-icons_2e83ff_256x240.png",
-                "jquery/images/ui-icons_cd0a0a_256x240.png",
-                "jquery/images/ui-bg_glass_55_fbf9ee_1x400.png",
-                "jquery/images/ui-icons_222222_256x240.png",
-                "jquery/images/ui-bg_glass_75_e6e6e6_1x400.png",
                 "resources/x.png",
                 "resources/glass.png");
     }
@@ -646,7 +632,7 @@ public class TestSearch extends JavadocTester {
                 + "            return ui.item.m + slash;\n"
                 + "        } else if ((ui.item.category === catTypes && ui.item.p) || ui.item.category === catMembers) {\n"
                 + "            $.each(packageSearchIndex, function(index, item) {\n"
-                + "                if (ui.item.p == item.l) {\n"
+                + "                if (item.m && ui.item.p == item.l) {\n"
                 + "                    urlPrefix = item.m + slash;\n"
                 + "                }\n"
                 + "            });\n"
