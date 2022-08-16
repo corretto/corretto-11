@@ -2,6 +2,29 @@
 
 The following sections describe the changes for each release of Amazon Corretto 11.
 
+## Corretto version: 11.0.16.9.1
+Release Date: August 15, 2022
+
+
+**Target Platforms**
+
++ RPM-based Linux using glibc 2.12 or later, x86, x86_64
++ Debian-based Linux using glibc 2.12 or later, x86, x86_64
++ RPM-based Linux using glibc 2.17 or later, aarch64
++ Debian-based Linux using glibc 2.17 or later, aarch64
++ Alpine-based Linux, x86_64
++ Windows 7 or later, x86_64
++ macos 10.15 and later, x86_64
++ macos 11.0 and later, aarch64
+
+The following issues are addressed in 11.0.16.9.1
+
+| Issue Name                                       | Platform    | Description                                                                          | Link                                                                          |
+|--------------------------------------------------|-------------|--------------------------------------------------------------------------------------|-------------------------------------------------------------------------------|
+| Import jdk-11.0.16.1+1                              | All         | Updates Corretto baseline to OpenJDK 11.0.16.1+1                                        | [jdk-11.0.16.1+1](https://github.com/openjdk/jdk11u/releases/tag/jdk-11.0.16.1%2B1) |
+| Resolve C2 compiler crash                              | All         | [JDK-8279219](https://bugs.openjdk.org/browse/JDK-8279219) caused regressions in the OpenJDK 11.0.16 and OpenJDK 17.0.4 releases and we are backing it out. See [JDK-8291665](https://bugs.openjdk.org/browse/JDK-8291665).                                       | [JDK-8292260](https://bugs.openjdk.org/browse/JDK-8292260) |
+| Unify Info.plist files with correct version strings | macOS |  | [JDK-8252145](https://bugs.openjdk.org/browse/JDK-8252145)
+
 ## Corretto version: 11.0.16.8.3
 Release Date: July 28, 2022
 
