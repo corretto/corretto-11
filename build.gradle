@@ -120,7 +120,7 @@ allprojects {
         correttoCommonFlags += '--enable-headless-only=' + (is_headless ? "yes" : "no")
 
         // Valid value: null, release, debug, fastdebug, slowdebug
-        def correttoDebugLevel = "release" // Default: release
+        correttoDebugLevel = "release" // Default: release
         switch(project.findProperty("corretto.debug_level")) {
             case null:
             case "release":

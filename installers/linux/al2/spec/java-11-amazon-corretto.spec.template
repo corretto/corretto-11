@@ -35,7 +35,7 @@
 %global java_inc  %{java_home}/include
 
 # Where the make targets actually get written out
-%global java_imgdir build/linux-%{_arch}-normal-server-release/images/
+%global java_imgdir build/linux-%{_arch}-normal-server-$debug_level/images/
 
 # Higher numbers win for the alternatives program.
 %global alternatives_priority 2
@@ -203,7 +203,7 @@ bash ./configure \\
         --with-vendor-url="https://aws.amazon.com/corretto/" \\
         --with-vendor-bug-url="https://github.com/corretto/corretto-11/issues/" \\
         --with-vendor-vm-bug-url="https://github.com/corretto/corretto-11/issues/" \\
-        --with-debug-level=release \\
+        --with-debug-level=$debug_level \\
         --with-native-debug-symbols=none
 
 make images
@@ -344,6 +344,9 @@ fi
 %license %{java_imgdir}/docs/legal
 
 %changelog
+* Thu Aug 18 2022 Dan Lutker <lutkerd@amazon.com>
+- Add ability to set debug_level
+
 * Fri Jul 22 2022 Dan Lutker <lutkerd@amazon.com>
 - Add provides java-devel
 
