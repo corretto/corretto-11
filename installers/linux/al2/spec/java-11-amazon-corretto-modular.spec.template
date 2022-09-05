@@ -121,13 +121,8 @@ Requires: libXt
 Requires: libXrender
 Requires: libXrandr
 Requires: libXtst
-Requires: alsa-lib
 Requires: giflib
-Requires: libjpeg
 Requires: libpng
-Requires: dejavu-sans-fonts
-Requires: dejavu-serif-fonts
-Requires: dejavu-sans-mono-fonts
 # Require headless package.
 Requires: %{name}-headless%{?_isa} = %{epoch}:%{version}-%{release}
 
@@ -155,6 +150,11 @@ Requires: javapackages-filesystem
 Requires: zlib
 Requires: fontconfig
 Requires: freetype
+Requires: dejavu-sans-fonts
+Requires: dejavu-serif-fonts
+Requires: dejavu-sans-mono-fonts
+Requires: alsa-lib
+Requires: libjpeg
 Requires: ca-certificates
 %if "%{dist}" == ".amzn2"
 Requires: log4j-cve-2021-44228-cve-mitigations
@@ -471,6 +471,9 @@ fi
 %license %{java_imgdir}/docs/legal
 
 %changelog
+* Mon Aug 29 2022 Dan Lutker <lutkerd@amazon.com>
+- Move requires for jpeg, alsa and fonts to headless package
+
 * Thu Aug 18 2022 Dan Lutker <lutkerd@amazon.com>
 - Add ability to set debug_level
 
