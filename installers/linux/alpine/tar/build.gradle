@@ -40,8 +40,8 @@ ext {
     }
 }
 
-def jdkResultingImage = "$buildRoot/build/linux-${arch}-normal-server-release/images/jdk"
-def testResultingImage = "$buildRoot/build/linux-${arch}-normal-server-release/images/test"
+def jdkResultingImage = "$buildRoot/build/linux-${arch}-server-release/images/jdk"
+def testResultingImage = "$buildRoot/build/linux-${arch}-server-release/images/test"
 
 /**
  * Create a local copy of the source tree in our

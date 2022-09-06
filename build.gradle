@@ -205,7 +205,7 @@ allprojects {
         }
 
         // Call toString explicitly to avoid lazy evaluation
-        jdkImageName = "${os}-${jdkArch}-normal-server-${correttoDebugLevel}".toString()
+        jdkImageName = "${os}-${jdkArch}-server-${correttoDebugLevel}".toString()
         archSuffix = is_musl ? "-musl" : ""
         headless = is_headless ? "-headless" : ""
         // no debug level suffix for release build
