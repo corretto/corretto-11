@@ -218,7 +218,6 @@ java/awt/image/DrawImage/IncorrectUnmanagedImageRotatedClip.java 8196087 windows
 java/awt/image/MultiResolutionImage/MultiResolutionDrawImageWithTransformTest.java 8198390 generic-all
 java/awt/image/multiresolution/MultiresolutionIconTest.java 8169187 macosx-all
 java/awt/print/Headless/HeadlessPrinterJob.java 8196088 windows-all
-java/awt/print/PrinterJob/TestPgfmtSetMPA.java 8198343 generic-all
 sun/awt/datatransfer/SuplementaryCharactersTransferTest.java 8011371 generic-all
 sun/awt/shell/ShellFolderMemoryLeak.java 8197794 windows-all
 sun/awt/shell/FileSystemViewMemoryLeak.java 8241806 windows-all
@@ -695,7 +694,6 @@ javax/swing/JWindow/ShapedAndTranslucentWindows/TranslucentJComboBox.java 802462
 # The next test below is an intermittent failure
 javax/swing/JComboBox/8033069/bug8033069ScrollBar.java 8163367 generic-all
 javax/swing/JColorChooser/Test6827032.java 8197825 windows-all
-javax/swing/JColorChooser/Test7194184.java 8194126 linux-all,macosx-all
 javax/swing/JSplitPane/4201995/bug4201995.java 8079127 generic-all
 javax/swing/JTree/DnD/LastNodeLowerHalfDrop.java 8159131 linux-all
 javax/swing/JTree/4633594/JTreeFocusTest.java 8173125 macosx-all
