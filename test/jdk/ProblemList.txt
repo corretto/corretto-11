@@ -136,7 +136,6 @@ java/awt/Focus/KeyEventForBadFocusOwnerTest/KeyEventForBadFocusOwnerTest.java 81
 java/awt/Focus/MouseClickRequestFocusRaceTest/MouseClickRequestFocusRaceTest.java 8194753 linux-all,macosx-all
 java/awt/Focus/NoAutotransferToDisabledCompTest/NoAutotransferToDisabledCompTest.java 7152980 macosx-all
 java/awt/Focus/ShowFrameCheckForegroundTest/ShowFrameCheckForegroundTest.java 8028701 macosx-all,linux-all
-java/awt/Focus/SimpleWindowActivationTest/SimpleWindowActivationTest.java 8159599 macosx-all
 java/awt/Focus/TypeAhead/TestFocusFreeze.java 8198622,6447537 macosx-all,windows-all,linux-all
 java/awt/Focus/WrongKeyTypedConsumedTest/WrongKeyTypedConsumedTest.java 8169096 macosx-all
 java/awt/event/KeyEvent/CorrectTime/CorrectTime.java 6626492 generic-all
@@ -223,7 +222,6 @@ sun/awt/shell/FileSystemViewMemoryLeak.java 8241806 windows-all
 sun/java2d/DirectX/OnScreenRenderingResizeTest/OnScreenRenderingResizeTest.java 8022403 generic-all
 sun/java2d/DirectX/OverriddenInsetsTest/OverriddenInsetsTest.java 8196102 generic-all
 sun/java2d/DirectX/RenderingToCachedGraphicsTest/RenderingToCachedGraphicsTest.java 8196180 windows-all
-java/awt/Graphics2D/CopyAreaOOB.java 7001973 windows-all,macosx-all
 sun/java2d/SunGraphics2D/EmptyClipRenderingTest.java 8144029 macosx-all
 sun/java2d/SunGraphics2D/DrawImageBilinear.java 8191406 generic-all
 sun/java2d/SunGraphics2D/PolyVertTest.java 6986565 generic-all
@@ -452,7 +450,6 @@ java/awt/image/VolatileImage/CustomCompositeTest.java 8199002 windows-all,linux-
 java/awt/image/VolatileImage/GradientPaints.java 8199003 linux-all
 java/awt/JAWT/JAWT.sh 8197798 windows-all
 java/awt/Debug/DumpOnKey/DumpOnKey.java 8202667 windows-all
-java/awt/Robot/RobotWheelTest/RobotWheelTest.java 8129827 generic-all
 java/awt/Focus/WindowUpdateFocusabilityTest/WindowUpdateFocusabilityTest.java 8202926 linux-all
 java/awt/datatransfer/ConstructFlavoredObjectTest/ConstructFlavoredObjectTest.java 8202860 linux-all
 java/awt/dnd/DisposeFrameOnDragCrash/DisposeFrameOnDragTest.java 8202790 macosx-all,linux-all
@@ -478,7 +475,6 @@ java/awt/Modal/ModalFocusTransferTests/FocusTransferDialogsDocModalTest.java 816
 
 java/awt/GraphicsDevice/DisplayModes/CycleDMImage.java 7099223 linux-all,solaris-all,windows-all
 java/awt/Window/WindowResizing/DoubleClickTitleBarTest.java 8233557 macosx-all
-java/awt/Window/WindowOwnedByEmbeddedFrameTest/WindowOwnedByEmbeddedFrameTest.java 8233558 macosx-all
 java/awt/keyboard/AllKeyCode/AllKeyCode.java 8242930 macosx-all
 java/awt/FullScreen/8013581/bug8013581.java 8169471 macosx-all
 java/awt/event/MouseEvent/RobotLWTest/RobotLWTest.java 8233568 macosx-all
