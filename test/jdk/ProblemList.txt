@@ -218,7 +218,6 @@ java/awt/print/Headless/HeadlessPrinterJob.java 8196088 windows-all
 sun/awt/datatransfer/SuplementaryCharactersTransferTest.java 8011371 generic-all
 sun/awt/shell/ShellFolderMemoryLeak.java 8197794 windows-all
 sun/awt/shell/FileSystemViewMemoryLeak.java 8241806 windows-all
-sun/java2d/DirectX/OnScreenRenderingResizeTest/OnScreenRenderingResizeTest.java 8022403 generic-all
 sun/java2d/DirectX/OverriddenInsetsTest/OverriddenInsetsTest.java 8196102 generic-all
 sun/java2d/DirectX/RenderingToCachedGraphicsTest/RenderingToCachedGraphicsTest.java 8196180 windows-all
 sun/java2d/SunGraphics2D/EmptyClipRenderingTest.java 8144029 macosx-all
@@ -660,7 +659,6 @@ javax/sound/sampled/Clip/Drain/ClipDrain.java          7062792 generic-all
 javax/sound/sampled/Mixers/DisabledAssertionCrash.java 7067310 generic-all
 
 javax/sound/midi/Sequencer/Recording.java 8167580 linux-all,solaris-all
-javax/sound/midi/Sequencer/MetaCallback.java 8178698 linux-all,solaris-all
 
 ############################################################################
 
