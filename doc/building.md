@@ -177,10 +177,9 @@ On Windows, it is important that you pay attention to the instructions in the
 
 Windows is the only non-POSIX OS supported by the JDK, and as such, requires
 some extra care. A POSIX support layer is required to build on Windows.
-Currently, the only supported such layer is Cygwin. (Msys is no longer
-supported due to a too old bash; msys2 and the new Windows Subsystem for Linux
-(WSL) would likely be possible to support in a future version but that would
-require effort to implement.)
+Currently, the only supported such layers are Cygwin and MSYS2. (MSYS is no longer
+supported due to an outdated bash; While OpenJDK can be built with MSYS2,
+support for it is still experimental, so build failures and unusual errors are not uncommon.)
 
 Internally in the build system, all paths are represented as Unix-style paths,
 e.g. `/cygdrive/c/git/jdk/Makefile` rather than `C:\git\jdk\Makefile`. This
@@ -402,6 +401,9 @@ invalid` when building using Visual Studio 2010, you have encountered
 specific installation order. However, the solution suggested by the KB article
 does not always resolve the problem. See [this stackoverflow discussion](
 https://stackoverflow.com/questions/10888391) for other suggestions.
+
+If you have Visual Studio installed but `configure` fails to detect it, it may
+be because of [spaces in path](#spaces-in-path).
 
 ### IBM XL C/C++
 
@@ -1509,6 +1511,15 @@ spawn failed
 This can be a sign of a Cygwin problem. See the information about solving
 problems in the [Cygwin](#cygwin) section. Rebooting the computer might help
 temporarily.
+
+#### Spaces in Path
+
+On Windows, when configuring, `fixpath.sh` may report that some directory
+names have spaces. Usually, it assumes those directories have
+[short paths](https://docs.microsoft.com/en-us/windows-server/administration/windows-commands/fsutil-8dot3name).
+You can run `fsutil file setshortname` in `cmd` on certain directories, such as
+`Microsoft Visual Studio` or `Windows Kits`, to assign arbitrary short paths so
+`configure` can access them.
 
 ### Getting Help
 

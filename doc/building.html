@@ -195,7 +195,7 @@
 <h3 id="windows">Windows</h3>
 <p>Windows XP is not a supported platform, but all newer Windows should be able to build the JDK.</p>
 <p>On Windows, it is important that you pay attention to the instructions in the <a href="#special-considerations">Special Considerations</a>.</p>
-<p>Windows is the only non-POSIX OS supported by the JDK, and as such, requires some extra care. A POSIX support layer is required to build on Windows. Currently, the only supported such layer is Cygwin. (Msys is no longer supported due to a too old bash; msys2 and the new Windows Subsystem for Linux (WSL) would likely be possible to support in a future version but that would require effort to implement.)</p>
+<p>Windows is the only non-POSIX OS supported by the JDK, and as such, requires some extra care. A POSIX support layer is required to build on Windows. Currently, the only supported such layers are Cygwin and MSYS2. (MSYS is no longer supported due to an outdated bash; While OpenJDK can be built with MSYS2, support for it is still experimental, so build failures and unusual errors are not uncommon.)</p>
 <p>Internally in the build system, all paths are represented as Unix-style paths, e.g. <code>/cygdrive/c/git/jdk/Makefile</code> rather than <code>C:\git\jdk\Makefile</code>. This rule also applies to input to the build system, e.g. in arguments to <code>configure</code>. So, use <code>--with-msvcr-dll=/cygdrive/c/msvcr100.dll</code> rather than <code>--with-msvcr-dll=c:\msvcr100.dll</code>. For details on this conversion, see the section on <a href="#fixpath">Fixpath</a>.</p>
 <h4 id="cygwin">Cygwin</h4>
 <p>A functioning <a href="http://www.cygwin.com/">Cygwin</a> environment is thus required for building the JDK on Windows. If you have a 64-bit OS, we strongly recommend using the 64-bit version of Cygwin.</p>
@@ -362,6 +362,7 @@ CC: Sun C++ 5.13 SunOS_i386 151846-10 2015/10/30</code></pre>
 <h3 id="microsoft-visual-studio">Microsoft Visual Studio</h3>
 <p>The minimum accepted version of Visual Studio is 2010. Older versions will not be accepted by <code>configure</code>. The maximum accepted version of Visual Studio is 2019. Versions older than 2017 are unlikely to continue working for long.</p>
 <p>If you have multiple versions of Visual Studio installed, <code>configure</code> will by default pick the latest. You can request a specific version to be used by setting <code>--with-toolchain-version</code>, e.g. <code>--with-toolchain-version=2015</code>.</p>
+<p>If you have Visual Studio installed but <code>configure</code> fails to detect it, it may be because of <a href="#spaces-in-path">spaces in path</a>.</p>
 <p>If you get <code>LINK: fatal error LNK1123: failure during conversion to COFF: file invalid</code> when building using Visual Studio 2010, you have encountered <a href="http://support.microsoft.com/kb/2757355">KB2757355</a>, a bug triggered by a specific installation order. However, the solution suggested by the KB article does not always resolve the problem. See <a href="https://stackoverflow.com/questions/10888391">this stackoverflow discussion</a> for other suggestions.</p>
 <h3 id="ibm-xl-cc">IBM XL C/C++</h3>
 <p>The regular builds by SAP is using version 12.1, described as <code>IBM XL C/C++ for AIX, V12.1 (5765-J02, 5725-C72) Version: 12.01.0000.0017</code>.</p>
@@ -943,6 +944,8 @@ Clock skew detected. Your build may be incomplete.</code></pre>
 cannot create ... Permission denied
 spawn failed</code></pre>
 <p>This can be a sign of a Cygwin problem. See the information about solving problems in the <a href="#cygwin">Cygwin</a> section. Rebooting the computer might help temporarily.</p>
+<h4 id="spaces-in-path">Spaces in Path</h4>
+<p>On Windows, when configuring, <code>fixpath.sh</code> may report that some directory names have spaces. Usually, it assumes those directories have <a href="https://docs.microsoft.com/en-us/windows-server/administration/windows-commands/fsutil-8dot3name">short paths</a>. You can run <code>fsutil file setshortname</code> in <code>cmd</code> on certain directories, such as <code>Microsoft Visual Studio</code> or <code>Windows Kits</code>, to assign arbitrary short paths so <code>configure</code> can access them.</p>
 <h3 id="getting-help">Getting Help</h3>
 <p>If none of the suggestions in this document helps you, or if you find what you believe is a bug in the build system, please contact the Build Group by sending a mail to <a href="mailto:build-dev@openjdk.java.net">build-dev@openjdk.java.net</a>. Please include the relevant parts of the configure and/or build log.</p>
 <p>If you need general help or advice about developing for the JDK, you can also contact the Adoption Group. See the section on <a href="#contributing-to-openjdk">Contributing to OpenJDK</a> for more information.</p>
