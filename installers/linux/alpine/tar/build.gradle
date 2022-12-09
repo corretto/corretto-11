@@ -56,7 +56,7 @@ task copySource(type: Copy) {
     into buildRoot
 }
 
-/** 
+/**
  * Scan the patches folder for any .patch that needs
  * to be applied before start building.
  */
@@ -169,6 +169,13 @@ task packageBuildResults(type: Tar) {
         include 'man/man1/**'
         include 'release'
         exclude '**/*.diz'
+    }
+
+    // Copy legal directory specifically to set permission correctly.
+    // See https://github.com/corretto/corretto-11/issues/129
+    from(jdkResultingImage) {
+        include 'legal/**'
+        fileMode 0444
     }
     into "amazon-corretto-${project.version.full}-alpine-linux-${arch_alias}"
 }

@@ -137,6 +137,15 @@ task prepareArtifacts {
                 include "Contents/MacOS/**"
                 exclude "Contents/Home/**/*.diz"
             }
+            from(buildRoot) {
+                include 'ADDITIONAL_LICENSE_INFO'
+                include 'ASSEMBLY_EXCEPTION'
+                include 'LICENSE'
+                include 'README.md'
+                include 'commitId.txt'
+                include 'version.txt'
+                into "Contents/Home"
+            }
             into "${buildDir}/${correttoMacDir}"
         }
         // Set the directory as bundle
