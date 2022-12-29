@@ -225,6 +225,7 @@ popd
 %post headless
 if [ \$1 -eq 1 ] ; then
   alternatives --install %{_bindir}/java java %{java_home}/bin/java %{alternatives_priority} \\
+               --slave %{_jvmdir}/%{name} %{name} %{java_home} \\
                --slave %{_jvmdir}/jre jre %{java_home} \\
                --slave %{_bindir}/keytool keytool %{java_home}/bin/keytool \\
                --slave %{_bindir}/pack200 pack200 %{java_home}/bin/pack200 \\
@@ -242,7 +243,6 @@ if [ \$1 -eq 1 ] ; then
               --slave %{_jvmdir}/jre-%{java_major_version}-openjdk jre_%{java_major_version}_openjdk %{java_home}
 
   alternatives --install %{_bindir}/javac javac %{java_home}/bin/javac %{alternatives_priority} \\
-               --slave %{_jvmdir}/%{name} %{name} %{java_home} \\
                --slave %{_jvmdir}/java java_sdk %{java_home} \\
                --slave %{_jvmdir}/java-%{java_major_version} java-%{java_major_version} %{java_home} \\
                --slave %{_bindir}/jaotc jaotc %{java_home}/bin/jaotc \\

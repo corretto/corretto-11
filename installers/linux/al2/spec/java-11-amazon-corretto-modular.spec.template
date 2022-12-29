@@ -253,6 +253,7 @@ popd
 %post headless
 if [ \$1 -eq 1 ] ; then
   alternatives --install %{_bindir}/java java %{java_home}/bin/java %{alternatives_priority} \\
+               --slave %{_jvmdir}/%{name} %{name} %{java_home} \\
                --slave %{_jvmdir}/jre jre %{java_home} \\
                --slave %{_bindir}/keytool keytool %{java_home}/bin/keytool \\
                --slave %{_bindir}/pack200 pack200 %{java_home}/bin/pack200 \\
@@ -273,7 +274,6 @@ fi
 %post devel
 if [ \$1 -eq 1 ] ; then
   alternatives --install %{_bindir}/javac javac %{java_home}/bin/javac %{alternatives_priority} \\
-               --slave %{_jvmdir}/%{name} %{name} %{java_home} \\
                --slave %{_jvmdir}/java java_sdk %{java_home} \\
                --slave %{_bindir}/jaotc jaotc %{java_home}/bin/jaotc \\
                --slave %{_bindir}/jar jar %{java_home}/bin/jar \\
