@@ -1,10 +1,18 @@
-This patch is applied to disable implicit-fallthrough warnings on gcc7 or
-higher when building the bundled version of zlib.
+From c346e3bc8bc8e8c844a0d53686c8c3cae315deaa Mon Sep 17 00:00:00 2001
+From: Ben Taylor <benty@amazon.com>
+Date: Thu, 5 Jan 2023 16:35:54 -0800
+Subject: [PATCH] Disable implicit-fallthrough warnings on gcc7 or higher when
+ building the bundled version of zlib.
 
-diff --git src/java.base/share/native/libzip/zlib/infback.c src/java.base/share/native/libzip/zlib/infback.c
-index 4c8283909..1a9cc6b60 100644
---- src/java.base/share/native/libzip/zlib/infback.c
-+++ src/java.base/share/native/libzip/zlib/infback.c
+---
+ .../share/native/libzip/zlib/infback.c         |  2 +-
+ .../share/native/libzip/zlib/inflate.c         | 18 ++++++++++++++++++
+ 2 files changed, 19 insertions(+), 1 deletion(-)
+
+diff --git a/src/java.base/share/native/libzip/zlib/infback.c b/src/java.base/share/native/libzip/zlib/infback.c
+index 4c8283909c1..1a9cc6b6013 100644
+--- a/src/java.base/share/native/libzip/zlib/infback.c
++++ b/src/java.base/share/native/libzip/zlib/infback.c
 @@ -501,7 +501,7 @@ void FAR *out_desc;
              }
              Tracev((stderr, "inflate:       codes ok\n"));
@@ -14,10 +22,10 @@ index 4c8283909..1a9cc6b60 100644
          case LEN:
              /* use inflate_fast() if we have enough input and output */
              if (have >= 6 && left >= 258) {
-diff --git src/java.base/share/native/libzip/zlib/inflate.c src/java.base/share/native/libzip/zlib/inflate.c
-index ca904e744..4abfe84a5 100644
---- src/java.base/share/native/libzip/zlib/inflate.c
-+++ src/java.base/share/native/libzip/zlib/inflate.c
+diff --git a/src/java.base/share/native/libzip/zlib/inflate.c b/src/java.base/share/native/libzip/zlib/inflate.c
+index ca904e74427..4abfe84a5d3 100644
+--- a/src/java.base/share/native/libzip/zlib/inflate.c
++++ b/src/java.base/share/native/libzip/zlib/inflate.c
 @@ -764,6 +764,7 @@ int flush;
                  CRC2(state->check, hold);
              INITBITS();
@@ -147,3 +155,6 @@ index ca904e744..4abfe84a5 100644
          case DONE:
              ret = Z_STREAM_END;
              goto inf_leave;
+-- 
+2.39.0
+
