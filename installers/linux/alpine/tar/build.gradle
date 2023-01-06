@@ -66,7 +66,7 @@ task applyPatches() {
         fileTree('patches').matching {
             include '*.patch'
         }.each { f ->
-            ant.patch(patchfile: f, dir: "$buildRoot", strip: 0)
+            ant.patch(patchfile: f, dir: "$buildRoot", strip: 1)
         }
     }
 }
