@@ -2,6 +2,45 @@
 
 The following sections describe the changes for each release of Amazon Corretto 11.
 
+## Corretto version: 11.0.18.10.1
+Release Date: January 17, 2023
+
+**Target Platforms <sup>1</sup>**
+
++  RPM-based Linux using glibc 2.12 or later, x86, x86_64
++  Debian-based Linux using glibc 2.12 or later, x86, x86_64
++  RPM-based Linux using glibc 2.17 or later, aarch64
++  Debian-based Linux using glibc 2.17 or later, aarch64
++  Linux using glibc 2.25 or later, Arm
++  Linux using muslc 1.2.2 or later, Arm
++  Alpine-based Linux, x86_64
++  Windows 10 or later, x86_64
++  macOS 10.15 and later, x86_64
++  macOS 11.0 and later, aarch64
+
+**1.** This is the platform targeted by the build. See [Using Amazon Corretto](https://aws.amazon.com/corretto/faqs/#Using_Amazon_Corretto)
+in the Amazon Corretto FAQ for supported platforms
+
+The following issues are addressed in 11.0.18.10.1:
+
+| Issue Name                | Platform | Description                                                                | Link                                                                            |
+|---------------------------|----------|----------------------------------------------------------------------------|---------------------------------------------------------------------------------|
+| Import jdk-11.0.18+10     | All      | Update Corretto baseline to OpenJDK 11.0.18+10                             | [jdk-11.0.18+10](https://github.com/openjdk/jdk11u/releases/tag/jdk-11.0.18+10) |
+| Backport 8221351          | All      | Backport 8221351: Crash in KlassFactory::check_shared_class_file_load_hook | [#298](https://github.com/corretto/corretto-11/pull/298)                        |
+| Backport 8221621          | All      | Backport 8221621: FindTests.gmk cannot handle "=" in TEST.groups comments  | [#298](https://github.com/corretto/corretto-11/pull/298)                        |
+| Fix java_home alternative | Linux    | Alternative dir without architecture should be created on headless package | [#302](https://github.com/corretto/corretto-11/pull/302)                        |                                                                                                                 |
+| Update amazon cacerts     | All      | Update amazon cacerts file from amazonlinux                                |                                                                                 |
+| Relax VerifyCACerts       | All      | Relax VerifyCACerts expiry condition                                       | [#294](https://github.com/corretto/corretto-11/pull/294)                        |                                                                                                                 |
+
+The following CVEs are addressed in 11.0.18.10.1:
+
+| CVE            | CVSS    | Component |
+|----------------|---------|-----------|
+| CVE-2023-21835 | 8287411 | 5.3       |
+| CVE-2023-21830 | 8285021 | 5.3       |
+| CVE-2023-21843 | 8293742 | 3.7       |
+
+
 ## Corretto version: 11.0.17.8.1
 
 Release Date: October 18, 2022
