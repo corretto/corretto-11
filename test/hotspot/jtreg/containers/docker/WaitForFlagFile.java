@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2001, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2022, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -21,30 +21,23 @@
  * questions.
  */
 
-/*
- * @test
- * @bug 4425485
- * @summary Check that shutdownInput followed by shutdownOutput
- *          doesn't throw an exception.
- */
-import java.net.*;
+import java.io.File;
+import java.io.FileOutputStream;
 
-public class ShutdownBoth {
+public class WaitForFlagFile {
+    public static void main(String[] args) throws Exception {
+        System.out.println("WaitForFlagFile: Entering");
 
-    public static void main(String args[]) throws Exception {
-        InetAddress loopback = InetAddress.getLoopbackAddress();
-        ServerSocket ss = new ServerSocket(0, 50, loopback);
-        Socket s1 = new Socket(ss.getInetAddress(), ss.getLocalPort());
-        Socket s2 = ss.accept();
+        File started = new File("/tmp/started");
+        FileOutputStream fout = new FileOutputStream(started);
+        fout.close();
 
-        try {
-            s1.shutdownInput();
-            s1.shutdownOutput();            // failed b55
-        } finally {
-            s1.close();
-            s2.close();
-            ss.close();
+        File flag = new File("/tmp/flag");
+        while (!flag.exists()) {
+            System.out.println("WaitForFlagFile: Waiting");
+            Thread.sleep(500);
         }
-    }
+        System.out.println("WaitForFlagFile: Exiting");
 
+    }
 }
