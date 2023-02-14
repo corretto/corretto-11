@@ -195,7 +195,8 @@ FLAGS_POST_TOOLCHAIN
 PLATFORM_SETUP_OPENJDK_TARGET_BITS
 PLATFORM_SETUP_OPENJDK_TARGET_ENDIANNESS
 
-# Configure flags for the tools
+# Configure flags for the tools. Need to know if we should build reproducible.
+JDKOPT_SETUP_REPRODUCIBLE_BUILD
 FLAGS_SETUP_FLAGS
 
 # Setup debug symbols (need objcopy from the toolchain for that)
@@ -235,6 +236,7 @@ JDKOPT_ENABLE_DISABLE_FAILURE_HANDLER
 JDKOPT_ENABLE_DISABLE_GENERATE_CLASSLIST
 JDKOPT_EXCLUDE_TRANSLATIONS
 JDKOPT_ENABLE_DISABLE_MANPAGES
+JDKOPT_SETUP_REPRODUCIBLE_BUILD
 
 ###############################################################################
 #

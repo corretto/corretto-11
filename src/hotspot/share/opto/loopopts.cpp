@@ -1858,26 +1858,28 @@ void PhaseIdealLoop::clone_loop_handle_data_uses(Node* old, Node_List &old_new,
   }
 }
 
-static void clone_outer_loop_helper(Node* n, const IdealLoopTree *loop, const IdealLoopTree* outer_loop,
-                                    const Node_List &old_new, Unique_Node_List& wq, PhaseIdealLoop* phase,
-                                    bool check_old_new) {
+static void collect_nodes_in_outer_loop_not_reachable_from_sfpt(Node* n, const IdealLoopTree *loop, const IdealLoopTree* outer_loop,
+                                                                const Node_List &old_new, Unique_Node_List& wq, PhaseIdealLoop* phase,
+                                                                bool check_old_new) {
   for (DUIterator_Fast jmax, j = n->fast_outs(jmax); j < jmax; j++) {
     Node* u = n->fast_out(j);
     assert(check_old_new || old_new[u->_idx] == NULL, "shouldn't have been cloned");
     if (!u->is_CFG() && (!check_old_new || old_new[u->_idx] == NULL)) {
       Node* c = phase->get_ctrl(u);
       IdealLoopTree* u_loop = phase->get_loop(c);
-      assert(!loop->is_member(u_loop), "can be in outer loop or out of both loops only");
-      if (outer_loop->is_member(u_loop)) {
-        wq.push(u);
-      } else {
-        // nodes pinned with control in the outer loop but not referenced from the safepoint must be moved out of
-        // the outer loop too
-        Node* u_c = u->in(0);
-        if (u_c != NULL) {
-          IdealLoopTree* u_c_loop = phase->get_loop(u_c);
-          if (outer_loop->is_member(u_c_loop) && !loop->is_member(u_c_loop)) {
-            wq.push(u);
+      assert(!loop->is_member(u_loop) || !loop->_body.contains(u), "can be in outer loop or out of both loops only");
+      if (!loop->is_member(u_loop)) {
+        if (outer_loop->is_member(u_loop)) {
+          wq.push(u);
+        } else {
+          // nodes pinned with control in the outer loop but not referenced from the safepoint must be moved out of
+          // the outer loop too
+          Node* u_c = u->in(0);
+          if (u_c != NULL) {
+            IdealLoopTree* u_c_loop = phase->get_loop(u_c);
+            if (outer_loop->is_member(u_c_loop) && !loop->is_member(u_c_loop)) {
+              wq.push(u);
+            }
           }
         }
       }
@@ -1996,12 +1998,17 @@ void PhaseIdealLoop::clone_outer_loop(LoopNode* head, CloneLoopMode mode, IdealL
     Unique_Node_List wq;
     for (uint i = 0; i < extra_data_nodes.size(); i++) {
       Node* old = extra_data_nodes.at(i);
-      clone_outer_loop_helper(old, loop, outer_loop, old_new, wq, this, true);
+      collect_nodes_in_outer_loop_not_reachable_from_sfpt(old, loop, outer_loop, old_new, wq, this, true);
+    }
+
+    for (uint i = 0; i < loop->_body.size(); i++) {
+      Node* old = loop->_body.at(i);
+      collect_nodes_in_outer_loop_not_reachable_from_sfpt(old, loop, outer_loop, old_new, wq, this, true);
     }
 
     Node* inner_out = sfpt->in(0);
     if (inner_out->outcnt() > 1) {
-      clone_outer_loop_helper(inner_out, loop, outer_loop, old_new, wq, this, true);
+      collect_nodes_in_outer_loop_not_reachable_from_sfpt(inner_out, loop, outer_loop, old_new, wq, this, true);
     }
 
     Node* new_ctrl = cl->outer_loop_exit();
@@ -2012,7 +2019,7 @@ void PhaseIdealLoop::clone_outer_loop(LoopNode* head, CloneLoopMode mode, IdealL
       if (n->in(0) != NULL) {
         _igvn.replace_input_of(n, 0, new_ctrl);
       }
-      clone_outer_loop_helper(n, loop, outer_loop, old_new, wq, this, false);
+      collect_nodes_in_outer_loop_not_reachable_from_sfpt(n, loop, outer_loop, old_new, wq, this, false);
     }
   } else {
     Node *newhead = old_new[loop->_head->_idx];
@@ -2698,6 +2705,12 @@ int PhaseIdealLoop::clone_for_use_outside_loop( IdealLoopTree *loop, Node* n, No
       worklist.push(use);
     }
   }
+
+  if (C->check_node_count(worklist.size() + NodeLimitFudgeFactor,
+                          "Too many clones required in clone_for_use_outside_loop in partial peeling")) {
+    return -1;
+  }
+
   while( worklist.size() ) {
     Node *use = worklist.pop();
     if (!has_node(use) || use->in(0) == C->top()) continue;
@@ -3251,6 +3264,7 @@ bool PhaseIdealLoop::partial_peel( IdealLoopTree *loop, Node_List &old_new ) {
 #endif
 
   // Evacuate nodes in peel region into the not_peeled region if possible
+  bool too_many_clones = false;
   uint new_phi_cnt = 0;
   uint cloned_for_outside_use = 0;
   for (uint i = 0; i < peel_list.size();) {
@@ -3267,7 +3281,12 @@ bool PhaseIdealLoop::partial_peel( IdealLoopTree *loop, Node_List &old_new ) {
           // if not pinned and not a load (which maybe anti-dependent on a store)
           // and not a CMove (Matcher expects only bool->cmove).
           if ( n->in(0) == NULL && !n->is_Load() && !n->is_CMove() ) {
-            cloned_for_outside_use += clone_for_use_outside_loop(loop, n, worklist);
+            int new_clones = clone_for_use_outside_loop(loop, n, worklist);
+            if (new_clones == -1) {
+              too_many_clones = true;
+              break;
+            }
+            cloned_for_outside_use += new_clones;
             sink_list.push(n);
             peel     >>= n->_idx; // delete n from peel set.
             not_peel <<= n->_idx; // add n to not_peel set.
@@ -3295,9 +3314,9 @@ bool PhaseIdealLoop::partial_peel( IdealLoopTree *loop, Node_List &old_new ) {
   bool exceed_node_budget = !may_require_nodes(estimate);
   bool exceed_phi_limit = new_phi_cnt > old_phi_cnt + PartialPeelNewPhiDelta;
 
-  if (exceed_node_budget || exceed_phi_limit) {
+  if (too_many_clones || exceed_node_budget || exceed_phi_limit) {
 #ifndef PRODUCT
-    if (TracePartialPeeling) {
+    if (TracePartialPeeling && exceed_phi_limit) {
       tty->print_cr("\nToo many new phis: %d  old %d new cmpi: %c",
                     new_phi_cnt, old_phi_cnt, new_peel_if != NULL?'T':'F');
     }
