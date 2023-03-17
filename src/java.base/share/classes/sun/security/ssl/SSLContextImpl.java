@@ -25,7 +25,7 @@
 
 package sun.security.ssl;
 
-import java.io.*;
+import java.io.FileInputStream;
 import java.net.Socket;
 import java.security.*;
 import java.security.cert.*;
@@ -571,9 +571,7 @@ public abstract class SSLContextImpl extends SSLContextSpi {
                     ProtocolVersion.TLS13,
                     ProtocolVersion.TLS12,
                     ProtocolVersion.TLS11,
-                    ProtocolVersion.TLS10,
-                    ProtocolVersion.SSL30,
-                    ProtocolVersion.SSL20Hello
+                    ProtocolVersion.TLS10
                 });
             }
 
@@ -617,26 +615,6 @@ public abstract class SSLContextImpl extends SSLContextSpi {
         boolean isDTLS() {
             return false;
         }
-
-        static ProtocolVersion[] getSupportedProtocols() {
-            if (SunJSSE.isFIPS()) {
-                return new ProtocolVersion[] {
-                        ProtocolVersion.TLS13,
-                        ProtocolVersion.TLS12,
-                        ProtocolVersion.TLS11,
-                        ProtocolVersion.TLS10
-                };
-            } else {
-                return new ProtocolVersion[]{
-                        ProtocolVersion.TLS13,
-                        ProtocolVersion.TLS12,
-                        ProtocolVersion.TLS11,
-                        ProtocolVersion.TLS10,
-                        ProtocolVersion.SSL30,
-                        ProtocolVersion.SSL20Hello
-                };
-            }
-        }
     }
 
     /*
@@ -657,8 +635,7 @@ public abstract class SSLContextImpl extends SSLContextSpi {
             } else {
                 clientDefaultProtocols = getAvailableProtocols(
                         new ProtocolVersion[] {
-                    ProtocolVersion.TLS10,
-                    ProtocolVersion.SSL30
+                    ProtocolVersion.TLS10
                 });
             }
 
@@ -697,8 +674,7 @@ public abstract class SSLContextImpl extends SSLContextSpi {
                 clientDefaultProtocols = getAvailableProtocols(
                         new ProtocolVersion[] {
                     ProtocolVersion.TLS11,
-                    ProtocolVersion.TLS10,
-                    ProtocolVersion.SSL30
+                    ProtocolVersion.TLS10
                 });
             }
 
@@ -740,8 +716,7 @@ public abstract class SSLContextImpl extends SSLContextSpi {
                         new ProtocolVersion[] {
                     ProtocolVersion.TLS12,
                     ProtocolVersion.TLS11,
-                    ProtocolVersion.TLS10,
-                    ProtocolVersion.SSL30
+                    ProtocolVersion.TLS10
                 });
             }
 
@@ -784,8 +759,7 @@ public abstract class SSLContextImpl extends SSLContextSpi {
                     ProtocolVersion.TLS13,
                     ProtocolVersion.TLS12,
                     ProtocolVersion.TLS11,
-                    ProtocolVersion.TLS10,
-                    ProtocolVersion.SSL30
+                    ProtocolVersion.TLS10
                 });
             }
 
@@ -934,9 +908,39 @@ public abstract class SSLContextImpl extends SSLContextSpi {
             ProtocolVersion[] candidates;
             if (refactored.isEmpty()) {
                 if (client) {
-                    candidates = getProtocols();
+                    // default client protocols
+                    if (SunJSSE.isFIPS()) {
+                        candidates = new ProtocolVersion[] {
+                            ProtocolVersion.TLS13,
+                            ProtocolVersion.TLS12,
+                            ProtocolVersion.TLS11,
+                            ProtocolVersion.TLS10
+                        };
+                    } else {
+                        candidates = new ProtocolVersion[] {
+                            ProtocolVersion.TLS13,
+                            ProtocolVersion.TLS12,
+                            ProtocolVersion.TLS11,
+                            ProtocolVersion.TLS10
+                        };
+                    }
                 } else {
-                    candidates = getSupportedProtocols();
+                    // default server protocols
+                    if (SunJSSE.isFIPS()) {
+                        candidates = new ProtocolVersion[] {
+                            ProtocolVersion.TLS13,
+                            ProtocolVersion.TLS12,
+                            ProtocolVersion.TLS11,
+                            ProtocolVersion.TLS10
+                        };
+                    } else {
+                        candidates = new ProtocolVersion[] {
+                            ProtocolVersion.TLS13,
+                            ProtocolVersion.TLS12,
+                            ProtocolVersion.TLS11,
+                            ProtocolVersion.TLS10
+                        };
+                    }
                 }
             } else {
                 // Use the customized TLS protocols.
@@ -945,25 +949,6 @@ public abstract class SSLContextImpl extends SSLContextSpi {
             }
 
             return getAvailableProtocols(candidates);
-        }
-
-        static ProtocolVersion[] getProtocols() {
-            if (SunJSSE.isFIPS()) {
-                return new ProtocolVersion[]{
-                        ProtocolVersion.TLS13,
-                        ProtocolVersion.TLS12,
-                        ProtocolVersion.TLS11,
-                        ProtocolVersion.TLS10
-                };
-            } else {
-                return new ProtocolVersion[]{
-                        ProtocolVersion.TLS13,
-                        ProtocolVersion.TLS12,
-                        ProtocolVersion.TLS11,
-                        ProtocolVersion.TLS10,
-                        ProtocolVersion.SSL30
-                };
-            }
         }
 
         protected CustomizedTLSContext() {
@@ -991,8 +976,6 @@ public abstract class SSLContextImpl extends SSLContextSpi {
         List<CipherSuite> getServerDefaultCipherSuites() {
             return serverDefaultCipherSuites;
         }
-
-
     }
 
     /*
@@ -1243,7 +1226,6 @@ public abstract class SSLContextImpl extends SSLContextSpi {
         private static final List<CipherSuite> serverDefaultCipherSuites;
 
         static {
-            // Both DTLSv1.0 and DTLSv1.2 can be used in FIPS mode.
             supportedProtocols = Arrays.asList(
                 ProtocolVersion.DTLS12,
                 ProtocolVersion.DTLS10
