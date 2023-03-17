@@ -1,10 +1,12 @@
 /*
- * Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2021, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 2 only, as
- * published by the Free Software Foundation.
+ * published by the Free Software Foundation.  Oracle designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Oracle in the LICENSE file that accompanied this code.
  *
  * This code is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
@@ -21,20 +23,19 @@
  * questions.
  */
 
-/*
- * @test TestSSE4Disabled
- * @bug 8158214
- * @requires vm.cpu.features ~= ".*sse4.*"
- * @summary Test correct execution without SSE 4.
- *
- * @run main/othervm -Xcomp -XX:UseSSE=3 compiler.cpuflags.TestSSE4Disabled
- */
+#import "JavaComponentAccessibility.h"
+#import "CommonComponentAccessibility.h"
 
-package compiler.cpuflags;
+#import <AppKit/AppKit.h>
 
-public class TestSSE4Disabled {
-    public static void main(String args[]) {
-        System.out.println("Passed");
-    }
-}
+@interface ScrollAreaAccessibility : CommonComponentAccessibility {
 
+};
+- (NSString * _Nonnull)accessibilityRole;
+- (NSArray * _Nullable)accessibilityContents;
+- (id _Nullable)accessibilityHorizontalScrollBar;
+- (id _Nullable)accessibilityVerticalScrollBar;
+
+- (NSArray * _Nullable)accessibilityContentsAttribute;
+- (id _Nullable)getScrollBarwithOrientation:(enum NSAccessibilityOrientation)orientation;
+@end
