@@ -49,11 +49,10 @@ The following issues are addressed in 11.0.18.10.1:
 
 The following CVEs are addressed in 11.0.18.10.1:
 
-| CVE            | CVSS    | Component |
-|----------------|---------|-----------|
-| CVE-2023-21835 | 8287411 | 5.3       |
-| CVE-2023-21830 | 8285021 | 5.3       |
-| CVE-2023-21843 | 8293742 | 3.7       |
+| CVE            | CVSS | Component                   |
+|----------------|------|-----------------------------|
+| CVE-2023-21835 | 5.3  | security-libs/javax.net.ssl |
+| CVE-2023-21843 | 3.7  | client-libs/javax.sound     |
 
 
 ## Corretto version: 11.0.17.8.1
