@@ -23,19 +23,14 @@
  * questions.
  */
 
-#ifndef STATIC_TEXT_ACCESSIBILITY
-#define STATIC_TEXT_ACCESSIBILITY
+#import "JavaComponentAccessibility.h"
+#import "CommonComponentAccessibility.h"
 
-#import "CommonTextAccessibility.h"
+#import <AppKit/AppKit.h>
 
-#import <AppKit/NSAccessibility.h>
-
-
-@interface StaticTextAccessibility : CommonTextAccessibility<NSAccessibilityStaticText> {
+@interface GroupAccessibility : CommonComponentAccessibility <NSAccessibilityGroup> {
 
 };
-- (nullable NSString *)accessibilityAttributedStringForRange:(NSRange)range;
-- (nullable NSString *)accessibilityValue;
-- (NSRange)accessibilityVisibleCharacterRange;
+
+- (NSArray * _Nullable)accessibilityChildren;
 @end
-#endif

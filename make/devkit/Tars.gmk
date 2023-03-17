@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2011, 2020, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2013, 2019, Oracle and/or its affiliates. All rights reserved.
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
 #
 # This code is free software; you can redistribute it and/or modify it
@@ -23,32 +23,27 @@
 # questions.
 #
 
-# Default version, product, and vendor information to use,
-# unless overridden by configure
+# This makefile creates the tar files. It needs to be called with make -r
+# which is why it's separated out into its own file.
 
-DEFAULT_VERSION_FEATURE=11
-DEFAULT_VERSION_INTERIM=0
-DEFAULT_VERSION_UPDATE=20
-DEFAULT_VERSION_PATCH=0
-DEFAULT_VERSION_EXTRA1=0
-DEFAULT_VERSION_EXTRA2=0
-DEFAULT_VERSION_EXTRA3=0
-DEFAULT_VERSION_DATE=2023-07-18
-DEFAULT_VERSION_CLASSFILE_MAJOR=55  # "`$EXPR $DEFAULT_VERSION_FEATURE + 44`"
-DEFAULT_VERSION_CLASSFILE_MINOR=0
-DEFAULT_ACCEPTABLE_BOOT_VERSIONS="10 11"
-DEFAULT_PROMOTED_VERSION_PRE=ea
+# Input parameters
+# SRC_DIR
+# TAR_FILE
 
-LAUNCHER_NAME=openjdk
-PRODUCT_NAME=OpenJDK
-PRODUCT_SUFFIX="Runtime Environment"
-JDK_RC_PLATFORM_NAME=Platform
-COMPANY_NAME=N/A
-HOTSPOT_VM_DISTRO="OpenJDK"
-VENDOR_URL=https://openjdk.java.net/
-VENDOR_URL_BUG=https://bugreport.java.com/bugreport/
-VENDOR_URL_VM_BUG=https://bugreport.java.com/bugreport/crash.jsp
+ifeq ($(SRC_DIR), )
+  $(error SRC_DIR not set)
+endif
+ifeq ($(TAR_FILE), )
+  $(error TAR_FILE not set)
+endif
 
-# Might need better names for these
-MACOSX_BUNDLE_NAME_BASE="OpenJDK"
-MACOSX_BUNDLE_ID_BASE="net.java.openjdk"
+default: tars
+
+tars : $(TAR_FILE)
+
+$(TAR_FILE): $(shell find $(SRC_DIR) -type f)
+	@echo 'Creating compiler package $@'
+	cd $(dir $(SRC_DIR)) && tar -czf $@ $(notdir $(SRC_DIR))/*
+	touch $@
+
+.PHONY: default tars

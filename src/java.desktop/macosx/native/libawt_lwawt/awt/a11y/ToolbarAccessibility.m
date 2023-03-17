@@ -23,19 +23,15 @@
  * questions.
  */
 
-#ifndef STATIC_TEXT_ACCESSIBILITY
-#define STATIC_TEXT_ACCESSIBILITY
+#import "ToolbarAccessibility.h"
 
-#import "CommonTextAccessibility.h"
+/*
+ * Implementation of the accessibility peer for the Toolbar role
+ */
+@implementation ToolbarAccessibility
 
-#import <AppKit/NSAccessibility.h>
-
-
-@interface StaticTextAccessibility : CommonTextAccessibility<NSAccessibilityStaticText> {
-
-};
-- (nullable NSString *)accessibilityAttributedStringForRange:(NSRange)range;
-- (nullable NSString *)accessibilityValue;
-- (NSRange)accessibilityVisibleCharacterRange;
+- (NSString * _Nonnull)accessibilityRole
+{
+    return [self accessibilityRoleAttribute];
+}
 @end
-#endif

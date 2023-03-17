@@ -23,19 +23,32 @@
  * questions.
  */
 
-#ifndef STATIC_TEXT_ACCESSIBILITY
-#define STATIC_TEXT_ACCESSIBILITY
+#import "GroupAccessibility.h"
+#import "JNIUtilities.h"
+#import "ThreadUtilities.h"
+/*
+ * This is the protocol for the components that contain children.
+ * Basic logic of accessibilityChildren might be overridden in the specific implementing
+ * classes reflecting the logic of the class.
+ */
+@implementation GroupAccessibility
 
-#import "CommonTextAccessibility.h"
+/*
+ * Return all non-ignored children.
+ */
+- (NSArray *)accessibilityChildren {
+    JNIEnv *env = [ThreadUtilities getJNIEnv];
 
-#import <AppKit/NSAccessibility.h>
+    NSArray *children = [JavaComponentAccessibility childrenOfParent:self
+                                                             withEnv:env
+                                                    withChildrenCode:JAVA_AX_ALL_CHILDREN
+                                                        allowIgnored:NO];
 
+    if ([children count] == 0) {
+        return nil;
+    } else {
+        return children;
+    }
+}
 
-@interface StaticTextAccessibility : CommonTextAccessibility<NSAccessibilityStaticText> {
-
-};
-- (nullable NSString *)accessibilityAttributedStringForRange:(NSRange)range;
-- (nullable NSString *)accessibilityValue;
-- (NSRange)accessibilityVisibleCharacterRange;
 @end
-#endif
