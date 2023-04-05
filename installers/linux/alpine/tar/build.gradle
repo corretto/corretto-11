@@ -164,7 +164,6 @@ task packageBuildResults(type: Tar) {
         include 'conf/**'
         include 'include/**'
         include 'jmods/**'
-        include 'legal/**'
         include 'lib/**'
         include 'man/man1/**'
         include 'release'
