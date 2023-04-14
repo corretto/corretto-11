@@ -2,6 +2,47 @@
 
 The following sections describe the changes for each release of Amazon Corretto 11.
 
+## Corretto version: 11.0.19.7.1
+Release Date: April 18, 2023
+
+**Target Platforms <sup>1</sup>**
+
++  RPM-based Linux using glibc 2.12 or later, x86, x86_64
++  Debian-based Linux using glibc 2.12 or later, x86, x86_64
++  RPM-based Linux using glibc 2.17 or later, aarch64
++  Debian-based Linux using glibc 2.17 or later, aarch64
++  Linux using glibc 2.25 or later, Arm
++  Linux using muslc 1.2.2 or later, Arm
++  Alpine-based Linux, x86_64
++  Alpine-based Linux, aarch64
++  Windows 10 or later, x86_64
++  macOS 11.0 and later, x86_64
++  macOS 11.0 and later, aarch64
+
+**1.** This is the platform targeted by the build. See [Using Amazon Corretto](https://aws.amazon.com/corretto/faqs/#Using_Amazon_Corretto)
+in the Amazon Corretto FAQ for supported platforms
+
+The following issues are addressed in 11.0.19.7.1:
+
+| Issue Name                | Platform | Description                                                                | Link                                                                            |
+|---------------------------|----------|----------------------------------------------------------------------------|---------------------------------------------------------------------------------|
+| Import jdk-11.0.19+7                 | All      | Update Corretto baseline to OpenJDK 11.0.19+7                              | [jdk-11.0.19+7](https://github.com/openjdk/jdk11u/releases/tag/jdk-11.0.19+7)   |
+| (tz) Update Timezone Data to 2023c   | All      | Update Timezone Data to 2023c                                              | [#323](https://github.com/corretto/corretto-11/pull/323) |
+| Update amazon cacerts                | All      | Update amazon cacerts file from amazonlinux                                | [#318](https://github.com/corretto/corretto-11/pull/318) [#321](https://github.com/corretto/corretto-11/pull/321) [#322](https://github.com/corretto/corretto-11/pull/322) |
+
+The following CVEs are addressed in 11.0.19.7.1:
+
+| CVE            | CVSS | Component                   |
+|----------------|------|-----------------------------|
+| CVE-2023-21930 | 7.4  | security-libs/javax.net.ssl |
+| CVE-2023-21954 | 5.9  | hotspot/gc                  |
+| CVE-2023-21967 | 5.9  | security-libs/javax.net.ssl |
+| CVE-2023-21939 | 5.3  | client-libs/javax.swing     |
+| CVE-2023-21938 | 3.7  | core-libs/java.lang         |
+| CVE-2023-21937 | 3.7  | core-libs/java.net          |
+| CVE-2023-21968 | 3.7  | core-libs/java.nio          |
+
+
 ## Corretto version: 11.0.18.11.1
 Release Date: Feb 2, 2023
 
