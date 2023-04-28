@@ -116,6 +116,8 @@ task generateJdkRpm(type: Rpm) {
     preUninstall file("$buildRoot/scripts/preun_java.sh")
     preUninstall file("$buildRoot/scripts/preun_javac.sh")
 
+    requires('zlib')
+
     provides(jdkPackageName, "${epoch}:${version}-${release}", EQUAL)
     provides('java-11-devel', "${epoch}:${version}", EQUAL)
     provides('java-11-openjdk-devel', "${epoch}:${version}", EQUAL)
