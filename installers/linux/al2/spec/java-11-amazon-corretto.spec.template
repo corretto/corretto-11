@@ -145,9 +145,9 @@ AutoReqProv: 0
 # For build, it provides the jvmdir macro. For runtime,
 # it provides the /usr/lib/jvm directory.
 %if "%{dist}" == ".amzn2" || "%{dist}" == ".amzn2int"
-BuildRequires: jpackage-utils
+Requires: jpackage-utils
 %else
-BuildRequires: javapackages-filesystem
+Requires: javapackages-filesystem
 %endif
 Requires: zlib
 Requires: fontconfig
