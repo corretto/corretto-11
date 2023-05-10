@@ -20,3 +20,5 @@ NashornProfile.txt
 /.project/
 /.settings/
 commitId.txt
+/compile_commands.json
+/.cache
