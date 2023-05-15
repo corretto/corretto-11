@@ -50,7 +50,8 @@ task inflateRpmSpec {
                     build_id            : buildId,
                     release_id          : releaseId,
                     version_opt         : versionOpt,
-                    debug_level         : correttoDebugLevel
+                    debug_level         : correttoDebugLevel,
+                    experimental_feature: project.findProperty("corretto.experimental_feature") ?: "%{nil}"
                 ])
         outputs.files.singleFile.text = renderedTemplate
     }
@@ -105,7 +106,8 @@ task inflateRpmSpecModular {
                     build_id            : buildId,
                     release_id          : releaseId,
                     version_opt         : versionOpt,
-                    debug_level         : correttoDebugLevel
+                    debug_level         : correttoDebugLevel,
+                    experimental_feature: project.findProperty("corretto.experimental_feature") ?: "%{nil}"
                 ])
         outputs.files.singleFile.text = renderedTemplate
     }
