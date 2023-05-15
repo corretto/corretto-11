@@ -26,6 +26,14 @@
 %global build_id        $build_id
 %global release_id      $release_id
 %global version_opt     $version_opt
+%global experimental_feature     $experimental_feature
+
+# The experimental_feature macro gets set to %nil by the template, but that is still defined and
+# the spec doesn't have a quick is not nil check, just define/not defined, this makes it easier to
+# work with
+%if 0%{?experimental_feature:1} && "%{experimental_feature}" == "%{nil}"
+%undefine experimental_feature
+%endif
 # If we need to rev the package for something outside of what the
 # Corretto team is doing, we can define release_ext.
 %global release_ext  1
@@ -65,7 +73,7 @@
 %bcond_without bootjdk
 
 Summary: Amazon Corretto development environment
-Name: java-%{java_major_version}-amazon-corretto
+Name: java-%{java_major_version}-amazon-corretto%{?experimental_feature:-%{experimental_feature}}
 # Matches the 'full version' from Java's release notes:
 # https://www.oracle.com/technetwork/java/javase/11-0-2-relnotes-5188746.html
 # Eg: 11.0.2+7
