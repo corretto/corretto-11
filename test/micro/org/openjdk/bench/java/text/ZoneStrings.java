@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, Google LLC. All rights reserved.
+ * Copyright (c) 2022, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -20,14 +20,25 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
+package org.openjdk.bench.java.text;
 
+import org.openjdk.jmh.annotations.Benchmark;
+import org.openjdk.jmh.annotations.BenchmarkMode;
+import org.openjdk.jmh.annotations.Mode;
+import org.openjdk.jmh.annotations.Scope;
+import org.openjdk.jmh.annotations.State;
 
-// key: compiler.note.verbose.l2m.deduplicate
-// options: -g:none --debug=dumpLambdaToMethodDeduplication
+import java.text.DateFormatSymbols;
+import java.util.Locale;
 
-import java.util.function.Function;
+@BenchmarkMode(Mode.SingleShotTime)
+@State(Scope.Thread)
+public class ZoneStrings {
 
-public class LambdaDeduplicate {
-  Function<Integer, Integer> f1 = x -> x;
-  Function<Integer, Integer> f2 = x -> x;
+    @Benchmark
+    public void testZoneStrings() {
+        for (Locale l : Locale.getAvailableLocales()) {
+            new DateFormatSymbols(l).getZoneStrings();
+        }
+    }
 }
