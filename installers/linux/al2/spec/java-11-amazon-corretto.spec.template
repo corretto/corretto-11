@@ -27,6 +27,7 @@
 %global release_id      $release_id
 %global version_opt     $version_opt
 %global experimental_feature     $experimental_feature
+%global additional_configure_options     $additional_configure_options
 
 # The experimental_feature macro gets set to %nil by the template, but that is still defined and
 # the spec doesn't have a quick is not nil check, just define/not defined, this makes it easier to
@@ -35,6 +36,9 @@
 %undefine experimental_feature
 %endif
 
+%if 0%{?additional_configure_options:1} == 1 && "%{additional_configure_options}" == "%{nil}"
+%undefine additional_configure_options
+%endif
 # If we need to rev the package for something outside of what the
 # Corretto team is doing, we can define release_ext.
 # %global release_ext  1
@@ -197,6 +201,9 @@ bash ./configure \\
         --with-extra-cflags="-moutline-atomics" \\
         --with-extra-cxxflags="-moutline-atomics" \\
 %endif
+%if 0%{?additional_configure_options:1}
+        %{additional_configure_options} \\
+%endif
         --with-jvm-features="zgc shenandoahgc" \\
         --with-version-feature="11" \\
         --with-freetype=system \\
@@ -206,7 +213,7 @@ bash ./configure \\
         --with-zlib=system \\
         --with-version-opt="LTS" \\
         --with-version-build="%{build_id}" \\
-        --with-vendor-version-string="Corretto-%{java_version}.%{build_id}.%{release_id}" \\
+        --with-vendor-version-string="Corretto%{?experimental_feature:-%{experimental_feature}}-%{java_version}.%{build_id}.%{release_id}" \\
         --with-version-pre= \\
         --with-vendor-name="Amazon.com Inc." \\
         --with-vendor-url="https://aws.amazon.com/corretto/" \\
