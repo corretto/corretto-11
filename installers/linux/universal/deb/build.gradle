@@ -141,6 +141,7 @@ task generateJdkDeb(type: Deb) {
     preUninstall file("$buildRoot/scripts/preun_jdk.sh")
 
     requires('java-common')
+    requires('zlib1g')
     // jdk
     provides('java-compiler')
     provides('java-sdk')
