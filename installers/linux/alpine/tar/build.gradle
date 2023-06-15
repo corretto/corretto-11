@@ -81,7 +81,7 @@ task configureBuild(type: Exec) {
         'bash',
         'configure',
         "--with-version-feature=${version.major}",
-        '--with-zlib=bundled',
+        '--with-zlib=system',
         '--with-stdc++lib=static',
         '--disable-warnings-as-errors'
     ]

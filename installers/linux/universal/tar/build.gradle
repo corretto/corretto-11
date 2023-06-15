@@ -105,11 +105,14 @@ task configureBuild(type: Exec) {
     dependsOn applyPatches
     workingDir "$buildRoot"
 
+    def isArmv7 = project.hasProperty("armv7") ? Boolean.valueOf("${project.getProperty('armv7')}") : false
+    def zlibFlag = isArmv7 ? "--with-zlib=bundled" : "--with-zlib=system" 
+
     // Platform specific flags
     def command = ['bash', 'configure',
-            "--with-cacerts-file=${depsMap[caCerts]}",
-            "--with-zlib=bundled"
+            "--with-cacerts-file=${depsMap[caCerts]}"
     ]
+    command += zlibFlag
     // Common flags
     command += project.correttoCommonFlags
     command += archSpecificFlags
