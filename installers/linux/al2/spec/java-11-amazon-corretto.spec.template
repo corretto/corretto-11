@@ -28,6 +28,8 @@
 %global version_opt     $version_opt
 %global experimental_feature     $experimental_feature
 %global additional_configure_options     $additional_configure_options
+%global zlib_option $zlib_option
+%global use_gcc_ver $use_gcc_ver
 
 # The experimental_feature macro gets set to %nil by the template, but that is still defined and
 # the spec doesn't have a quick is not nil check, just define/not defined, this makes it easier to
@@ -100,7 +102,7 @@ BuildRequires: cups-devel
 BuildRequires: fontconfig-devel
 BuildRequires: freetype-devel
 BuildRequires: giflib-devel
-BuildRequires: gcc-c++
+BuildRequires: gcc%{?use_gcc_ver}-c++
 BuildRequires: libjpeg-devel
 BuildRequires: libpng-devel
 BuildRequires: libxslt
@@ -210,7 +212,7 @@ bash ./configure \\
         --with-libjpeg=system \\
         --with-giflib=system \\
         --with-libpng=system \\
-        --with-zlib=system \\
+        --with-zlib="%{zlib_option}" \\
         --with-version-opt="LTS" \\
         --with-version-build="%{build_id}" \\
         --with-vendor-version-string="Corretto%{?experimental_feature:-%{experimental_feature}}-%{java_version}.%{build_id}.%{release_id}" \\

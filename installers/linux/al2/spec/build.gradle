@@ -52,7 +52,9 @@ task inflateRpmSpec {
                     version_opt         : versionOpt,
                     debug_level         : correttoDebugLevel,
                     experimental_feature: project.findProperty("corretto.experimental_feature") ?: "%{nil}",
-                    additional_configure_options: project.findProperty("corretto.additional_configure_options") ?: "%{nil}"
+                    additional_configure_options: project.findProperty("corretto.additional_configure_options") ?: "%{nil}",
+                    zlib_option: project.findProperty("corretto.zlib_option") ?: "system",
+                    use_gcc_ver: project.findProperty("corretto.use_gcc_ver") ?: ""
                 ])
         outputs.files.singleFile.text = renderedTemplate
     }
@@ -109,7 +111,9 @@ task inflateRpmSpecModular {
                     version_opt         : versionOpt,
                     debug_level         : correttoDebugLevel,
                     experimental_feature: project.findProperty("corretto.experimental_feature") ?: "%{nil}",
-                    additional_configure_options: project.findProperty("corretto.additional_configure_options") ?: "%{nil}"
+                    additional_configure_options: project.findProperty("corretto.additional_configure_options") ?: "%{nil}",
+                    zlib_option: project.findProperty("corretto.zlib_option") ?: "system",
+                    use_gcc_ver: project.findProperty("corretto.use_gcc_ver") ?: ""
                 ])
         outputs.files.singleFile.text = renderedTemplate
     }
