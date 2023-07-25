@@ -2,6 +2,45 @@
 
 The following sections describe the changes for each release of Amazon Corretto 11.
 
+## Corretto version: 11.0.20.8.1
+Release Date: July 18, 2023
+
+**Target Platforms <sup>1</sup>**
+
++  RPM-based Linux using glibc 2.12 or later, x86, x86_64
++  Debian-based Linux using glibc 2.12 or later, x86, x86_64
++  RPM-based Linux using glibc 2.17 or later, aarch64
++  Debian-based Linux using glibc 2.17 or later, aarch64
++  Linux using glibc 2.25 or later, Arm
++  Linux using muslc 1.2.2 or later, Arm
++  Alpine-based Linux, x86_64
++  Alpine-based Linux, aarch64
++  Windows 10 or later, x86_64
++  macOS 11.0 and later, x86_64
++  macOS 11.0 and later, aarch64
+
+**1.** This is the platform targeted by the build. See [Using Amazon Corretto](https://aws.amazon.com/corretto/faqs/#Using_Amazon_Corretto)
+in the Amazon Corretto FAQ for supported platforms
+
+The following issues are addressed in 11.0.20.8.1:
+
+| Issue Name                                | Platform | Description                                   | Link                                                                          |
+|-------------------------------------------|----------|-----------------------------------------------|-------------------------------------------------------------------------------|
+| Import jdk-11.0.20+8                      | All      | Update Corretto baseline to OpenJDK 11.0.20+8 | [jdk-11.0.20+8](https://github.com/openjdk/jdk11u/releases/tag/jdk-11.0.20+8) |
+| Dynamic link zlib for non armv7 linux     | All      | Dynamic link zlib for non armv7 linux         | [#333](https://github.com/corretto/corretto-11/pull/333)                       |
+| 8302483: Enhance ZIP performance          | All      | This release of OpenJDK includes stronger checks on the Zip64 fields of zip files. In the event that these checks cause failures on trusted zip files, the checks can be disabled by setting the new system property 'jdk.util.zip.disableZip64ExtraFieldValidation' to 'true'. | |
+| 8300596: Enhance Jar Signature validation | All      | A System property "jdk.jar.maxSignatureFileSize" is introduced to configure the maximum number of bytes allowed for the signature-related files in a JAR file during verification. The default value is 8000000 bytes (8 MB). | |
+The following CVEs are addressed in 11.0.20.8.1:
+
+| CVE            | CVSS | Component                   |
+|----------------|------|-----------------------------|
+| CVE-2023-22041 | 5.1  | hotspot/compiler |
+| CVE-2023-25193 | 3.7  | client-libs/2d |
+| CVE-2023-22045 | 3.7  | hotspot/compiler |
+| CVE-2023-22049 | 3.7  | core-libs/java.io |
+| CVE-2023-22036 | 3.7  | core-libs/java.util |
+| CVE-2023-22006 | 3.1  | core-libs/java.net |
+
 ## Corretto version: 11.0.19.7.1
 Release Date: April 18, 2023
 
