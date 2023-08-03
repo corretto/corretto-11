@@ -64,17 +64,11 @@ import javax.security.auth.DestroyFailedException;
 import javax.security.auth.x500.X500Principal;
 
 import sun.security.action.GetPropertyAction;
-import sun.security.util.Debug;
-import sun.security.util.DerInputStream;
-import sun.security.util.DerOutputStream;
-import sun.security.util.DerValue;
-import sun.security.util.ObjectIdentifier;
+import sun.security.util.*;
 import sun.security.pkcs.ContentInfo;
-import sun.security.util.SecurityProperties;
 import sun.security.x509.AlgorithmId;
 import sun.security.pkcs.EncryptedPrivateKeyInfo;
 import sun.security.provider.JavaKeyStore.JKS;
-import sun.security.util.KeyStoreDelegator;
 
 
 /**
@@ -133,43 +127,42 @@ public final class PKCS12KeyStore extends KeyStoreSpi {
     private static final int MAX_ITERATION_COUNT = 5000000;
     private static final int SALT_LEN = 20;
 
-    // friendlyName, localKeyId, trustedKeyUsage
-    private static final String[] CORE_ATTRIBUTES = {
-        "1.2.840.113549.1.9.20",
-        "1.2.840.113549.1.9.21",
-        "2.16.840.1.113894.746875.1.1"
+    private static final KnownOIDs[] CORE_ATTRIBUTES = {
+        KnownOIDs.FriendlyName,
+        KnownOIDs.LocalKeyID,
+        KnownOIDs.ORACLE_TrustedKeyUsage
     };
 
     private static final Debug debug = Debug.getInstance("pkcs12");
 
-    private static final int[] keyBag  = {1, 2, 840, 113549, 1, 12, 10, 1, 2};
-    private static final int[] certBag = {1, 2, 840, 113549, 1, 12, 10, 1, 3};
-    private static final int[] secretBag = {1, 2, 840, 113549, 1, 12, 10, 1, 5};
+    private static final ObjectIdentifier PKCS8ShroudedKeyBag_OID =
+            ObjectIdentifier.of(KnownOIDs.PKCS8ShroudedKeyBag);
+    private static final ObjectIdentifier CertBag_OID =
+            ObjectIdentifier.of(KnownOIDs.CertBag);
+    private static final ObjectIdentifier SecretBag_OID =
+            ObjectIdentifier.of(KnownOIDs.SecretBag);
 
-    private static final int[] pkcs9Name  = {1, 2, 840, 113549, 1, 9, 20};
-    private static final int[] pkcs9KeyId = {1, 2, 840, 113549, 1, 9, 21};
+    private static final ObjectIdentifier PKCS9FriendlyName_OID =
+            ObjectIdentifier.of(KnownOIDs.FriendlyName);
+    private static final ObjectIdentifier PKCS9LocalKeyId_OID =
+            ObjectIdentifier.of(KnownOIDs.LocalKeyID);
+    private static final ObjectIdentifier PKCS9CertType_OID =
+            ObjectIdentifier.of(KnownOIDs.CertTypeX509);
+    private static final ObjectIdentifier pbes2_OID =
+            ObjectIdentifier.of(KnownOIDs.PBES2);
 
-    private static final int[] pkcs9certType = {1, 2, 840, 113549, 1, 9, 22, 1};
-
-    private static final int[] pbes2 = {1, 2, 840, 113549, 1, 5, 13};
-    // TODO: temporary Oracle OID
     /*
-     * { joint-iso-itu-t(2) country(16) us(840) organization(1) oracle(113894)
-     *   jdk(746875) crypto(1) id-at-trustedKeyUsage(1) }
+     * Temporary Oracle OID
+     *
+     * {joint-iso-itu-t(2) country(16) us(840) organization(1)
+     *  oracle(113894) jdk(746875) crypto(1) id-at-trustedKeyUsage(1)}
      */
-    private static final int[] TrustedKeyUsage =
-                                        {2, 16, 840, 1, 113894, 746875, 1, 1};
-    private static final int[] AnyExtendedKeyUsage = {2, 5, 29, 37, 0};
+    private static final ObjectIdentifier TrustedKeyUsage_OID =
+            ObjectIdentifier.of(KnownOIDs.ORACLE_TrustedKeyUsage);
 
-    private static final ObjectIdentifier PKCS8ShroudedKeyBag_OID;
-    private static final ObjectIdentifier CertBag_OID;
-    private static final ObjectIdentifier SecretBag_OID;
-    private static final ObjectIdentifier PKCS9FriendlyName_OID;
-    private static final ObjectIdentifier PKCS9LocalKeyId_OID;
-    private static final ObjectIdentifier PKCS9CertType_OID;
-    private static final ObjectIdentifier pbes2_OID;
-    private static final ObjectIdentifier TrustedKeyUsage_OID;
-    private static final ObjectIdentifier[] AnyUsage;
+    private static final ObjectIdentifier[] AnyUsage = new ObjectIdentifier[] {
+                ObjectIdentifier.of(KnownOIDs.anyExtendedKeyUsage)
+            };
 
     private int counter = 0;
 
@@ -197,23 +190,6 @@ public final class PKCS12KeyStore extends KeyStoreSpi {
 
     // the source of randomness
     private SecureRandom random;
-
-    static {
-        try {
-            PKCS8ShroudedKeyBag_OID = new ObjectIdentifier(keyBag);
-            CertBag_OID = new ObjectIdentifier(certBag);
-            SecretBag_OID = new ObjectIdentifier(secretBag);
-            PKCS9FriendlyName_OID = new ObjectIdentifier(pkcs9Name);
-            PKCS9LocalKeyId_OID = new ObjectIdentifier(pkcs9KeyId);
-            PKCS9CertType_OID = new ObjectIdentifier(pkcs9certType);
-            pbes2_OID = new ObjectIdentifier(pbes2);
-            TrustedKeyUsage_OID = new ObjectIdentifier(TrustedKeyUsage);
-            AnyUsage = new ObjectIdentifier[]{
-                new ObjectIdentifier(AnyExtendedKeyUsage)};
-        } catch (IOException ioe) {
-            throw new AssertionError("OID not initialized", ioe);
-        }
-    }
 
     // A keystore entry and associated attributes
     private static class Entry {
@@ -1655,9 +1631,9 @@ public final class PKCS12KeyStore extends KeyStoreSpi {
             for (KeyStore.Entry.Attribute attribute : attributes) {
                 String attributeName = attribute.getName();
                 // skip friendlyName, localKeyId and trustedKeyUsage
-                if (CORE_ATTRIBUTES[0].equals(attributeName) ||
-                    CORE_ATTRIBUTES[1].equals(attributeName) ||
-                    CORE_ATTRIBUTES[2].equals(attributeName)) {
+                if (CORE_ATTRIBUTES[0].value().equals(attributeName) ||
+                    CORE_ATTRIBUTES[1].value().equals(attributeName) ||
+                    CORE_ATTRIBUTES[2].value().equals(attributeName)) {
                     continue;
                 }
                 attrs.write(((PKCS12Attribute) attribute).getEncoded());

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, 2020, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -45,11 +45,7 @@ import sun.security.provider.certpath.ResponderId;
 import sun.security.provider.certpath.CertId;
 import sun.security.provider.certpath.OCSPResponse;
 import sun.security.provider.certpath.OCSPResponse.ResponseStatus;
-import sun.security.util.Debug;
-import sun.security.util.DerInputStream;
-import sun.security.util.DerOutputStream;
-import sun.security.util.DerValue;
-import sun.security.util.ObjectIdentifier;
+import sun.security.util.*;
 
 
 /**
@@ -59,8 +55,8 @@ import sun.security.util.ObjectIdentifier;
 public class SimpleOCSPServer {
     private final Debug debug = Debug.getInstance("oserv");
     private static final ObjectIdentifier OCSP_BASIC_RESPONSE_OID =
-            ObjectIdentifier.newInternal(
-                    new int[] { 1, 3, 6, 1, 5, 5, 7, 48, 1, 1});
+            ObjectIdentifier.of(KnownOIDs.OCSPBasicResponse);
+
     private static final SimpleDateFormat utcDateFmt =
             new SimpleDateFormat("MMM dd yyyy, HH:mm:ss z");
 

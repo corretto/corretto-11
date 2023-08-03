@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, 2013, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011, 2019, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -25,7 +25,8 @@
  * @test
  * @bug 8022780
  * @summary Test division of large values
- * @run main/othervm -Xshare:off DivisionOverflow
+ * @requires (sun.arch.data.model == "64" & os.maxMemory > 8g)
+ * @run main/othervm -Xshare:off -Xmx8g DivisionOverflow
  * @author Dmitry Nadezhin
  */
 import java.math.BigInteger;

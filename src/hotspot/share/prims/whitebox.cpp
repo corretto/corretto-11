@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012, 2023, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -94,6 +94,7 @@
 #endif // INCLUDE_AOT
 
 #ifdef LINUX
+#include "os_linux.hpp"
 #include "osContainer_linux.hpp"
 #include "cgroupSubsystem_linux.hpp"
 #endif
@@ -1832,7 +1833,7 @@ WB_ENTRY(jboolean, WB_AreOpenArchiveHeapObjectsMapped(JNIEnv* env))
   return MetaspaceShared::open_archive_heap_region_mapped();
 WB_END
 
-WB_ENTRY(jboolean, WB_IsCDSIncludedInVmBuild(JNIEnv* env))
+WB_ENTRY(jboolean, WB_IsCDSIncluded(JNIEnv* env))
 #if INCLUDE_CDS
 # ifdef _LP64
     if (!UseCompressedOops || !UseCompressedClassPointers) {
@@ -1851,7 +1852,7 @@ WB_ENTRY(jboolean, WB_IsJavaHeapArchiveSupported(JNIEnv* env))
 WB_END
 
 
-WB_ENTRY(jboolean, WB_IsJFRIncludedInVmBuild(JNIEnv* env))
+WB_ENTRY(jboolean, WB_IsJFRIncluded(JNIEnv* env))
 #if INCLUDE_JFR
   return true;
 #else
@@ -2024,6 +2025,18 @@ WB_END
 WB_ENTRY(jboolean, WB_IsContainerized(JNIEnv* env, jobject o))
   LINUX_ONLY(return OSContainer::is_containerized();)
   return false;
+WB_END
+
+// Physical memory of the host machine (including containers)
+WB_ENTRY(jlong, WB_HostPhysicalMemory(JNIEnv* env, jobject o))
+  LINUX_ONLY(return os::Linux::physical_memory();)
+  return os::physical_memory();
+WB_END
+
+// Physical swap of the host machine (including containers), Linux only.
+WB_ENTRY(jlong, WB_HostPhysicalSwap(JNIEnv* env, jobject o))
+  LINUX_ONLY(return (jlong)os::Linux::host_swap();)
+  return -1; // Not used/implemented on other platforms
 WB_END
 
 WB_ENTRY(jint, WB_ValidateCgroup(JNIEnv* env,
@@ -2282,8 +2295,8 @@ static JNINativeMethod methods[] = {
   {CC"areSharedStringsIgnored",           CC"()Z",    (void*)&WB_AreSharedStringsIgnored },
   {CC"getResolvedReferences", CC"(Ljava/lang/Class;)Ljava/lang/Object;", (void*)&WB_GetResolvedReferences},
   {CC"areOpenArchiveHeapObjectsMapped",   CC"()Z",    (void*)&WB_AreOpenArchiveHeapObjectsMapped},
-  {CC"isCDSIncludedInVmBuild",            CC"()Z",    (void*)&WB_IsCDSIncludedInVmBuild },
-  {CC"isJFRIncludedInVmBuild",            CC"()Z",    (void*)&WB_IsJFRIncludedInVmBuild },
+  {CC"isCDSIncluded",                     CC"()Z",    (void*)&WB_IsCDSIncluded },
+  {CC"isJFRIncluded",                     CC"()Z",    (void*)&WB_IsJFRIncluded },
   {CC"isJavaHeapArchiveSupported",      CC"()Z",      (void*)&WB_IsJavaHeapArchiveSupported },
 
   {CC"clearInlineCaches0",  CC"(Z)V",                 (void*)&WB_ClearInlineCaches },
@@ -2305,6 +2318,8 @@ static JNINativeMethod methods[] = {
   {CC"validateCgroup",
       CC"(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)I",
                                                       (void*)&WB_ValidateCgroup },
+  {CC"hostPhysicalMemory",        CC"()J",            (void*)&WB_HostPhysicalMemory },
+  {CC"hostPhysicalSwap",          CC"()J",            (void*)&WB_HostPhysicalSwap },
   {CC"printOsInfo",               CC"()V",            (void*)&WB_PrintOsInfo },
   {CC"disableElfSectionCache",    CC"()V",            (void*)&WB_DisableElfSectionCache },
   {CC"aotLibrariesCount", CC"()I",                    (void*)&WB_AotLibrariesCount },

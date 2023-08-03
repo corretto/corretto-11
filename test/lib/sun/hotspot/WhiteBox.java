@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012, 2023, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -520,8 +520,8 @@ public class WhiteBox {
   public native boolean isShared(Object o);
   public native boolean isSharedClass(Class<?> c);
   public native boolean areSharedStringsIgnored();
-  public native boolean isCDSIncludedInVmBuild();
-  public native boolean isJFRIncludedInVmBuild();
+  public native boolean isCDSIncluded();
+  public native boolean isJFRIncluded();
   public native boolean isJavaHeapArchiveSupported();
   public native Object  getResolvedReferences(Class<?> c);
   public native boolean areOpenArchiveHeapObjectsMapped();
@@ -542,6 +542,8 @@ public class WhiteBox {
                                    String procSelfCgroup,
                                    String procSelfMountinfo);
   public native void printOsInfo();
+  public native long hostPhysicalMemory();
+  public native long hostPhysicalSwap();
 
   // Decoder
   public native void disableElfSectionCache();
