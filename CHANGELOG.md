@@ -2,6 +2,33 @@
 
 The following sections describe the changes for each release of Amazon Corretto 11.
 
+## Corretto version: 11.0.20.9.1
+Release Date: August 22, 2023
+ 
+**Target Platforms <sup>1</sup>**
+ 
++  RPM-based Linux using glibc 2.12 or later, x86, x86_64
++  Debian-based Linux using glibc 2.12 or later, x86, x86_64
++  RPM-based Linux using glibc 2.17 or later, aarch64
++  Debian-based Linux using glibc 2.17 or later, aarch64
++  Linux using glibc 2.25 or later, Arm
++  Linux using muslc 1.2.2 or later, Arm
++  Alpine-based Linux, x86_64
++  Alpine-based Linux, aarch64
++  Windows 10 or later, x86_64
++  macOS 11.0 and later, x86_64
++  macOS 11.0 and later, aarch64 
+
+
+**1.** This is the platform targeted by the build. See [Using Amazon Corretto](https://aws.amazon.com/corretto/faqs/#Using_Amazon_Corretto)
+in the Amazon Corretto FAQ for supported platforms
+ 
+The following issues are addressed in 11.0.20.9.1:
+ 
+|                             Issue Name                            | Platform |                                    Description                                     |                            Link                            |
+|-------------------------------------------------------------------|----------|------------------------------------------------------------------------------------|------------------------------------------------------------|
+| 8313765: Invalid CEN header (invalid zip64 extra data field size) | All      | Fix ZipException that may be encountered when opening select APK, ZIP or JAR files | [JDK-8313765](https://bugs.openjdk.org/browse/JDK-8313765) |
+
 ## Corretto version: 11.0.20.8.1
 Release Date: July 18, 2023
 
