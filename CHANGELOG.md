@@ -15,7 +15,7 @@ Release Date: August 22, 2023
 +  Linux using muslc 1.2.2 or later, Arm
 +  Alpine-based Linux, x86_64
 +  Alpine-based Linux, aarch64
-+  Windows 10 or later, x86_64
++  Windows 10 or later, x86, x86_64
 +  macOS 11.0 and later, x86_64
 +  macOS 11.0 and later, aarch64 
 
