@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1999, 2023, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -24,6 +24,9 @@
  */
 
 package javax.security.auth.callback;
+
+import java.io.IOException;
+import java.io.ObjectInputStream;
 
 /**
  * <p> Underlying security services instantiate and pass a
@@ -121,26 +124,27 @@ public class ConfirmationCallback implements Callback, java.io.Serializable {
 
     /** ERROR message type. */
     public static final int ERROR                       = 2;
+
     /**
      * @serial
      * @since 1.4
      */
-    private String prompt;
+    private final String prompt;
     /**
      * @serial
      * @since 1.4
      */
-    private int messageType;
+    private final int messageType;
     /**
      * @serial
      * @since 1.4
      */
-    private int optionType = UNSPECIFIED_OPTION;
+    private final int optionType;
     /**
      * @serial
      * @since 1.4
      */
-    private int defaultOption;
+    private final int defaultOption;
     /**
      * @serial
      * @since 1.4
@@ -205,8 +209,10 @@ public class ConfirmationCallback implements Callback, java.io.Serializable {
             break;
         }
 
+        this.prompt = null;
         this.messageType = messageType;
         this.optionType = optionType;
+        this.options = null;
         this.defaultOption = defaultOption;
     }
 
@@ -247,14 +253,16 @@ public class ConfirmationCallback implements Callback, java.io.Serializable {
             defaultOption < 0 || defaultOption >= options.length)
             throw new IllegalArgumentException();
 
+        this.prompt = null;
+        this.messageType = messageType;
+        this.optionType = UNSPECIFIED_OPTION;
+        this.defaultOption = defaultOption;
+
+        this.options = options.clone();
         for (int i = 0; i < options.length; i++) {
             if (options[i] == null || options[i].isEmpty())
                 throw new IllegalArgumentException();
         }
-
-        this.messageType = messageType;
-        this.options = options;
-        this.defaultOption = defaultOption;
     }
 
     /**
@@ -318,6 +326,7 @@ public class ConfirmationCallback implements Callback, java.io.Serializable {
         this.prompt = prompt;
         this.messageType = messageType;
         this.optionType = optionType;
+        this.options = null;
         this.defaultOption = defaultOption;
     }
 
@@ -363,15 +372,16 @@ public class ConfirmationCallback implements Callback, java.io.Serializable {
             defaultOption < 0 || defaultOption >= options.length)
             throw new IllegalArgumentException();
 
+        this.prompt = prompt;
+        this.messageType = messageType;
+        this.optionType = UNSPECIFIED_OPTION;
+        this.defaultOption = defaultOption;
+
+        this.options = options.clone();
         for (int i = 0; i < options.length; i++) {
             if (options[i] == null || options[i].isEmpty())
                 throw new IllegalArgumentException();
         }
-
-        this.prompt = prompt;
-        this.messageType = messageType;
-        this.options = options;
-        this.defaultOption = defaultOption;
     }
 
     /**
@@ -422,7 +432,7 @@ public class ConfirmationCallback implements Callback, java.io.Serializable {
      *          an {@code optionType} instead of {@code options}.
      */
     public String[] getOptions() {
-        return options;
+        return options == null ? null : options.clone();
     }
 
     /**
@@ -476,5 +486,20 @@ public class ConfirmationCallback implements Callback, java.io.Serializable {
      */
     public int getSelectedIndex() {
         return selection;
+    }
+
+    /**
+     * Restores the state of this object from the stream.
+     *
+     * @param  stream the {@code ObjectInputStream} from which data is read
+     * @throws IOException if an I/O error occurs
+     * @throws ClassNotFoundException if a serialized class cannot be loaded
+     */
+    private void readObject(ObjectInputStream stream)
+            throws IOException, ClassNotFoundException {
+        stream.defaultReadObject();
+        if (options != null) {
+            options = options.clone();
+        }
     }
 }
