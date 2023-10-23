@@ -2,6 +2,43 @@
 
 The following sections describe the changes for each release of Amazon Corretto 11.
 
+## Corretto version: 11.0.21.9.1
+Release Date: October 17, 2023
+ 
+**Target Platforms <sup>1</sup>**
+ 
++  RPM-based Linux using glibc 2.12 or later, x86, x86_64
++  Debian-based Linux using glibc 2.12 or later, x86, x86_64
++  RPM-based Linux using glibc 2.17 or later, aarch64
++  Debian-based Linux using glibc 2.17 or later, aarch64
++  Linux using glibc 2.25 or later, Arm
++  Linux using muslc 1.2.2 or later, Arm
++  Alpine-based Linux, x86_64
++  Alpine-based Linux, aarch64
++  Windows 10 or later, x86, x86_64
++  macOS 11.0 and later, x86_64
++  macOS 11.0 and later, aarch64 
+
+
+**1.** This is the platform targeted by the build. See [Using Amazon Corretto](https://aws.amazon.com/corretto/faqs/#Using_Amazon_Corretto)
+in the Amazon Corretto FAQ for supported platforms
+ 
+The following issues are addressed in 11.0.21.9.1:
+
+| Issue Name                | Platform | Description                                                                | Link                                                                            |
+|---------------------------|----------|----------------------------------------------------------------------------|---------------------------------------------------------------------------------|
+| Import jdk-11.0.21+9                 | All      | Update Corretto baseline to OpenJDK 11.0.21+9                              | [jdk-11.0.21+9](https://github.com/openjdk/jdk11u/releases/tag/jdk-11.0.21+9)   |
+| JDK-8168261                     | All                | Use Server Cipher Suites Preference by Default | [JDK-8168261](https://bugs.openjdk.org/browse/JDK-8168261) |
+
+
+The following CVEs are addressed in 11.0.21.9.1:
+
+| CVE            | CVSS | Component                   |
+|----------------|------|-----------------------------|
+| CVE-2023-22081 | 5.3  | security-libs/javax.net.ssl |
+
+
+
 ## Corretto version: 11.0.20.9.1
 Release Date: August 22, 2023
  
