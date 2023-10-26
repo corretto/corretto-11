@@ -169,14 +169,11 @@ void VM_Version::initialize() {
   if (_cpu == CPU_ARM && os::processor_count() == 1 && _model == 0xd07) _features |= CPU_A53MAC;
 
   char buf[512];
-  sprintf(buf, "0x%02x:0x%x:0x%03x:%d", _cpu, _variant, _model, _revision);
-  if (_model2) sprintf(buf+strlen(buf), "(0x%03x)", _model2);
-  if (_features & CPU_ASIMD) strcat(buf, ", simd");
-  if (_features & CPU_CRC32) strcat(buf, ", crc");
-  if (_features & CPU_AES)   strcat(buf, ", aes");
-  if (_features & CPU_SHA1)  strcat(buf, ", sha1");
-  if (_features & CPU_SHA2)  strcat(buf, ", sha256");
-  if (_features & CPU_LSE)   strcat(buf, ", lse");
+  int buf_used_len = os::snprintf_checked(buf, sizeof(buf), "0x%02x:0x%x:0x%03x:%d", _cpu, _variant, _model, _revision);
+  if (_model2) os::snprintf_checked(buf + buf_used_len, sizeof(buf) - buf_used_len, "(0x%03x)", _model2);
+#define ADD_FEATURE_IF_SUPPORTED(id, name, bit) if (VM_Version::supports_##name()) strcat(buf, ", " #name);
+  CPU_FEATURE_FLAGS(ADD_FEATURE_IF_SUPPORTED)
+#undef ADD_FEATURE_IF_SUPPORTED
 
   _features_string = os::strdup(buf);
 
