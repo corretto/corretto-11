@@ -810,7 +810,7 @@ static const char *getRegMask(const char *reg_class_name) {
     const char *mask    = "_mask";
     int         length  = (int)strlen(rc_name) + (int)strlen(mask) + 5;
     char       *regMask = new char[length];
-    sprintf(regMask,"%s%s()", rc_name, mask);
+    snprintf_checked(regMask, length, "%s%s()", rc_name, mask);
     delete[] rc_name;
     return regMask;
   }
@@ -903,7 +903,7 @@ char *ArchDesc::stack_or_reg_mask(OperandForm  &opForm) {
   const char *stack_or = "STACK_OR_";
   int   length         = (int)strlen(stack_or) + (int)strlen(reg_mask_name) + 1;
   char *result         = new char[length];
-  sprintf(result,"%s%s", stack_or, reg_mask_name);
+  snprintf_checked(result, length, "%s%s", stack_or, reg_mask_name);
 
   return result;
 }
