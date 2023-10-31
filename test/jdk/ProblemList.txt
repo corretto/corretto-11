@@ -462,7 +462,7 @@ java/awt/Mouse/MouseDragEvent/MouseDraggedTest.java 8080676 linux-all
 java/awt/Mouse/MouseModifiersUnitTest/MouseModifiersInKeyEvent.java 8157147 linux-all,solaris-all,windows-all,macosx-all
 java/awt/Mouse/TitleBarDoubleClick/TitleBarDoubleClick.java 8148041 linux-all
 java/awt/Toolkit/DesktopProperties/rfe4758438.java 8193547 linux-all
-java/awt/Toolkit/ToolkitPropertyTest/ToolkitPropertyTest_Enable.java 6847163
+java/awt/Toolkit/ToolkitPropertyTest/ToolkitPropertyTest_Enable.java 6847163 linux-all
 java/awt/xembed/server/RunTestXEmbed.java 7034201 linux-all
 java/awt/Modal/ModalFocusTransferTests/FocusTransferDialogsDocModalTest.java 8164473 linux-all
 java/awt/im/memoryleak/InputContextMemoryLeakTest.java 8023814 linux-all,solaris-all
@@ -482,7 +482,7 @@ java/awt/TrayIcon/RightClickWhenBalloonDisplayed/RightClickWhenBalloonDisplayed.
 java/awt/PopupMenu/PopupMenuLocation.java 8238720 windows-all
 java/awt/GridLayout/ComponentPreferredSize/ComponentPreferredSize.java 8238720 windows-all
 java/awt/GridLayout/ChangeGridSize/ChangeGridSize.java   8238720 windows-all
-java/awt/event/MouseEvent/FrameMouseEventAbsoluteCoordsTest/FrameMouseEventAbsoluteCoordsTest.java
+java/awt/event/MouseEvent/FrameMouseEventAbsoluteCoordsTest/FrameMouseEventAbsoluteCoordsTest.java 8238720 windows-all
 
 # Several tests which fail sometimes on macos11
 java/awt/Dialog/MakeWindowAlwaysOnTop/MakeWindowAlwaysOnTop.java 8266243 macosx-aarch64
@@ -588,6 +588,7 @@ java/rmi/activation/ActivationGroup/downloadActivationGroup/DownloadActivationGr
 java/rmi/activation/rmidViaInheritedChannel/InheritedChannelNotServerSocket.java 8170562 generic-all
 
 java/rmi/registry/readTest/CodebaseTest.java                    8173324 windows-all
+java/rmi/registry/multipleRegistries/MultipleRegistries.java    8268182 macosx-all
 
 java/nio/channels/DatagramChannel/ManySourcesAndTargets.java    8264385 macosx-aarch64
 
@@ -820,7 +821,6 @@ javax/swing/SwingUtilities/TestTextPosInPrint.java 8227025 windows-all
 java/awt/print/PrinterJob/ScaledText/ScaledText.java 8231226 macosx-all
 java/awt/print/bug8023392/bug8023392.html 8231231 generic-all
 java/awt/font/TextLayout/TestJustification.html 8250791 macosx-all
-javax/swing/JTabbedPane/4209065/bug4209065.java 8251177 macosx-all
 java/awt/TrayIcon/DragEventSource/DragEventSource.java 8252242 macosx-all
 java/awt/FileDialog/DefaultFocusOwner/DefaultFocusOwner.java 7187728 macosx-all,linux-all
 java/awt/FileDialog/RegexpFilterTest/RegexpFilterTest.html 7187728 macosx-all,linux-all
