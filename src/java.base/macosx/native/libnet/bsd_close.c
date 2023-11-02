@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2001, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2001, 2020, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -349,58 +349,58 @@ int NET_SocketClose(int fd) {
 /************** Basic I/O operations here ***************/
 
 /*
- * Macro to perform a blocking IO operation. Restarts
- * automatically if interrupted by signal (other than
- * our wakeup signal)
+ * Macro to perform a blocking IO operation.
+ * If interrupted by signal (other than our wakeup signal), and if RETRY is true,
+ * then restarts automatically
  */
-#define BLOCKING_IO_RETURN_INT(FD, FUNC) {      \
-    int ret;                                    \
-    threadEntry_t self;                         \
-    fdEntry_t *fdEntry = getFdEntry(FD);        \
-    if (fdEntry == NULL) {                      \
-        errno = EBADF;                          \
-        return -1;                              \
-    }                                           \
-    do {                                        \
-        startOp(fdEntry, &self);                \
-        ret = FUNC;                             \
-        endOp(fdEntry, &self);                  \
-    } while (ret == -1 && errno == EINTR);      \
-    return ret;                                 \
+#define BLOCKING_IO_RETURN_INT(FD, FUNC, RETRY) {     \
+    int ret;                                          \
+    threadEntry_t self;                               \
+    fdEntry_t *fdEntry = getFdEntry(FD);              \
+    if (fdEntry == NULL) {                            \
+        errno = EBADF;                                \
+        return -1;                                    \
+    }                                                 \
+    do {                                              \
+        startOp(fdEntry, &self);                      \
+        ret = FUNC;                                   \
+        endOp(fdEntry, &self);                        \
+    } while ((RETRY) && ret == -1 && errno == EINTR); \
+    return ret;                                       \
 }
 
 int NET_Read(int s, void* buf, size_t len) {
-    BLOCKING_IO_RETURN_INT( s, recv(s, buf, len, 0) );
+    BLOCKING_IO_RETURN_INT( s, recv(s, buf, len, 0), JNI_TRUE );
 }
 
 int NET_NonBlockingRead(int s, void* buf, size_t len) {
-    BLOCKING_IO_RETURN_INT( s, recv(s, buf, len, MSG_DONTWAIT));
+    BLOCKING_IO_RETURN_INT( s, recv(s, buf, len, MSG_DONTWAIT), JNI_TRUE );
 }
 
 int NET_RecvFrom(int s, void *buf, int len, unsigned int flags,
        struct sockaddr *from, socklen_t *fromlen) {
-    BLOCKING_IO_RETURN_INT( s, recvfrom(s, buf, len, flags, from, fromlen) );
+    BLOCKING_IO_RETURN_INT( s, recvfrom(s, buf, len, flags, from, fromlen), JNI_TRUE );
 }
 
 int NET_Send(int s, void *msg, int len, unsigned int flags) {
-    BLOCKING_IO_RETURN_INT( s, send(s, msg, len, flags) );
+    BLOCKING_IO_RETURN_INT( s, send(s, msg, len, flags), JNI_TRUE );
 }
 
 int NET_SendTo(int s, const void *msg, int len,  unsigned  int
        flags, const struct sockaddr *to, int tolen) {
-    BLOCKING_IO_RETURN_INT( s, sendto(s, msg, len, flags, to, tolen) );
+    BLOCKING_IO_RETURN_INT( s, sendto(s, msg, len, flags, to, tolen), JNI_TRUE );
 }
 
 int NET_Accept(int s, struct sockaddr *addr, socklen_t *addrlen) {
-    BLOCKING_IO_RETURN_INT( s, accept(s, addr, addrlen) );
+    BLOCKING_IO_RETURN_INT( s, accept(s, addr, addrlen), JNI_TRUE );
 }
 
 int NET_Connect(int s, struct sockaddr *addr, int addrlen) {
-    BLOCKING_IO_RETURN_INT( s, connect(s, addr, addrlen) );
+    BLOCKING_IO_RETURN_INT( s, connect(s, addr, addrlen), JNI_TRUE );
 }
 
 int NET_Poll(struct pollfd *ufds, unsigned int nfds, int timeout) {
-    BLOCKING_IO_RETURN_INT( ufds[0].fd, poll(ufds, nfds, timeout) );
+    BLOCKING_IO_RETURN_INT( ufds[0].fd, poll(ufds, nfds, timeout), JNI_FALSE );
 }
 
 /*
@@ -472,17 +472,20 @@ int NET_Timeout(JNIEnv *env, int s, long timeout, jlong nanoTimeStamp) {
          * has expired return 0 (indicating timeout expired).
          */
         if (rv < 0 && errno == EINTR) {
-            jlong newNanoTime = JVM_NanoTime(env, 0);
-            nanoTimeout -= newNanoTime - prevNanoTime;
-            if (nanoTimeout < NET_NSEC_PER_MSEC) {
-                if (allocated != 0)
-                    free(fdsp);
-                return 0;
+            if (timeout > 0) {
+                jlong newNanoTime = JVM_NanoTime(env, 0);
+                nanoTimeout -= newNanoTime - prevNanoTime;
+                if (nanoTimeout < NET_NSEC_PER_MSEC) {
+                    if (allocated != 0)
+                        free(fdsp);
+                    return 0;
+                }
+                prevNanoTime = newNanoTime;
+                t.tv_sec = nanoTimeout / NET_NSEC_PER_SEC;
+                t.tv_usec = (nanoTimeout % NET_NSEC_PER_SEC) / NET_NSEC_PER_USEC;
+            } else {
+                continue; // timeout is -1, so  loop again.
             }
-            prevNanoTime = newNanoTime;
-            t.tv_sec = nanoTimeout / NET_NSEC_PER_SEC;
-            t.tv_usec = (nanoTimeout % NET_NSEC_PER_SEC) / NET_NSEC_PER_USEC;
-
         } else {
             if (allocated != 0)
                 free(fdsp);
