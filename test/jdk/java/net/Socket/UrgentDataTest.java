@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2001, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2001, 2019, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -54,10 +54,12 @@ public class UrgentDataTest {
         try {
             UrgentDataTest test = new UrgentDataTest ();
             if (args.length == 0) {
-                test.listener = new ServerSocket (0);
+                InetAddress loopback = InetAddress.getLoopbackAddress();
+                test.listener = new ServerSocket ();
+                test.listener.bind(new InetSocketAddress(loopback, 0));
                 test.isClient = true;
                 test.isServer = true;
-                test.clHost = "127.0.0.1";
+                test.clHost = loopback.getHostAddress();
                 test.clPort = test.listener.getLocalPort();
                 test.run();
             } else if (args[0].equals ("-server")) {
