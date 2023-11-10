@@ -19,34 +19,40 @@
  * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
  * or visit www.oracle.com if you need additional information or have any
  * questions.
- *
  */
 
 /*
- * @test
- * @summary White box test for shared strings
- * @requires vm.cds.archived.java.heap
- * @library /test/lib /test/hotspot/jtreg/runtime/appcds
- * @modules java.base/jdk.internal.misc
- * @modules java.management
- *          jdk.jartool/sun.tools.jar
- * @build sun.hotspot.WhiteBox SharedStringsWb
- * @run driver ClassFileInstaller sun.hotspot.WhiteBox
- * @run main SharedStringsWbTest
- * @run main/othervm -XX:+UseStringDeduplication SharedStringsWbTest
- * @run main/othervm -XX:-CompactStrings SharedStringsWbTest
+ * @test Testjsig.java
+ * @bug 8017498
+ * @bug 8020791
+ * @bug 8021296
+ * @bug 8022301
+ * @bug 8025519
+ * @summary sigaction(sig) results in process hang/timed-out if sig is much greater than SIGRTMAX
+ * @requires (os.family == "linux")
+ * @library /test/lib
+ * @compile TestJNI.java
+ * @run driver Testjsig
  */
 
-import java.io.*;
-import sun.hotspot.WhiteBox;
+import jdk.test.lib.process.ProcessTools;
+import jdk.test.lib.process.OutputAnalyzer;
 
-public class SharedStringsWbTest {
-    public static void main(String[] args) throws Exception {
-        SharedStringsUtils.buildJarAndWhiteBox("SharedStringsWb");
+public class Testjsig {
 
-        SharedStringsUtils.dumpWithWhiteBox(TestCommon.list("SharedStringsWb"),
-            "SharedStringsBasic.txt");
+    public static void main(String[] args) throws Throwable {
 
-        SharedStringsUtils.runWithArchiveAndWhiteBox("SharedStringsWb");
+        // Get the JDK, library and class path properties
+        String libpath = System.getProperty("java.library.path");
+
+        // Create a new java process for the TestJNI Java/JNI test
+        ProcessBuilder pb = ProcessTools.createJavaProcessBuilder(
+            "-Djava.library.path=" + libpath + ":.",
+            "TestJNI",
+            "100");
+
+        // Start the process and check the output
+        OutputAnalyzer output = new OutputAnalyzer(pb.start());
+        output.shouldContain("old handler");
     }
 }

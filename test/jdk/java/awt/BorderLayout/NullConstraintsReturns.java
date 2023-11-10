@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2023, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -19,31 +19,24 @@
  * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
  * or visit www.oracle.com if you need additional information or have any
  * questions.
- *
  */
 
 /*
- * @test
- * @summary Basic plus test for shared strings
- * @requires vm.cds.archived.java.heap
- * @library /test/hotspot/jtreg/runtime/appcds /test/lib
- * @modules java.base/jdk.internal.misc
- * @modules java.management
- *          jdk.jartool/sun.tools.jar
- * @build HelloStringPlus sun.hotspot.WhiteBox
- * @run driver ClassFileInstaller sun.hotspot.WhiteBox
- * @run main SharedStringsBasicPlus
- * @run main/othervm -XX:+UseStringDeduplication SharedStringsBasicPlus
- * @run main/othervm -XX:-CompactStrings SharedStringsBasicPlus
- */
+  @test
+  @bug 6242148
+  @summary API method java.awt.BorderLayout.getConstraints(null) should return null
+*/
 
-public class SharedStringsBasicPlus {
-    public static void main(String[] args) throws Exception {
-        SharedStringsUtils.buildJarAndWhiteBox("HelloStringPlus");
+import java.awt.BorderLayout;
 
-        SharedStringsUtils.dumpWithWhiteBox( TestCommon.list("HelloStringPlus"),
-            "SharedStringsBasic.txt");
+public class NullConstraintsReturns {
 
-        SharedStringsUtils.runWithArchiveAndWhiteBox("HelloStringPlus");
+    public static void main(String[] args) {
+        BorderLayout bl = new BorderLayout();
+        Object constraints = bl.getConstraints(null);
+        if (constraints != null) {
+            throw new RuntimeException("Test failed. Constraints is not null: " + constraints);
+        }
+        System.out.println("Test Passed.");
     }
 }
