@@ -252,9 +252,8 @@ public class AquaComboBoxUI extends BasicComboBoxUI implements Sizeable {
                         if (editor instanceof AquaCustomComboTextField) {
                             ((AquaCustomComboTextField)editor).selectAll();
                         }
-                    } else {
-                        action.actionPerformed(e);
                     }
+                    action.actionPerformed(e);
                 }
             });
         }
@@ -324,6 +323,8 @@ public class AquaComboBoxUI extends BasicComboBoxUI implements Sizeable {
         actionMap.put("aquaSelectPageDown", highlightPageDownAction);
 
         actionMap.put("aquaHidePopup", hideAction);
+        actionMap.put("aquaOpenPopupOrhighlightLast", openPopupOrHighlightLast);
+        actionMap.put("aquaOpenPopupOrhighlightFirst", openPopupOrHighlightFirst);
 
         SwingUtilities.replaceUIActionMap(comboBox, actionMap);
     }
@@ -582,6 +583,27 @@ public class AquaComboBoxUI extends BasicComboBoxUI implements Sizeable {
         }
     };
 
+    @SuppressWarnings("serial") // anonymous class
+    private final Action openPopupOrHighlightLast = new ComboBoxAction() {
+        @Override
+        void performComboBoxAction(final AquaComboBoxUI ui) {
+            final int size = listBox.getModel().getSize();
+            listBox.setSelectedIndex(size - 1);
+            listBox.ensureIndexIsVisible(size - 1);
+            comboBox.setSelectedIndex(ui.getPopup().getList().getSelectedIndex());
+        }
+    };
+
+    @SuppressWarnings("serial") // anonymous class
+    private final Action openPopupOrHighlightFirst = new ComboBoxAction() {
+        @Override
+        void performComboBoxAction(final AquaComboBoxUI ui) {
+           listBox.setSelectedIndex(0);
+           listBox.ensureIndexIsVisible(0);
+           comboBox.setSelectedIndex(ui.getPopup().getList().getSelectedIndex());
+        }
+    };
+
     public void applySizeFor(final JComponent c, final Size size) {
         if (arrowButton == null) return;
         final Border border = arrowButton.getBorder();
@@ -618,13 +640,6 @@ public class AquaComboBoxUI extends BasicComboBoxUI implements Sizeable {
             size.height += margin.top + margin.bottom;
         } else {
             size = super.getMinimumSize(c);
-        }
-
-        final Border border = c.getBorder();
-        if (border != null) {
-            final Insets insets = border.getBorderInsets(c);
-            size.height += insets.top + insets.bottom;
-            size.width += insets.left + insets.right;
         }
 
         cachedMinimumSize.setSize(size.width, size.height);
