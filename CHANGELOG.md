@@ -1,6 +1,49 @@
 # Change Log for Amazon Corretto 11
 
 The following sections describe the changes for each release of Amazon Corretto 11.
+## Corretto version: 11.0.22.7.1
+Release Date: January 16, 2024
+
+**Target Platforms <sup>1</sup>**
+
+RPM-based Linux using glibc 2.12 or later, x86, x86_64
+Debian-based Linux using glibc 2.12 or later, x86, x86_64
+RPM-based Linux using glibc 2.17 or later, aarch64
+Debian-based Linux using glibc 2.17 or later, aarch64
+Linux using glibc 2.25 or later, Arm
+Linux using muslc 1.2.2 or later, Arm
+Alpine-based Linux, x86_64
+Alpine-based Linux, aarch64
+Windows 10 or later, x86, x86_64
+macOS 12.0 and later, x86_64
+macOS 12.0 and later, aarch64
+
+
+**1.** This is the platform targeted by the build. See [Using Amazon Corretto](https://aws.amazon.com/corretto/faqs/#Using_Amazon_Corretto)
+in the Amazon Corretto FAQ for supported platforms
+
+The following issues are addressed in 11.0.22.7.1:
+
+| Issue Name                                 | Platform | Description                                                          | Link                                                                          |
+|--------------------------------------------|----------|----------------------------------------------------------------------|-------------------------------------------------------------------------------|
+| Import jdk-11.0.22+7                       | All      | Update Corretto baseline to OpenJDK 11.0.22+7                        | [jdk-11.0.22+7](https://github.com/openjdk/jdk11u/releases/tag/jdk-11.0.22+7) |
+| (tz) Update Timezone Data to 2023d         | All | Update Timezone Data to 2023d                                        | [JDK-8322725](https://bugs.openjdk.org/browse/JDK-8322725)                    |
+| NPE in PKCS7.parseOldSignedData            | All | fixes exception PKCS7.parseOldSignedDat                              | [JDK-8315042](https://bugs.openjdk.org/browse/JDK-8315042)                    |
+| Disable build-ids in AL RPMs               | AL2023 | Build-ids can conflict across versions                               | N/A                                                                           |
+| Support dealing with standard assert macro | All | fix name clash of assert macro in debug.hpp with libc's assert macro | [JDK-8299254](https://bugs.openjdk.org/browse/JDK-8299254)                    |
+|Enable Neoverse N1 optimizations for Neoverse V2| ALL      |Enable Neoverse N1 optimizations for Neoverse V2| [JDK-8321025](https://bugs.openjdk.org/browse/JDK-8321025)                      |
+
+The following CVEs are addressed in 11.0.22.7.1:
+
+| CVE            | CVSS | Component                      |
+|----------------|------|--------------------------------|
+| CVE-2024-20918 | 7.4  | hotspot/compiler               |
+| CVE-2024-20952 | 7.4  | security-libs/java.security    |
+| CVE-2024-20926 | 5.9  | core-libs/javax.script         |
+| CVE-2024-20919 | 5.9  | hotspot/runtime                |
+| CVE-2024-20921 | 5.9  | hotspot/compiler               |
+| CVE-2024-20945 | 4.7  | security-libs/javax.xml.crypto |
+
 
 ## Corretto version: 11.0.21.9.1
 Release Date: October 17, 2023
