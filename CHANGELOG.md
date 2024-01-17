@@ -1,22 +1,23 @@
 # Change Log for Amazon Corretto 11
 
 The following sections describe the changes for each release of Amazon Corretto 11.
+
 ## Corretto version: 11.0.22.7.1
 Release Date: January 16, 2024
 
 **Target Platforms <sup>1</sup>**
 
-RPM-based Linux using glibc 2.12 or later, x86, x86_64
-Debian-based Linux using glibc 2.12 or later, x86, x86_64
-RPM-based Linux using glibc 2.17 or later, aarch64
-Debian-based Linux using glibc 2.17 or later, aarch64
-Linux using glibc 2.25 or later, Arm
-Linux using muslc 1.2.2 or later, Arm
-Alpine-based Linux, x86_64
-Alpine-based Linux, aarch64
-Windows 10 or later, x86, x86_64
-macOS 12.0 and later, x86_64
-macOS 12.0 and later, aarch64
++ RPM-based Linux using glibc 2.12 or later, x86, x86_64
++ Debian-based Linux using glibc 2.12 or later, x86, x86_64
++ RPM-based Linux using glibc 2.17 or later, aarch64
++ Debian-based Linux using glibc 2.17 or later, aarch64
++ Linux using glibc 2.25 or later, Arm
++ Linux using muslc 1.2.2 or later, Arm
++ Alpine-based Linux, x86_64
++ Alpine-based Linux, aarch64
++ Windows 10 or later, x86, x86_64
++ macOS 12.0 and later, x86_64
++ macOS 12.0 and later, aarch64
 
 
 **1.** This is the platform targeted by the build. See [Using Amazon Corretto](https://aws.amazon.com/corretto/faqs/#Using_Amazon_Corretto)
@@ -31,7 +32,7 @@ The following issues are addressed in 11.0.22.7.1:
 | NPE in PKCS7.parseOldSignedData            | All | fixes exception PKCS7.parseOldSignedDat                              | [JDK-8315042](https://bugs.openjdk.org/browse/JDK-8315042)                    |
 | Disable build-ids in AL RPMs               | AL2023 | Build-ids can conflict across versions                               | N/A                                                                           |
 | Support dealing with standard assert macro | All | fix name clash of assert macro in debug.hpp with libc's assert macro | [JDK-8299254](https://bugs.openjdk.org/browse/JDK-8299254)                    |
-|Enable Neoverse N1 optimizations for Neoverse V2| ALL      |Enable Neoverse N1 optimizations for Neoverse V2| [JDK-8321025](https://bugs.openjdk.org/browse/JDK-8321025)                      |
+|Enable Neoverse N1 optimizations for Neoverse V2| All      |Enable Neoverse N1 optimizations for Neoverse V2| [JDK-8321025](https://bugs.openjdk.org/browse/JDK-8321025)                      |
 
 The following CVEs are addressed in 11.0.22.7.1:
 
