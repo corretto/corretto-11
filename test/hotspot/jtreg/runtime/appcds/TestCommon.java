@@ -114,10 +114,6 @@ public class TestCommon extends CDSTestUtils {
         return createArchive(opts);
     }
 
-    public static String[] makeCommandLineForAppCDS(String... args) throws Exception {
-        return args;
-    }
-
     // Create AppCDS archive using appcds options
     public static OutputAnalyzer createArchive(AppCDSOptions opts)
         throws Exception {
@@ -137,7 +133,6 @@ public class TestCommon extends CDSTestUtils {
         }
 
         cmd.add("-Xshare:dump");
-        cmd.add("-Xlog:cds,cds+hashtables");
         cmd.add("-XX:ExtraSharedClassListFile=" + classList.getPath());
 
         if (opts.archiveName == null)

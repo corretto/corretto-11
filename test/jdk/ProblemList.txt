@@ -446,10 +446,8 @@ java/awt/JAWT/JAWT.sh 8197798 windows-all
 java/awt/Debug/DumpOnKey/DumpOnKey.java 8202667 windows-all
 java/awt/Focus/WindowUpdateFocusabilityTest/WindowUpdateFocusabilityTest.java 8202926 linux-all
 java/awt/datatransfer/ConstructFlavoredObjectTest/ConstructFlavoredObjectTest.java 8202860 linux-all
-java/awt/dnd/DisposeFrameOnDragCrash/DisposeFrameOnDragTest.java 8202790 macosx-all,linux-all
 java/awt/FileDialog/FilenameFilterTest/FilenameFilterTest.java 8202882 linux-all
 java/awt/Frame/FramesGC/FramesGC.java 8079069 macosx-all
-java/awt/Choice/ChoicePopupLocation/ChoicePopupLocation.java 8202931 macosx-all,linux-all
 java/awt/Focus/NonFocusableBlockedOwnerTest/NonFocusableBlockedOwnerTest.java 7124275 macosx-all
 java/awt/Focus/TranserFocusToWindow/TranserFocusToWindow.java 6848810 macosx-all
 java/awt/Component/NativeInLightShow/NativeInLightShow.java 8202932 linux-all
@@ -614,8 +612,6 @@ sun/security/tools/keytool/ListKeychainStore.sh                 8156889 macosx-a
 javax/net/ssl/DTLS/PacketLossRetransmission.java                8169086 macosx-x64
 javax/net/ssl/DTLS/RespondToRetransmit.java                     8169086 macosx-all
 javax/net/ssl/DTLS/CipherSuite.java                             8202059 macosx-x64
-
-sun/security/provider/KeyStore/DKSTest.sh                       8180266 windows-all
 
 sun/security/smartcardio/TestChannel.java                       8039280 generic-all
 sun/security/smartcardio/TestConnect.java                       8039280 generic-all

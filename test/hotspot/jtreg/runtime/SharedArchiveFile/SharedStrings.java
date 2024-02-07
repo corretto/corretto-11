@@ -26,12 +26,13 @@
  * @summary Check to make sure that shared strings in the bootstrap CDS archive
  *          are actually shared
  * @requires vm.cds.archived.java.heap
+ * @requires vm.flagless
  * @library /test/lib
  * @modules java.base/jdk.internal.misc
  *          java.management
  * @build SharedStringsWb sun.hotspot.WhiteBox
  * @run driver ClassFileInstaller -jar whitebox.jar sun.hotspot.WhiteBox
- * @run main SharedStrings
+ * @run driver SharedStrings
  */
 
 import jdk.test.lib.cds.CDSTestUtils;

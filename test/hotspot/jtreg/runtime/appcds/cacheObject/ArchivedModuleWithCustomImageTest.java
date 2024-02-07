@@ -25,6 +25,7 @@
  * @test
  * @summary Test archived module graph with custom runtime image
  * @requires vm.cds.archived.java.heap
+ * @requires vm.flagless
  * @library /test/jdk/lib/testlibrary /test/lib /test/hotspot/jtreg/runtime/appcds
  * @modules java.base/jdk.internal.module
  *          java.management
@@ -34,7 +35,7 @@
  * @compile CheckArchivedModuleApp.java
  * @run driver ClassFileInstaller -jar app.jar CheckArchivedModuleApp
  * @run driver ClassFileInstaller -jar WhiteBox.jar sun.hotspot.WhiteBox
- * @run main ArchivedModuleWithCustomImageTest
+ * @run driver ArchivedModuleWithCustomImageTest
  */
 
 import java.io.File;

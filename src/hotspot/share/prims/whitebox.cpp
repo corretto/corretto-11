@@ -949,7 +949,11 @@ WB_END
 
 WB_ENTRY(jboolean, WB_EnqueueInitializerForCompilation(JNIEnv* env, jobject o, jclass klass, jint comp_level))
   InstanceKlass* ik = InstanceKlass::cast(java_lang_Class::as_Klass(JNIHandles::resolve(klass)));
-  return WhiteBox::compile_method(ik->class_initializer(), comp_level, InvocationEntryBci, THREAD);
+  Method* clinit = ik->class_initializer();
+  if (clinit == NULL) {
+    return false;
+  }
+  return WhiteBox::compile_method(clinit, comp_level, InvocationEntryBci, THREAD);
 WB_END
 
 WB_ENTRY(jboolean, WB_ShouldPrintAssembly(JNIEnv* env, jobject o, jobject method, jint comp_level))
@@ -2090,6 +2094,18 @@ WB_ENTRY(jstring, WB_GetLibcName(JNIEnv* env, jobject o))
   return info_string;
 WB_END
 
+class VM_WhiteBoxCleanMetaspaces : public VM_WhiteBoxOperation {
+ public:
+  void doit() {
+    ClassLoaderDataGraph::do_unloading(true);
+  }
+};
+
+WB_ENTRY(void, WB_CleanMetaspaces(JNIEnv* env, jobject target))
+  VM_WhiteBoxCleanMetaspaces op;
+  VMThread::execute(&op);
+WB_END
+
 #define CC (char*)
 
 static JNINativeMethod methods[] = {
@@ -2324,6 +2340,7 @@ static JNINativeMethod methods[] = {
   {CC"disableElfSectionCache",    CC"()V",            (void*)&WB_DisableElfSectionCache },
   {CC"aotLibrariesCount", CC"()I",                    (void*)&WB_AotLibrariesCount },
   {CC"getLibcName",     CC"()Ljava/lang/String;",     (void*)&WB_GetLibcName},
+  {CC"cleanMetaspaces", CC"()V",                      (void*)&WB_CleanMetaspaces},
 };
 
 

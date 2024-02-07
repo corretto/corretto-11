@@ -32,7 +32,7 @@
  *          jdk.jartool/sun.tools.jar
  * @build HelloStringGC sun.hotspot.WhiteBox
  * @run driver ClassFileInstaller sun.hotspot.WhiteBox
- * @run main ExerciseGC
+ * @run driver ExerciseGC
  * @run main/othervm -XX:+UseStringDeduplication ExerciseGC
  * @run main/othervm -XX:-CompactStrings ExerciseGC
  */
@@ -41,7 +41,7 @@ public class ExerciseGC {
         SharedStringsUtils.buildJarAndWhiteBox("HelloStringGC");
 
         SharedStringsUtils.dumpWithWhiteBox(TestCommon.list("HelloStringGC"),
-            "SharedStringsBasic.txt");
+            "SharedStringsBasic.txt", "-Xlog:cds,cds+hashtables");
 
         SharedStringsUtils.runWithArchiveAndWhiteBox("HelloStringGC",
             "-XX:+UnlockDiagnosticVMOptions", "-XX:+VerifyBeforeGC");

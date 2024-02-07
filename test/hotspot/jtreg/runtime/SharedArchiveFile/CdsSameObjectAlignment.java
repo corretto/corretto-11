@@ -30,13 +30,12 @@
  * @library /test/lib
  * @modules java.base/jdk.internal.misc
  *          java.management
- * @run main CdsSameObjectAlignment
+ * @run driver CdsSameObjectAlignment
  */
 
 import jdk.test.lib.Platform;
 import jdk.test.lib.cds.CDSTestUtils;
 import jdk.test.lib.process.OutputAnalyzer;
-import jtreg.SkippedException;
 
 public class CdsSameObjectAlignment {
     public static void main(String[] args) throws Exception {

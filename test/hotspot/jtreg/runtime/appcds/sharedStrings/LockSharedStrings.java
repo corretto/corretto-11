@@ -33,7 +33,7 @@
  * @compile LockStringTest.java LockStringValueTest.java
  * @build sun.hotspot.WhiteBox
  * @run driver ClassFileInstaller sun.hotspot.WhiteBox
- * @run main LockSharedStrings
+ * @run driver LockSharedStrings
  * @run main/othervm -XX:+UseStringDeduplication LockSharedStrings
  * @run main/othervm -XX:-CompactStrings LockSharedStrings
  */
@@ -44,7 +44,7 @@ public class LockSharedStrings {
 
         SharedStringsUtils.dumpWithWhiteBox(
             TestCommon.list("LockStringTest", "LockStringValueTest"),
-            "ExtraSharedInput.txt");
+            "ExtraSharedInput.txt", "-Xlog:cds,cds+hashtables");
 
         String[] extraMatch = new String[] {"LockStringTest: PASS"};
         SharedStringsUtils.runWithArchiveAndWhiteBox(extraMatch, "LockStringTest");

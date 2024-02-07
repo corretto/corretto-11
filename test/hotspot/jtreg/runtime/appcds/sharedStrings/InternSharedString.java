@@ -33,7 +33,7 @@
  * @compile InternStringTest.java
  * @build sun.hotspot.WhiteBox
  * @run driver ClassFileInstaller sun.hotspot.WhiteBox
- * @run main InternSharedString
+ * @run driver InternSharedString
  * @run main/othervm -XX:+UseStringDeduplication InternSharedString
  * @run main/othervm -XX:-CompactStrings InternSharedString
  */
@@ -43,7 +43,7 @@ public class InternSharedString {
         SharedStringsUtils.buildJarAndWhiteBox("InternStringTest");
 
         SharedStringsUtils.dumpWithWhiteBox(TestCommon.list("InternStringTest"),
-            "ExtraSharedInput.txt");
+            "ExtraSharedInput.txt", "-Xlog:cds,cds+hashtables");
 
         String[] extraMatches = new String[]   {
             InternStringTest.passed_output1,

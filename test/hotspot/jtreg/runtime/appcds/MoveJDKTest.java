@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -27,6 +27,7 @@
  * @summary Test that CDS still works when the JDK is moved to a new directory
  * @bug 8272345
  * @requires vm.cds
+ * @requires vm.flagless
  * @comment This test doesn't work on Windows because it depends on symlinks
  * @requires os.family != "windows"
  * @library /test/lib
@@ -34,7 +35,7 @@
  *          java.management
  *          jdk.jartool/sun.tools.jar
  * @compile test-classes/Hello.java
- * @run main MoveJDKTest
+ * @run driver MoveJDKTest
  */
 
 import java.io.File;
@@ -54,7 +55,8 @@ public class MoveJDKTest {
         String jsaOpt = "-XX:SharedArchiveFile=" + jsaFile;
         {
             ProcessBuilder pb = makeBuilder(java_home_src + "/bin/java", "-Xshare:dump", jsaOpt);
-            TestCommon.executeAndLog(pb, "dump");
+            TestCommon.executeAndLog(pb, "dump")
+                      .shouldHaveExitValue(0);
         }
         {
             ProcessBuilder pb = makeBuilder(java_home_src + "/bin/java",
@@ -63,6 +65,7 @@ public class MoveJDKTest {
                                             "-Xlog:class+path=info",
                                             "-version");
             OutputAnalyzer out = TestCommon.executeAndLog(pb, "exec-src");
+            out.shouldHaveExitValue(0);
             out.shouldNotContain("shared class paths mismatch");
             out.shouldNotContain("BOOT classpath mismatch");
         }
@@ -78,6 +81,7 @@ public class MoveJDKTest {
                                             "-Xlog:class+path=info",
                                             "-version");
             OutputAnalyzer out = TestCommon.executeAndLog(pb, "exec-dst");
+            out.shouldHaveExitValue(0);
             out.shouldNotContain("shared class paths mismatch");
             out.shouldNotContain("BOOT classpath mismatch");
         }
@@ -91,7 +95,8 @@ public class MoveJDKTest {
                                             "-Xshare:dump",
                                             dumptimeBootAppendOpt,
                                             jsaOpt);
-            TestCommon.executeAndLog(pb, "dump");
+            TestCommon.executeAndLog(pb, "dump")
+                      .shouldHaveExitValue(0);
         }
         {
             String runtimeBootAppendOpt = dumptimeBootAppendOpt + System.getProperty("path.separator") + helloJar;
@@ -102,6 +107,7 @@ public class MoveJDKTest {
                                             "-Xlog:class+path=info",
                                             "-version");
             OutputAnalyzer out = TestCommon.executeAndLog(pb, "exec-dst");
+            out.shouldHaveExitValue(0);
             out.shouldNotContain("shared class paths mismatch");
             out.shouldNotContain("BOOT classpath mismatch");
         }

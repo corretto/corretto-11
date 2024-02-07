@@ -31,7 +31,7 @@
  * @modules java.management
  *          jdk.jartool/sun.tools.jar
  * @build HelloString
- * @run main FlagCombo
+ * @run driver FlagCombo
  */
 
 /**
@@ -44,7 +44,7 @@
  * @modules java.management
  *          jdk.jartool/sun.tools.jar
  * @build HelloString
- * @run main FlagCombo noJfr
+ * @run driver FlagCombo noJfr
  */
 
 import jdk.test.lib.BuildHelper;
@@ -55,7 +55,7 @@ public class FlagCombo {
         SharedStringsUtils.buildJar("HelloString");
 
         SharedStringsUtils.dump(TestCommon.list("HelloString"),
-            "SharedStringsBasic.txt");
+            "SharedStringsBasic.txt", "-Xlog:cds,cds+hashtables");
 
         SharedStringsUtils.runWithArchive("HelloString", "-XX:+UseG1GC");
 

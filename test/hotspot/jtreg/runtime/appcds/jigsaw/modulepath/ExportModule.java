@@ -29,7 +29,7 @@
  * @modules jdk.compiler
  *          jdk.jartool/sun.tools.jar
  *          jdk.jlink
- * @run main ExportModule
+ * @run driver ExportModule
  * @summary Tests involve exporting a module from the module path to a jar in the -cp.
  */
 
@@ -117,7 +117,6 @@ public class ExportModule {
         // the module in the --module-path
         OutputAnalyzer output = TestCommon.createArchive(
                                         appJar.toString(), appClasses,
-                                        "-Xlog:class+load=trace",
                                         "--module-path", moduleDir.toString(),
                                         "--add-modules", TEST_MODULE2, MAIN_CLASS);
         TestCommon.checkDump(output);
@@ -141,7 +140,6 @@ public class ExportModule {
         // unnmaed.
         output = TestCommon.createArchive(
                                         appJar2.toString(), appClasses2,
-                                        "-Xlog:class+load=trace",
                                         "--module-path", moduleDir.toString(),
                                         "--add-modules", TEST_MODULE2,
                                         "--add-exports", "org.astro/org.astro=ALL-UNNAMED",

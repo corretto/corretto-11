@@ -29,7 +29,7 @@
  * @modules jdk.compiler
  *          jdk.jartool/sun.tools.jar
  *          jdk.jlink
- * @run main AddOpens
+ * @run driver AddOpens
  * @summary sanity test the --add-opens option
  */
 
@@ -86,7 +86,6 @@ public class AddOpens {
         // the class in the modular jar in the -cp won't be archived.
         OutputAnalyzer output = TestCommon.createArchive(
                                         destJar.toString(), appClasses,
-                                        "-Xlog:class+load=trace",
                                         "--module-path", moduleDir.toString(),
                                         "-m", TEST_MODULE1);
         TestCommon.checkDump(output);
