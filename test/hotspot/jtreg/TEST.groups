@@ -21,12 +21,19 @@
 # questions.
 #
 
+# All tests
+
+all = \
+  :hotspot_all
+
 hotspot_all = \
   /
 
 hotspot_all_no_apps = \
   / \
   -applications
+
+# Component test groups
 
 hotspot_compiler = \
   compiler
@@ -416,6 +423,21 @@ hotspot_rest_runtime = \
   -:tier1_runtime_appcds_exclude \
   -:hotspot_nmt \
   -:hotspot_tier2_runtime_platform_agnostic
+
+jcstress_part1 = \
+  applications/jcstress/seqcst.java
+
+jcstress_part2 = \
+  applications/jcstress/accessAtomic.java \
+  applications/jcstress/acqrel.java \
+  applications/jcstress/atomics.java \
+  applications/jcstress/coherence.java \
+  applications/jcstress/locks.java
+
+jcstress_part3 = \
+  applications/jcstress \
+  -:jcstress_part1 \
+  -:jcstress_part2
 
 # Stress tests against information provided by VM via JMX
 vmTestbase_nsk_monitoring = \
