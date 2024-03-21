@@ -210,8 +210,9 @@ void ADLParser::instr_parse(void) {
             return;
           }
           assert(match_rules_cnt < 100," too many match rule clones");
+          const size_t buf_size = strlen(instr->_ident) + 4;
           char* buf = (char*) malloc(strlen(instr->_ident) + 4);
-          sprintf(buf, "%s_%d", instr->_ident, match_rules_cnt++);
+          snprintf_checked(buf, buf_size, "%s_%d", instr->_ident, match_rules_cnt++);
           rule->_result = buf;
           // Check for commutative operations with tree operands.
           matchrule_clone_and_swap(rule, instr->_ident, match_rules_cnt);
@@ -2858,8 +2859,9 @@ void ADLParser::ins_encode_parse_block(InstructForm& inst) {
   // Create a new encoding name based on the name of the instruction
   // definition, which should be unique.
   const char* prefix = "__ins_encode_";
+  const size_t ec_name_size = strlen(inst._ident) + strlen(prefix) + 1;
   char* ec_name = (char*) malloc(strlen(inst._ident) + strlen(prefix) + 1);
-  sprintf(ec_name, "%s%s", prefix, inst._ident);
+  snprintf_checked(ec_name, ec_name_size, "%s%s", prefix, inst._ident);
 
   assert(_AD._encode->encClass(ec_name) == NULL, "shouldn't already exist");
   EncClass* encoding = _AD._encode->add_EncClass(ec_name);
@@ -3329,8 +3331,9 @@ void ADLParser::constant_parse(InstructForm& inst) {
   // Create a new encoding name based on the name of the instruction
   // definition, which should be unique.
   const char* prefix = "__constant_";
+  const size_t ec_name_size = strlen(inst._ident) + strlen(prefix) + 1;
   char* ec_name = (char*) malloc(strlen(inst._ident) + strlen(prefix) + 1);
-  sprintf(ec_name, "%s%s", prefix, inst._ident);
+  snprintf_checked(ec_name, ec_name_size, "%s%s", prefix, inst._ident);
 
   assert(_AD._encode->encClass(ec_name) == NULL, "shouldn't already exist");
   EncClass* encoding = _AD._encode->add_EncClass(ec_name);
@@ -4649,8 +4652,9 @@ char *ADLParser::get_ident_or_literal_constant(const char* description) {
     // Grab a constant expression.
     param = get_paren_expr(description);
     if (param[0] != '(') {
+      const size_t buf_size = strlen(param) + 3;
       char* buf = (char*) malloc(strlen(param) + 3);
-      sprintf(buf, "(%s)", param);
+      snprintf_checked(buf, buf_size, "(%s)", param);
       param = buf;
     }
     assert(is_literal_constant(param),
@@ -5257,8 +5261,9 @@ void ADLParser::next_line() {
 char* ADLParser::get_line_string(int linenum) {
   const char* file = _AD._ADL_file._name;
   int         line = linenum ? linenum : this->linenum();
+  const size_t location_size = strlen(file) + 100;
   char* location = (char *)malloc(strlen(file) + 100);
-  sprintf(location, "\n#line %d \"%s\"\n", line, file);
+  snprintf_checked(location, location_size, "\n#line %d \"%s\"\n", line, file);
   return location;
 }
 
