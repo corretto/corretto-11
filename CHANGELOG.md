@@ -2,6 +2,44 @@
 
 The following sections describe the changes for each release of Amazon Corretto 11.
 
+## Corretto version: 11.0.23.9.1
+Release Date: April 16, 2024
+
+**Target Platforms <sup>1</sup>**
+
++ RPM-based Linux using glibc 2.12 or later, x86, x86_64
++ Debian-based Linux using glibc 2.12 or later, x86, x86_64
++ RPM-based Linux using glibc 2.17 or later, aarch64
++ Debian-based Linux using glibc 2.17 or later, aarch64
++ Linux using glibc 2.25 or later, Arm
++ Linux using muslc 1.2.2 or later, Arm
++ Alpine-based Linux, x86_64
++ Alpine-based Linux, aarch64
++ Windows 10 or later, x86, x86_64
++ macOS 12.0 and later, x86_64
++ macOS 12.0 and later, aarch64
+
+
+**1.** This is the platform targeted by the build. See [Using Amazon Corretto](https://aws.amazon.com/corretto/faqs/#Using_Amazon_Corretto)
+in the Amazon Corretto FAQ for supported platforms
+
+The following issues are addressed in 11.0.23.9.1:
+
+| Issue Name                                 | Platform | Description                                                          | Link                                                                          |
+|--------------------------------------------|----------|----------------------------------------------------------------------|-------------------------------------------------------------------------------|
+| Import jdk-11.0.23+9                       | All      | Update Corretto baseline to OpenJDK 11.0.23+9                        | [jdk-11.0.23+9](https://github.com/openjdk/jdk11u/releases/tag/jdk-11.0.23+9) |
+| (tz) Update Timezone Data to 2024a         | All | Update Timezone Data to 2024a                                        | [JDK-8325150](https://bugs.openjdk.org/browse/JDK-8325150)    
+
+The following CVEs are addressed in 11.0.23.9.1:
+
+| CVE            | CVSS | Component                      |
+|----------------|------|--------------------------------|
+| CVE-2024-21094 | 3.7  | hotspot/compiler               |
+| CVE-2024-21085 | 3.7  | core-libs/java.util            |
+| CVE-2024-21011 | 3.7  | hotspot/runtime                |
+| CVE-2024-21068 | 3.7  | hotspot/compiler               |
+| CVE-2024-21012 | 3.7  | core-libs/java.net             |
+
 ## Corretto version: 11.0.22.7.1
 Release Date: January 16, 2024
 
