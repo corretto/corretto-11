@@ -52,7 +52,7 @@ public class SSLContextDefault {
     );
 
     private static final List<String> disabledDtlsProtocols = List.<String>of(
-        "DTLSv1.0"
+
     );
 
     public static void main(String[] args) throws Exception {
