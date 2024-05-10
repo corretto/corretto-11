@@ -48,7 +48,7 @@ public class SSLContextDefault {
     };
 
     private static final List<String> disabledTlsProtocols = List.<String>of(
-        "SSLv3", "TLSv1", "TLSv1.1"
+        "SSLv3"
     );
 
     private static final List<String> disabledDtlsProtocols = List.<String>of(
