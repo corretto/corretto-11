@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2005, 2021, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2005, 2023, Oracle and/or its affiliates. All rights reserved.
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
 #
 # This code is free software; you can redistribute it and/or modify it
@@ -29,7 +29,8 @@
 # The list of keywords supported in this test suite
 # randomness:           test uses randomness, test cases differ from run to run
 # cgroups:              test uses cgroups
-keys=cte_test jcmd nmt regression gc stress metaspace headful intermittent randomness cgroups
+# external-dep:         test requires external dependencies to work
+keys=cte_test jcmd nmt regression gc stress metaspace headful intermittent randomness cgroups external-dep
 
 groups=TEST.groups TEST.quick-groups
 
@@ -74,7 +75,7 @@ requires.properties= \
     docker.support
 
 # Minimum jtreg version
-requiredVersion=6+1
+requiredVersion=7.3.1+1
 
 # Path to libraries in the topmost test directory. This is needed so @library
 # does not need ../../../ notation to reach them
