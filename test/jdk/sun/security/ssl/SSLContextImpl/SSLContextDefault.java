@@ -48,11 +48,10 @@ public class SSLContextDefault {
     };
 
     private static final List<String> disabledTlsProtocols = List.<String>of(
-        "SSLv3""
+        "SSLv3"
     );
 
     private static final List<String> disabledDtlsProtocols = List.<String>of(
-        "DTLSv1.0"
     );
 
     public static void main(String[] args) throws Exception {
