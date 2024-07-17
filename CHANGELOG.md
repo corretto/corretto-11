@@ -2,6 +2,45 @@
 
 The following sections describe the changes for each release of Amazon Corretto 11.
 
+## Corretto version: 11.0.24.8.1
+Release Date: July 16, 2024
+
+**Target Platforms <sup>1</sup>**
+
++ RPM-based Linux using glibc 2.12 or later, x86, x86_64
++ Debian-based Linux using glibc 2.12 or later, x86, x86_64
++ RPM-based Linux using glibc 2.17 or later, aarch64
++ Debian-based Linux using glibc 2.17 or later, aarch64
++ Linux using glibc 2.25 or later, Arm
++ Linux using muslc 1.2.2 or later, Arm
++ Alpine-based Linux, x86_64
++ Alpine-based Linux, aarch64
++ Windows 10 or later, x86, x86_64
++ macOS 12.0 and later, x86_64
++ macOS 12.0 and later, aarch64
+
+
+**1.** This is the platform targeted by the build. See [Using Amazon Corretto](https://aws.amazon.com/corretto/faqs/#Using_Amazon_Corretto)
+in the Amazon Corretto FAQ for supported platforms
+
+The following issues are addressed in 11.0.24.8.1:
+
+| Issue Name                                 | Platform | Description                                                          | Link                                                                          |
+|--------------------------------------------|----------|----------------------------------------------------------------------|-------------------------------------------------------------------------------|
+| Import jdk-11.0.24+8                       | All      | Update Corretto baseline to OpenJDK 11.0.24+8                        | [jdk-11.0.24+8](https://github.com/openjdk/jdk11u/releases/tag/jdk-11.0.24+8) |
+| Re-enable DTLS1.0                          | All      | Re-enable DTLS to not change default TLS                             | [corretto-11/pull/366](https://github.com/corretto/corretto-11/pull/366)      |
+
+The following CVEs are addressed in 11.0.24.8.1:
+
+| CVE            | CVSS | Component                      |
+|----------------|------|--------------------------------|
+| CVE-2024-21147 | 7.4  | hotspot/compiler               |
+| CVE-2024-21145 | 4.8  | client-libs/2d                 |
+| CVE-2024-21140 | 4.8  | hotspot/compiler               |
+| CVE-2024-21144 | 3.7  | core-libs/java.util            |
+| CVE-2024-21131 | 3.7  | hotspot/runtime                |
+| CVE-2024-21138 | 3.7  | hotspot/runtime                |
+
 ## Corretto version: 11.0.23.9.1
 Release Date: April 16, 2024
 
