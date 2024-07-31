@@ -1,8 +1,8 @@
 /build/
 /dist/
 /.idea/
-/.vscode/
 /nbproject/
+/.vscode/
 nbproject/private/
 /webrev
 /.src-rev
