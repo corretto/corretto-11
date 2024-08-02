@@ -54,10 +54,10 @@ import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.Timer;
@@ -161,7 +161,7 @@ class ServerImpl {
             logger.log (Level.DEBUG, "MAX_REQ_TIME:  "+MAX_REQ_TIME);
             logger.log (Level.DEBUG, "MAX_RSP_TIME:  "+MAX_RSP_TIME);
         }
-        events = new LinkedList<Event>();
+        events = new ArrayList<>();
         logger.log (Level.DEBUG, "HttpServer created "+protocol+" "+ addr);
     }
 
@@ -427,8 +427,7 @@ class ServerImpl {
             }
         }
 
-        final LinkedList<HttpConnection> connsToRegister =
-                new LinkedList<HttpConnection>();
+        final ArrayList<HttpConnection> connsToRegister = new ArrayList<>();
 
         void reRegister (HttpConnection c) {
             /* re-register with selector */
@@ -453,7 +452,7 @@ class ServerImpl {
                     synchronized (lolock) {
                         if (events.size() > 0) {
                             list = events;
-                            events = new LinkedList<Event>();
+                            events = new ArrayList<>();
                         }
                     }
 
@@ -516,14 +515,15 @@ class ServerImpl {
 
                                     key.cancel();
                                     chan.configureBlocking (true);
+                                    // check if connection is being closed
                                     if (newlyAcceptedConnections.remove(conn)
                                             || idleConnections.remove(conn)) {
                                         // was either a newly accepted connection or an idle
                                         // connection. In either case, we mark that the request
                                         // has now started on this connection.
                                         requestStarted(conn);
+                                        handle (chan, conn);
                                     }
-                                    handle (chan, conn);
                                 } else {
                                     assert false : "Unexpected non-readable key:" + key;
                                 }
@@ -982,35 +982,30 @@ class ServerImpl {
      */
     class IdleTimeoutTask extends TimerTask {
         public void run () {
-            LinkedList<HttpConnection> toClose = new LinkedList<HttpConnection>();
-            final long currentTime = System.currentTimeMillis();
-            synchronized (idleConnections) {
-                final Iterator<HttpConnection> it = idleConnections.iterator();
-                while (it.hasNext()) {
-                    final HttpConnection c = it.next();
-                    if (currentTime - c.idleStartTime >= IDLE_INTERVAL) {
-                        toClose.add(c);
-                        it.remove();
-                    }
-                }
-            }
+            closeConnections(idleConnections, IDLE_INTERVAL);
             // if any newly accepted connection has been idle (i.e. no byte has been sent on that
             // connection during the configured idle timeout period) then close it as well
-            synchronized (newlyAcceptedConnections) {
-                final Iterator<HttpConnection> it = newlyAcceptedConnections.iterator();
-                while (it.hasNext()) {
-                    final HttpConnection c = it.next();
-                    if (currentTime - c.idleStartTime >= NEWLY_ACCEPTED_CONN_IDLE_INTERVAL) {
-                        toClose.add(c);
-                        it.remove();
-                    }
+            closeConnections(newlyAcceptedConnections, NEWLY_ACCEPTED_CONN_IDLE_INTERVAL);
+        }
+
+        private void closeConnections(Set<HttpConnection> connections, long idleInterval) {
+            long currentTime = System.currentTimeMillis();
+            ArrayList<HttpConnection> toClose = new ArrayList<>();
+
+            connections.forEach(c -> {
+                if (currentTime - c.idleStartTime >= idleInterval) {
+                    toClose.add(c);
                 }
-            }
+            });
             for (HttpConnection c : toClose) {
-                allConnections.remove(c);
-                c.close();
-                if (logger.isLoggable(Level.TRACE)) {
-                    logger.log(Level.TRACE, "Closed idle connection " + c);
+                // check if connection still idle
+                if (currentTime - c.idleStartTime >= idleInterval &&
+                        connections.remove(c)) {
+                    allConnections.remove(c);
+                    c.close();
+                    if (logger.isLoggable(Level.TRACE)) {
+                        logger.log(Level.TRACE, "Closed idle connection " + c);
+                    }
                 }
             }
         }
@@ -1023,7 +1018,7 @@ class ServerImpl {
 
         // runs every TIMER_MILLIS
         public void run () {
-            LinkedList<HttpConnection> toClose = new LinkedList<HttpConnection>();
+            ArrayList<HttpConnection> toClose = new ArrayList<>();
             final long currentTime = System.currentTimeMillis();
             synchronized (reqConnections) {
                 if (MAX_REQ_TIME != -1) {
@@ -1040,7 +1035,7 @@ class ServerImpl {
                     }
                 }
             }
-            toClose = new LinkedList<HttpConnection>();
+            toClose = new ArrayList<>();
             synchronized (rspConnections) {
                 if (MAX_RSP_TIME != -1) {
                     for (HttpConnection c : rspConnections) {
