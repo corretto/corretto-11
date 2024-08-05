@@ -112,4 +112,5 @@ extern ArchDesc* globalAD;
 // an encoding error) and that the output was not truncated.
 extern int snprintf_checked(char* buf, size_t len, const char* fmt, ...);
 
-#endif // SHARE_ADLC_ADLC_HPP
+#endif // SHARE_VM_ADLC_ADLC_HPP
+
