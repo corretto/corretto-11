@@ -28,10 +28,10 @@
 #include <stdio.h>
 
 #define GTEST_DONT_DEFINE_TEST 1
+
 #include "utilities/vmassert_uninstall.hpp"
 #include "gtest/gtest.h"
 #include "utilities/vmassert_reinstall.hpp"
-
 
 #define CONCAT(a, b) a ## b
 
