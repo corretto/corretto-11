@@ -2,6 +2,45 @@
 
 The following sections describe the changes for each release of Amazon Corretto 11.
 
+## Corretto version: 11.0.26.4.1
+Release Date: January 21, 2025
+
+**Target Platforms <sup>1</sup>**
+
++ RPM-based Linux using glibc 2.12 or later, x86, x86_64
++ Debian-based Linux using glibc 2.12 or later, x86, x86_64
++ RPM-based Linux using glibc 2.17 or later, aarch64
++ Debian-based Linux using glibc 2.17 or later, aarch64
++ Linux using glibc 2.25 or later, Arm
++ Linux using muslc 1.2.2 or later, Arm
++ Alpine-based Linux, x86_64
++ Alpine-based Linux, aarch64
++ Windows 10 or later, x86, x86_64
++ macOS 13.0 and later, x86_64
++ macOS 13.0 and later, aarch64
+
+**1.** This is the platform targeted by the build. See [Using Amazon Corretto](https://aws.amazon.com/corretto/faqs/#Using_Amazon_Corretto)
+in the Amazon Corretto FAQ for supported platforms
+
+The following issues are addressed in 11.0.26.4.1:
+
+| Issue Name                                 | Platform | Description                                                          | Link                                                                          |
+|--------------------------------------------|----------|----------------------------------------------------------------------|-------------------------------------------------------------------------------|
+| Import jdk-11.0.26+4   | All      | Update Corretto baseline to OpenJDK 11.0.26+4                        | [jdk-11.0.26+4](https://github.com/openjdk/jdk11u/releases/tag/jdk-11.0.26+4) |
+| JDK-8339637            | All      | Update timezone data to 2024b.  | [JDK-8339637](https://bugs.openjdk.org/browse/JDK-8339637) |
+| JDK-8339803            | All      | TZDB spec allows not only month/weekday names, but the keywords themselves can be case-insensitive and unambiguous abbreviations. | [JDK-8339803](https://bugs.openjdk.org/browse/JDK-8339803) |
+| JDK-8339644            | All      | Improved parsing of Day/Month in tzdata rules.  | [JDK-8339644](https://bugs.openjdk.org/browse/JDK-8339644) |
+| JDK-8341059            | All      | Change Entrust TLS distrust date to November 12, 2024  | [JDK-8341059](https://bugs.openjdk.org/browse/JDK-8341059) |
+| JDK-8341057            | All      | Add 2 SSL.com TLS roots.  | [JDK-8341057](https://bugs.openjdk.org/browse/JDK-8341057) |
+| JDK-8337664            | All      | Distrust TLS server certificates issued after Oct 2024 and anchored by Entrust Root CAs | [JDK-8337664](https://bugs.openjdk.org/browse/JDK-8337664) |
+
+The following CVEs are addressed in 11.0.26.4.1:
+
+| CVE            | CVSS | Component                       |
+|----------------|------|---------------------------------|
+| CVE-2024-21502 | 4.8  | hotspot/compiler                |
+
+
 ## Corretto version: 11.0.25.9.1
 Release Date: October 15, 2024
 
