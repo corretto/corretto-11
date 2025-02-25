@@ -1,5 +1,6 @@
+#!/bin/bash
 #
-# Copyright (c) 2020, 2022, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2024, Oracle and/or its affiliates. All rights reserved.
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
 #
 # This code is free software; you can redistribute it and/or modify it
@@ -23,19 +24,18 @@
 # questions.
 #
 
-# Versions and download locations for dependencies used by GitHub Actions (GHA)
-
-GTEST_VERSION=1.8.1
-JTREG_VERSION=7.3.1+1
-
-LINUX_X64_BOOT_JDK_EXT=tar.gz
-LINUX_X64_BOOT_JDK_URL=https://github.com/adoptium/temurin11-binaries/releases/download/jdk-11.0.26%2B4/OpenJDK11U-jdk_x64_linux_hotspot_11.0.26_4.tar.gz
-LINUX_X64_BOOT_JDK_SHA256=7def4c5807b38ef1a7bb30a86572a795ca604127cc8d1f5b370abf23618104e6
-
-MACOS_X64_BOOT_JDK_EXT=tar.gz
-MACOS_X64_BOOT_JDK_URL=https://github.com/adoptium/temurin11-binaries/releases/download/jdk-11.0.26%2B4/OpenJDK11U-jdk_x64_mac_hotspot_11.0.26_4.tar.gz
-MACOS_X64_BOOT_JDK_SHA256=b0142c2c85da43bb3565321164e8129b1166de5d6a43c88e567a92c39128c003
-
-WINDOWS_X64_BOOT_JDK_EXT=zip
-WINDOWS_X64_BOOT_JDK_URL=https://github.com/adoptium/temurin11-binaries/releases/download/jdk-11.0.26%2B4/OpenJDK11U-jdk_x64_windows_hotspot_11.0.26_4.zip
-WINDOWS_X64_BOOT_JDK_SHA256=a221ae370f609f00e5869c385f4853fecb622a99f8637b95c22ec66c04e15051
+function truncate_summary() {
+  # With large hs_errs, the summary can easily exceed 1024 kB, the limit set by Github
+  # Trim it down if so.
+  summary_size=$(wc -c < $GITHUB_STEP_SUMMARY)
+  if [[ $summary_size -gt 1000000 ]]; then
+    # Trim to below 1024 kB, and cut off after the last detail group
+    head -c 1000000 $GITHUB_STEP_SUMMARY | tac | sed -n -e '/<\/details>/,$ p' | tac > $GITHUB_STEP_SUMMARY.tmp
+    mv $GITHUB_STEP_SUMMARY.tmp $GITHUB_STEP_SUMMARY
+    (
+      echo ''
+      echo ':x: **WARNING: Summary is too large and has been truncated.**'
+      echo ''
+    )  >> $GITHUB_STEP_SUMMARY
+  fi
+}
