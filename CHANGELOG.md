@@ -27,7 +27,6 @@ The following issues are addressed in 11.0.27.6.1:
 | Issue Name | Platform | Description | Link |
 |------------|----------|-------------|------|
 | Import jdk-11.0.27+6 | All | Update Corretto baseline to OpenJDK 11.0.27+6 | [jdk-11.0.27+6](https://github.com/openjdk/jdk11u/releases/tag/jdk-11.0.27+6) |
-| JDK-8349133 | All | Update Timezone Data to 2025a | [JDK-8349133](https://bugs.openjdk.org/browse/JDK-8349133) |
 
 The following CVEs are addressed in 11.0.27.6.1:
 
