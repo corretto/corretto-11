@@ -74,7 +74,7 @@ The following CVEs are addressed in 11.0.26.4.1:
 
 | CVE            | CVSS | Component                       |
 |----------------|------|---------------------------------|
-| CVE-2024-21502 | 4.8  | hotspot/compiler                |
+| CVE-2025-21502 | 4.8  | hotspot/compiler                |
 
 
 ## Corretto version: 11.0.25.9.1
