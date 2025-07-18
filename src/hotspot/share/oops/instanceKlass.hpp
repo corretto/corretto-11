@@ -680,12 +680,6 @@ public:
     }
   }
 
-  // Oop that keeps the metadata for this class from being unloaded
-  // in places where the metadata is stored in other places, like nmethods
-  oop klass_holder() const {
-    return is_anonymous() ? java_mirror() : class_loader();
-  }
-
   bool is_contended() const                {
     return (_misc_flags & _misc_is_contended) != 0;
   }

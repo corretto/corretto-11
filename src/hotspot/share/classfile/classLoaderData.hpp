@@ -287,13 +287,14 @@ class ClassLoaderData : public CHeapObj<mtClass> {
   void accumulate_modified_oops()        { if (has_modified_oops()) _accumulated_modified_oops = true; }
   void clear_accumulated_modified_oops() { _accumulated_modified_oops = false; }
   bool has_accumulated_modified_oops()   { return _accumulated_modified_oops; }
- private:
+  oop holder_no_keepalive() const;
+  oop holder_phantom() const;
 
+private:
   void unload();
   bool keep_alive() const       { return _keep_alive > 0; }
 
-  oop holder_phantom() const;
-  void classes_do(void f(Klass*));
+  void classes_do(void f(Klass* const));
   void loaded_classes_do(KlassClosure* klass_closure);
   void classes_do(void f(InstanceKlass*));
   void methods_do(void f(Method*));

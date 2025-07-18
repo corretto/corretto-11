@@ -93,7 +93,7 @@ inline void ParCompactionManager::MarkAndPushClosure::do_oop(oop* p)       { do_
 inline void ParCompactionManager::MarkAndPushClosure::do_oop(narrowOop* p) { do_oop_work(p); }
 
 inline void ParCompactionManager::follow_klass(Klass* klass) {
-  oop holder = klass->klass_holder();
+  oop holder = klass->class_loader_data()->holder_no_keepalive();
   mark_and_push(&holder);
 }
 
