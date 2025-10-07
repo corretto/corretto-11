@@ -119,6 +119,10 @@ allprojects {
 
         correttoCommonFlags += '--enable-headless-only=' + (is_headless ? "yes" : "no")
 
+        // If asyncProfilerBinariesPath provided, store for easy reference when bundling
+        asyncProfilerBinariesPath = project.findProperty("asyncProfilerBinariesPath") ?: ""
+        asyncProfilerLegal = "${rootDir}/installers/legal/async-profiler.md"
+
         // Valid value: null, release, debug, fastdebug, slowdebug
         correttoDebugLevel = "release" // Default: release
         switch(project.findProperty("corretto.debug_level")) {
