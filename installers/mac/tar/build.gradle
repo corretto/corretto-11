@@ -35,8 +35,6 @@ def imageDir= "$buildRoot/build/${project.jdkImageName}/images"
 def jdkResultingImage = "${imageDir}/jdk-bundle"
 def testResultingImage = "${imageDir}/test"
 def correttoMacDir = "amazon-corretto-${project.version.major}.jdk"
-def thirdPartyBinaries = "${project.rootDir}/third-party-binaries"
-def thirdPartyLegal = "${project.rootDir}/installers/legal"
 
 // deps
 def depsMap = [:]

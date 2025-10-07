@@ -62,8 +62,6 @@ if (project.correttoArch == 'armv7') {
 def imageDir = "$buildRoot/build/${project.jdkImageName}/images"
 def jdkResultingImage = "${imageDir}/jdk"
 def testResultingImage = "${imageDir}/test"
-def thirdPartyBinaries = "${project.rootDir}/third-party-binaries"
-def thirdPartyLegal = "${project.rootDir}/installers/legal"
 
 // deps
 def depsMap = [:]

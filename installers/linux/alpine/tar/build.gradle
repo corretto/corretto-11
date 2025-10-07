@@ -42,8 +42,6 @@ ext {
 
 def jdkResultingImage = "$buildRoot/build/linux-${arch}-normal-server-${correttoDebugLevel}/images/jdk"
 def testResultingImage = "$buildRoot/build/linux-${arch}-normal-server-${correttoDebugLevel}/images/test"
-def thirdPartyBinaries = "${project.rootDir}/third-party-binaries"
-def thirdPartyLegal = "${project.rootDir}/installers/legal"
 
 /**
  * Create a local copy of the source tree in our
