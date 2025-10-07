@@ -35,7 +35,8 @@ def imageDir= "$buildRoot/build/${project.jdkImageName}/images"
 def jdkResultingImage = "${imageDir}/jdk-bundle"
 def testResultingImage = "${imageDir}/test"
 def correttoMacDir = "amazon-corretto-${project.version.major}.jdk"
-
+def thirdPartyBinaries = "${project.rootDir}/third-party-binaries"
+def thirdPartyLegal = "${project.rootDir}/installers/legal"
 
 // deps
 def depsMap = [:]
@@ -119,6 +120,20 @@ task prepareArtifacts {
             }
             into "${jdkResultingImage}/${correttoMacDir}/Contents".toString()
         }
+
+        // Copy pre-populated third party binaries if present
+        if (file(thirdPartyBinaries).exists()) {
+            copy {
+                from thirdPartyBinaries
+                include 'bin/**', 'lib/**'
+                into "${jdkResultingImage}/${correttoMacDir}/Contents/Home"
+            }
+            copy {
+                from thirdPartyLegal
+                into "${jdkResultingImage}/${correttoMacDir}/Contents/Home/legal"
+            }
+        }
+
         // Filter files
         if(file("${buildDir}/${correttoMacDir}").exists()) {
             delete "${buildDir}/${correttoMacDir}"

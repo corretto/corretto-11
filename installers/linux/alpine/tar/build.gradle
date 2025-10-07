@@ -42,6 +42,8 @@ ext {
 
 def jdkResultingImage = "$buildRoot/build/linux-${arch}-normal-server-${correttoDebugLevel}/images/jdk"
 def testResultingImage = "$buildRoot/build/linux-${arch}-normal-server-${correttoDebugLevel}/images/test"
+def thirdPartyBinaries = "${project.rootDir}/third-party-binaries"
+def thirdPartyLegal = "${project.rootDir}/installers/legal"
 
 /**
  * Create a local copy of the source tree in our
@@ -102,6 +104,24 @@ task executeBuild(type: Exec) {
     outputs.dir jdkResultingImage
 }
 
+task bundleThirdPartyBinaries {
+    dependsOn executeBuild
+    doLast {
+        // Copy pre-populated third party binaries if present
+        if (file(thirdPartyBinaries).exists()) {
+            copy {
+                from thirdPartyBinaries
+                include 'bin/**', 'lib/**'
+                into jdkResultingImage
+            }
+            copy {
+                from thirdPartyLegal
+                into "${jdkResultingImage}/legal"
+            }
+        }
+    }
+}
+
 task importAmazonCacerts(type: Exec) {
     dependsOn executeBuild
     workingDir jdkResultingImage
@@ -148,6 +168,7 @@ task packageDebugSymbols(type: Tar) {
 task packageBuildResults(type: Tar) {
     description 'Compresses the JDK image and puts the results in build/distributions.'
     dependsOn packageDebugSymbols
+    dependsOn bundleThirdPartyBinaries
     dependsOn importAmazonCacerts
     archiveName "amazon-corretto-${project.version.full}-alpine-linux-${arch_alias}.tar.gz"
     compression Compression.GZIP
