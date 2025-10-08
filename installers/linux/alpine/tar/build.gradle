@@ -102,6 +102,27 @@ task executeBuild(type: Exec) {
     outputs.dir jdkResultingImage
 }
 
+task bundleThirdPartyBinaries {
+    dependsOn executeBuild
+    doLast {
+        // If property set, copy async profiler binaries to bundle
+        if (project.asyncProfilerBinariesPath != "") {
+            if (!file(project.asyncProfilerBinariesPath).isDirectory()) {
+                throw new GradleException("asyncProfilerBinariesPath is not a valid directory: ${project.asyncProfilerBinariesPath}")
+            }
+            copy {
+                from project.asyncProfilerBinariesPath
+                include 'bin/**', 'lib/**'
+                into jdkResultingImage
+            }
+            copy {
+                from project.asyncProfilerLegal
+                into "${jdkResultingImage}/legal"
+            }
+        }
+    }
+}
+
 task importAmazonCacerts(type: Exec) {
     dependsOn executeBuild
     workingDir jdkResultingImage
@@ -148,6 +169,7 @@ task packageDebugSymbols(type: Tar) {
 task packageBuildResults(type: Tar) {
     description 'Compresses the JDK image and puts the results in build/distributions.'
     dependsOn packageDebugSymbols
+    dependsOn bundleThirdPartyBinaries
     dependsOn importAmazonCacerts
     archiveName "amazon-corretto-${project.version.full}-alpine-linux-${arch_alias}.tar.gz"
     compression Compression.GZIP

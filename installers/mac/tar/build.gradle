@@ -36,7 +36,6 @@ def jdkResultingImage = "${imageDir}/jdk-bundle"
 def testResultingImage = "${imageDir}/test"
 def correttoMacDir = "amazon-corretto-${project.version.major}.jdk"
 
-
 // deps
 def depsMap = [:]
 project.configurations.compile.getFiles().each { depsMap[it.getName()] = it }
@@ -119,6 +118,23 @@ task prepareArtifacts {
             }
             into "${jdkResultingImage}/${correttoMacDir}/Contents".toString()
         }
+
+        // If property set, copy async profiler binaries to bundle
+        if (project.asyncProfilerBinariesPath != "") {
+            if (!file(project.asyncProfilerBinariesPath).isDirectory()) {
+                throw new GradleException("asyncProfilerBinariesPath is not a valid directory: ${project.asyncProfilerBinariesPath}")
+            }
+            copy {
+                from project.asyncProfilerBinariesPath
+                include 'bin/**', 'lib/**'
+                into "${jdkResultingImage}/${correttoMacDir}/Contents/Home"
+            }
+            copy {
+                from project.asyncProfilerLegal
+                into "${jdkResultingImage}/${correttoMacDir}/Contents/Home/legal"
+            }
+        }
+
         // Filter files
         if(file("${buildDir}/${correttoMacDir}").exists()) {
             delete "${buildDir}/${correttoMacDir}"
