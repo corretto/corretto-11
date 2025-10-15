@@ -38,6 +38,7 @@
 import jdk.test.lib.Asserts;
 import sun.hotspot.WhiteBox;
 
+import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
