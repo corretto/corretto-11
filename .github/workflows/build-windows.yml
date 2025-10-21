@@ -60,6 +60,9 @@ env:
   MSYS2_PATH_TYPE: minimal
   CHERE_INVOKING: 1
 
+permissions:
+  contents: read
+
 jobs:
   build-windows:
     name: build
