@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2000, 2025, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -36,10 +36,11 @@ import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.EOFException;
-import java.io.InputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.SequenceInputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -47,18 +48,22 @@ import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.zip.Inflater;
 import java.util.zip.InflaterInputStream;
+
 import javax.imageio.IIOException;
-import javax.imageio.ImageReader;
 import javax.imageio.ImageReadParam;
+import javax.imageio.ImageReader;
 import javax.imageio.ImageTypeSpecifier;
 import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.spi.ImageReaderSpi;
 import javax.imageio.stream.ImageInputStream;
+
 import com.sun.imageio.plugins.common.InputStreamAdapter;
 import com.sun.imageio.plugins.common.ReaderUtil;
 import com.sun.imageio.plugins.common.SubImageInputStream;
-import java.io.ByteArrayOutputStream;
 import sun.awt.image.ByteInterleavedRaster;
+
+import static java.nio.charset.StandardCharsets.ISO_8859_1;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 class PNGImageDataEnumeration implements Enumeration<InputStream> {
 
@@ -134,6 +139,7 @@ public class PNGImageReader extends ImageReader {
     static final int tRNS_TYPE = 0x74524e53;
     static final int zTXt_TYPE = 0x7a545874;
 
+    static final int MAX_INFLATED_TEXT_LENGTH = 262144;
     static final int PNG_COLOR_GRAY = 0;
     static final int PNG_COLOR_RGB = 2;
     static final int PNG_COLOR_PALETTE = 3;
@@ -478,9 +484,9 @@ public class PNGImageReader extends ImageReader {
         stream.readFully(b);
 
         if (compressionFlag == 1) { // Decompress the text
-            text = new String(inflate(b), "UTF8");
+            text = new String(inflate(b), UTF_8);
         } else {
-            text = new String(b, "UTF8");
+            text = new String(b, UTF_8);
         }
         metadata.iTXt_text.add(text);
 
@@ -581,7 +587,7 @@ public class PNGImageReader extends ImageReader {
 
         byte[] b = new byte[textLength];
         stream.readFully(b);
-        metadata.tEXt_text.add(new String(b, "ISO-8859-1"));
+        metadata.tEXt_text.add(new String(b, ISO_8859_1));
 
         // Check if the text chunk contains image creation time
         if (keyword.equals(PNGMetadata.tEXt_creationTimeKey)) {
@@ -655,18 +661,9 @@ public class PNGImageReader extends ImageReader {
 
     private static byte[] inflate(byte[] b) throws IOException {
         InputStream bais = new ByteArrayInputStream(b);
-        InputStream iis = new InflaterInputStream(bais);
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-
-        int c;
-        try {
-            while ((c = iis.read()) != -1) {
-                baos.write(c);
-            }
-        } finally {
-            iis.close();
+        try (InputStream iis = new InflaterInputStream(bais)) {
+            return iis.readNBytes(MAX_INFLATED_TEXT_LENGTH);
         }
-        return baos.toByteArray();
     }
 
     private void parse_zTXt_chunk(int chunkLength) throws IOException {
@@ -682,7 +679,7 @@ public class PNGImageReader extends ImageReader {
 
         byte[] b = new byte[textLength];
         stream.readFully(b);
-        metadata.zTXt_text.add(new String(inflate(b), "ISO-8859-1"));
+        metadata.zTXt_text.add(new String(inflate(b), ISO_8859_1));
 
         // Check if the text chunk contains image creation time
         if (keyword.equals(PNGMetadata.tEXt_creationTimeKey)) {

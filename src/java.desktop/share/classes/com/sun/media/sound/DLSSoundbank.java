@@ -47,6 +47,8 @@ import javax.sound.sampled.AudioFormat.Encoding;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 
+import static java.nio.charset.StandardCharsets.US_ASCII;
+
 /**
  * A DLS Level 1 and Level 2 soundbank reader (from files/url/streams).
  *
@@ -189,22 +191,16 @@ public final class DLSSoundbank implements Soundbank {
     }
 
     public DLSSoundbank(URL url) throws IOException {
-        InputStream is = url.openStream();
-        try {
+        try (InputStream is = url.openStream()) {
             readSoundbank(is);
-        } finally {
-            is.close();
         }
     }
 
     public DLSSoundbank(File file) throws IOException {
         largeFormat = true;
         sampleFile = file;
-        InputStream is = new FileInputStream(file);
-        try {
+        try (InputStream is = new FileInputStream(file)) {
             readSoundbank(is);
-        } finally {
-            is.close();
         }
     }
 
@@ -873,15 +869,21 @@ public final class DLSSoundbank implements Soundbank {
     }
 
     public void save(String name) throws IOException {
-        writeSoundbank(new RIFFWriter(name, "DLS "));
+        try (RIFFWriter writer = new RIFFWriter(name, "DLS ")) {
+            writeSoundbank(writer);
+        }
     }
 
     public void save(File file) throws IOException {
-        writeSoundbank(new RIFFWriter(file, "DLS "));
+        try (RIFFWriter writer = new RIFFWriter(file, "DLS ")) {
+            writeSoundbank(writer);
+        }
     }
 
     public void save(OutputStream out) throws IOException {
-        writeSoundbank(new RIFFWriter(out, "DLS "));
+        try (RIFFWriter writer = new RIFFWriter(out, "DLS ")) {
+            writeSoundbank(writer);
+        }
     }
 
     private void writeSoundbank(RIFFWriter writer) throws IOException {
@@ -921,8 +923,6 @@ public final class DLSSoundbank implements Soundbank {
         writer.seek(bak);
 
         writeInfo(writer.writeList("INFO"), info);
-
-        writer.close();
     }
 
     private void writeSample(RIFFWriter writer, DLSSample sample)
@@ -1151,7 +1151,7 @@ public final class DLSSoundbank implements Soundbank {
             return;
         RIFFWriter chunk = writer.writeChunk(name);
         chunk.writeString(value);
-        int len = value.getBytes("ascii").length;
+        int len = value.getBytes(US_ASCII).length;
         chunk.write(0);
         len++;
         if (len % 2 != 0)

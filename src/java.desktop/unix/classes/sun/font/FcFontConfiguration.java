@@ -33,23 +33,24 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Scanner;
+
 import sun.awt.FcFontManager;
 import sun.awt.FontConfiguration;
 import sun.awt.FontDescriptor;
 import sun.awt.SunToolkit;
-import sun.font.CompositeFontDescriptor;
 import sun.font.FontManager;
-import sun.font.FontConfigManager.FontConfigInfo;
 import sun.font.FontConfigManager.FcCompFont;
 import sun.font.FontConfigManager.FontConfigFont;
+import sun.font.FontConfigManager.FontConfigInfo;
 import sun.java2d.SunGraphicsEnvironment;
 import sun.util.logging.PlatformLogger;
+
+import static java.nio.charset.StandardCharsets.ISO_8859_1;
 
 public class FcFontConfiguration extends FontConfiguration {
 
@@ -180,7 +181,7 @@ public class FcFontConfiguration extends FontConfiguration {
         String[] componentFaceNames = cfi[idx].getComponentFaceNames();
         FontDescriptor[] ret = new FontDescriptor[componentFaceNames.length];
         for (int i = 0; i < componentFaceNames.length; i++) {
-            ret[i] = new FontDescriptor(componentFaceNames[i], StandardCharsets.ISO_8859_1.newEncoder(), new int[0]);
+            ret[i] = new FontDescriptor(componentFaceNames[i], ISO_8859_1.newEncoder(), new int[0]);
         }
 
         return ret;
@@ -317,7 +318,9 @@ public class FcFontConfiguration extends FontConfiguration {
                      * For Ubuntu the ID is "Ubuntu".
                      */
                     Properties props = new Properties();
-                    props.load(new FileInputStream(f));
+                    try (FileInputStream fis = new FileInputStream(f)) {
+                        props.load(fis);
+                    }
                     osName = props.getProperty("DISTRIB_ID");
                     osVersion =  props.getProperty("DISTRIB_RELEASE");
             } else if ((f = new File("/etc/redhat-release")).canRead()) {
@@ -400,10 +403,9 @@ public class FcFontConfiguration extends FontConfiguration {
             File dir = fcInfoFile.getParentFile();
             dir.mkdirs();
             File tempFile = Files.createTempFile(dir.toPath(), "fcinfo", null).toFile();
-            FileOutputStream fos = new FileOutputStream(tempFile);
-            props.store(fos,
-                      "JDK Font Configuration Generated File: *Do Not Edit*");
-            fos.close();
+            try (FileOutputStream fos = new FileOutputStream(tempFile)) {
+                props.store(fos, "JDK Font Configuration Generated File: *Do Not Edit*");
+            }
             boolean renamed = tempFile.renameTo(fcInfoFile);
             if (!renamed && FontUtilities.debugFonts()) {
                 System.out.println("rename failed");
