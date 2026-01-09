@@ -26,6 +26,7 @@
  * @bug 8044860
  * @summary Vectors and fixed length fields should be verified
  *          for allowed sizes.
+ * @library /test/lib
  * @modules java.base/sun.security.ssl
  * @run main/othervm LengthCheckTest
  * @key randomness
@@ -75,6 +76,8 @@ import java.nio.*;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Iterator;
+
+import jdk.test.lib.security.SecurityUtils;
 
 public class LengthCheckTest {
 
@@ -301,7 +304,7 @@ public class LengthCheckTest {
      */
     public static void main(String args[]) throws Exception {
         // Re-enable TLSv1 and TLS_RSA_* since test depends on it.
-        SecurityUtils.removeFromDisabledTlsAlgs("TLSv1", "TLS_RSA_*");
+        SecurityUtils.removeFromDisabledTlsAlgs("TLS_RSA_*");
 
         List<LengthCheckTest> ccsTests = new ArrayList<>();
 

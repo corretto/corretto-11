@@ -27,6 +27,7 @@
  * @test
  * @bug 4873188
  * @summary Support TLS 1.1
+ * @library /test/lib
  * @modules java.security.jgss
  *          java.security.jgss/sun.security.jgss.krb5
  *          java.security.jgss/sun.security.krb5:+open
@@ -49,6 +50,8 @@ import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
+
+import jdk.test.lib.security.SecurityUtils;
 
 public class GenericBlockCipher {
 
@@ -172,7 +175,7 @@ public class GenericBlockCipher {
 
     public static void main(String[] args) throws Exception {
         // Re-enable TLSv1.1 and TLS_RSA_* since test depends on it.
-        SecurityUtils.removeFromDisabledTlsAlgs("TLSv1.1", "TLS_RSA_*");
+        SecurityUtils.removeFromDisabledTlsAlgs("TLS_RSA_*");
 
         String keyFilename =
             System.getProperty("test.src", ".") + "/" + pathToStores +
