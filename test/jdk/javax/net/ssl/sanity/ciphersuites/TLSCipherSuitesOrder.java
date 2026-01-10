@@ -24,11 +24,14 @@ import java.util.Arrays;
 import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLSocket;
 
+import jdk.test.lib.security.SecurityUtils;
+
 /*
  * @test
  * @bug 8234728
  * @library /javax/net/ssl/templates
  *          /javax/net/ssl/TLSCommon
+ *          /test/lib
  * @summary Test TLS ciphersuites order.
  *      Parameter order: <protocol> <client cipher order> <server cipher order>
  * @run main/othervm TLSCipherSuitesOrder TLSv13 ORDERED default
