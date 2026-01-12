@@ -89,7 +89,7 @@ public abstract class AbstractConnectTimeout {
     }
 
     static final ProxySelector EXAMPLE_DOT_COM_PROXY = ProxySelector.of(
-            InetSocketAddress.createUnresolved("192.0.2.1", 8080));
+            InetSocketAddress.createUnresolved("203.0.113.1", 8080));
 
     //@Test(dataProvider = "variants")
     protected void timeoutNoProxySync(Version requestVersion,
