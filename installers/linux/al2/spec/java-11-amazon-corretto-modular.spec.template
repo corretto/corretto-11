@@ -229,6 +229,13 @@ Requires: %{name}-devel%{?1}%{?_isa} = %{epoch}:%{version}-%{release}
 %description jmods
 Amazon Corretto's packaging of the OpenJDK %{java_major_version} jmods.
 
+%package debugsymbols
+Summary: Amazon Corretto ${java_spec_version} zipped debug symbols
+Group: Development
+
+%description debugsymbols
+Amazon Corretto's packaging of the OpenJDK ${java_spec_version} debug symbols.
+
 %prep
 %setup -q -n src -c
 
@@ -257,7 +264,7 @@ bash ./configure \\
         --with-vendor-bug-url="https://github.com/corretto/corretto-11/issues/" \\
         --with-vendor-vm-bug-url="https://github.com/corretto/corretto-11/issues/" \\
         --with-debug-level=$debug_level \\
-        --with-native-debug-symbols=none
+        --with-native-debug-symbols=zipped
 
 make images
 make LOG=debug docs
@@ -419,6 +426,9 @@ fi
 %exclude %{java_lib}/libawt_xawt.so
 %exclude %{java_lib}/libjawt.so
 %exclude %{java_lib}/libsplashscreen.so
+# Exclude debug symbol files
+%exclude %{java_home}/lib/*.diz
+%exclude %{java_home}/lib/server/*.diz
 
 %files devel
 %{java_home}/bin/jaotc
@@ -495,7 +505,15 @@ fi
 %doc %{java_imgdir}/docs/specs
 %license %{java_imgdir}/docs/legal
 
+%files debugsymbols
+%{java_home}/bin/*.diz
+%{java_home}/lib/*.diz
+%{java_home}/lib/server/*.diz
+
 %changelog
+* Fri Jan 23 2026 Satyen Subramaniam <satyenme@amazon.com>
+- Add package debug symbols
+
 * Mon Aug 29 2022 Dan Lutker <lutkerd@amazon.com>
 - Move requires for jpeg, alsa and fonts to headless package
 
