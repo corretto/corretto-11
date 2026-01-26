@@ -198,6 +198,13 @@ Provides: java-11-javadoc = %{epoch}:%{version}-%{release}
 %description javadoc
 Amazon Corretto's packaging of the OpenJDK 11 API documentation.
 
+%package debugsymbols
+Summary: Amazon Corretto 11 zipped debug symbols
+Group: Development
+
+%description debugsymbols
+Amazon Corretto's packaging of the OpenJDK 11 debug symbols.
+
 %prep
 %setup -q -n src -c
 
@@ -226,7 +233,7 @@ bash ./configure \\
         --with-vendor-bug-url="https://github.com/corretto/corretto-11/issues/" \\
         --with-vendor-vm-bug-url="https://github.com/corretto/corretto-11/issues/" \\
         --with-debug-level=$debug_level \\
-        --with-native-debug-symbols=none
+        --with-native-debug-symbols=zipped
 
 make images
 make LOG=debug docs
@@ -354,6 +361,9 @@ fi
 %exclude %{java_lib}/libawt_xawt.so
 %exclude %{java_lib}/libjawt.so
 %exclude %{java_lib}/libsplashscreen.so
+# Exclude debug symbol files
+%exclude %{java_home}/lib/*.diz
+%exclude %{java_home}/lib/server/*.diz
 
 %exclude %{java_inc}/jawt.h
 %exclude %{java_inc}/linux/jawt_md.h
@@ -365,7 +375,15 @@ fi
 %doc %{java_imgdir}/docs/specs
 %license %{java_imgdir}/docs/legal
 
+%files debugsymbols
+%{java_home}/bin/*.diz
+%{java_home}/lib/*.diz
+%{java_home}/lib/server/*.diz
+
 %changelog
+* Fri Jan 23 2026 Satyen Subramaniam <satyenme@amazon.com>
+- Add package debug symbols
+
 * Thu Aug 18 2022 Dan Lutker <lutkerd@amazon.com>
 - Add ability to set debug_level
 
