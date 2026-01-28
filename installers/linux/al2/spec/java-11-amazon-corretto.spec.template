@@ -362,8 +362,9 @@ fi
 %exclude %{java_lib}/libjawt.so
 %exclude %{java_lib}/libsplashscreen.so
 # Exclude debug symbol files
-%exclude %{java_home}/lib/*.diz
-%exclude %{java_home}/lib/server/*.diz
+%exclude %{java_home}/bin/*.diz
+%exclude %{java_lib}/*.diz
+%exclude %{java_lib}/server/*.diz
 
 %exclude %{java_inc}/jawt.h
 %exclude %{java_inc}/linux/jawt_md.h
