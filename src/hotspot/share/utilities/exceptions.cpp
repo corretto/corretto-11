@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1998, 2024, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -415,6 +415,7 @@ void Exceptions::wrap_dynamic_exception(Thread* THREAD) {
       // Pass through an Error, including BootstrapMethodError, any other form
       // of linkage error, or say ThreadDeath/OutOfMemoryError
       if (TraceMethodHandles) {
+        ResourceMark rm(THREAD);
         tty->print_cr("[constant/invoke]dynamic passes through an Error for " INTPTR_FORMAT, p2i((void *)exception));
         exception->print();
       }
@@ -423,6 +424,7 @@ void Exceptions::wrap_dynamic_exception(Thread* THREAD) {
 
     // Otherwise wrap the exception in a BootstrapMethodError
     if (TraceMethodHandles) {
+      ResourceMark rm(THREAD);
       tty->print_cr("[constant/invoke]dynamic throws BSME for " INTPTR_FORMAT, p2i((void *)exception));
       exception->print();
     }
