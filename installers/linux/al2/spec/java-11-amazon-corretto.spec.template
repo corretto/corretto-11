@@ -26,6 +26,7 @@
 %global build_id        $build_id
 %global release_id      $release_id
 %global version_opt     $version_opt
+%global version_date    $version_date
 %global experimental_feature     $experimental_feature
 %global additional_configure_options     $additional_configure_options
 %global zlib_option $zlib_option
@@ -217,7 +218,10 @@ bash ./configure \\
         --with-giflib=system \\
         --with-libpng=system \\
         --with-zlib="%{zlib_option}" \\
-        --with-version-opt="LTS" \\
+        --with-version-opt="%{version_opt}" \\
+%if "%{version_date}" != "%{nil}"
+        --with-version-date="%{version_date}" \\
+%endif
         --with-version-build="%{build_id}" \\
         --with-vendor-version-string="Corretto%{?experimental_feature:-%{experimental_feature}}-%{java_version}.%{build_id}.%{release_id}" \\
         --with-version-pre= \\
