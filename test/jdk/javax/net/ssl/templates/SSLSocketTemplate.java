@@ -296,7 +296,7 @@ public class SSLSocketTemplate {
     /*
      * Define the client side of the test.
      */
-    private void doClientSide() throws Exception {
+    protected void doClientSide() throws Exception {
 
         // Wait for server to get started.
         //
