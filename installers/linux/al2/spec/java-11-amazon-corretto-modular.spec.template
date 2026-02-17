@@ -433,6 +433,7 @@ fi
 # Exclude debug symbol files
 %exclude %{java_home}/lib/*.diz
 %exclude %{java_home}/lib/server/*.diz
+%exclude %{java_home}/lib/jli/*.diz
 
 %files devel
 %{java_home}/bin/jaotc
