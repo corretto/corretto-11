@@ -513,6 +513,7 @@ fi
 %{java_home}/bin/*.diz
 %{java_home}/lib/*.diz
 %{java_home}/lib/server/*.diz
+%{java_home}/lib/jli/*.diz
 
 %changelog
 * Fri Jan 23 2026 Satyen Subramaniam <satyenme@amazon.com>
