@@ -369,6 +369,7 @@ fi
 %exclude %{java_home}/bin/*.diz
 %exclude %{java_lib}/*.diz
 %exclude %{java_lib}/server/*.diz
+%exclude %{java_lib}/jli/*.diz
 
 %exclude %{java_inc}/jawt.h
 %exclude %{java_inc}/linux/jawt_md.h
@@ -384,6 +385,7 @@ fi
 %{java_home}/bin/*.diz
 %{java_home}/lib/*.diz
 %{java_home}/lib/server/*.diz
+%{java_home}/lib/jli/*.diz
 
 %changelog
 * Fri Jan 23 2026 Satyen Subramaniam <satyenme@amazon.com>

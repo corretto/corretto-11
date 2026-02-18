@@ -433,6 +433,7 @@ fi
 # Exclude debug symbol files
 %exclude %{java_home}/lib/*.diz
 %exclude %{java_home}/lib/server/*.diz
+%exclude %{java_home}/lib/jli/*.diz
 
 %files devel
 %{java_home}/bin/jaotc
@@ -513,6 +514,7 @@ fi
 %{java_home}/bin/*.diz
 %{java_home}/lib/*.diz
 %{java_home}/lib/server/*.diz
+%{java_home}/lib/jli/*.diz
 
 %changelog
 * Fri Jan 23 2026 Satyen Subramaniam <satyenme@amazon.com>
