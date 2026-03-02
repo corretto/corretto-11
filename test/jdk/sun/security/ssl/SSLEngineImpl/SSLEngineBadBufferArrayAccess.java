@@ -86,6 +86,8 @@ import java.nio.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import jdk.test.lib.security.SecurityUtils;
+
 public class SSLEngineBadBufferArrayAccess extends SSLContextTemplate {
 
     /*
