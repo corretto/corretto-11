@@ -46,35 +46,34 @@ import javax.swing.SwingUtilities;
  */
 
 public class AddRemoveMenuBarTest_3  {
-    private static final String INSTRUCTIONS = """
-            A frame at (100,100) contains two (2) rows of three (3) text
-            fields each, and under this, a checkbox labelled 'Use menubar'.
-
-            The first row's text fields pertain to the x coordinates and
-            the second row's text fields pertain to the y coordinates.
-
-            The first column, 'request', is an input only field for frame
-            location. (press enter to apply).
-
-            The second column, 'reported', is an output only
-            field reporting frame location.
-
-            The third column, 'inset', is an output only field reporting
-            the frame's inset values.
-
-            You can click the 'Use menubar' checkbox to alternately add
-            and remove a menu bar containing an (empty) 'Help' menu.
-
-            After a menubar is added or removed, the frame should not
-            have been resized nor repositioned on the screen and the
-            y inset should accurately reflect the presence or absence
-            of the menubar within the inset.
-
-            The insets always include the window manager's title and border
-            decorations, if any.
-
-            Upon test completion, click Pass or Fail appropriately.
-            """;
+    private static final String INSTRUCTIONS =
+            "A frame at (100,100) contains two (2) rows of three (3) text\n" +
+            "fields each, and under this, a checkbox labelled 'Use menubar'.\n" +
+            "\n" +
+            "The first row's text fields pertain to the x coordinates and\n" +
+            "the second row's text fields pertain to the y coordinates.\n" +
+            "\n" +
+            "The first column, 'request', is an input only field for frame\n" +
+            "location. (press enter to apply).\n" +
+            "\n" +
+            "The second column, 'reported', is an output only\n" +
+            "field reporting frame location.\n" +
+            "\n" +
+            "The third column, 'inset', is an output only field reporting\n" +
+            "the frame's inset values.\n" +
+            "\n" +
+            "You can click the 'Use menubar' checkbox to alternately add\n" +
+            "and remove a menu bar containing an (empty) 'Help' menu.\n" +
+            "\n" +
+            "After a menubar is added or removed, the frame should not\n" +
+            "have been resized nor repositioned on the screen and the\n" +
+            "y inset should accurately reflect the presence or absence\n" +
+            "of the menubar within the inset.\n" +
+            "\n" +
+            "The insets always include the window manager's title and border\n" +
+            "decorations, if any.\n" +
+            "\n" +
+            "Upon test completion, click Pass or Fail appropriately.";
     public static void main(String[] args) throws Exception {
         PassFailJFrame passFailJFrame = new PassFailJFrame.Builder()
                 .title("AddRemoveMenuBarTest_3 Instructions")

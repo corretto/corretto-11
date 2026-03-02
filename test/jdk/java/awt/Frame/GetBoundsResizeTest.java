@@ -38,16 +38,15 @@ import javax.swing.JTextArea;
 */
 
 public class GetBoundsResizeTest {
-    private static final String INSTRUCTIONS = """
-            0. There is a test window with a "Press" button,
-                Its original bounds should be printed in the text area below.
-            1. Resize the test window using the upper left corner.
-            2. Press the button to print the result of getBounds() to the text area.
-            3. Previously, a window could report an incorrect position on the
-                screen after resizing the window in this way.
-                If getBounds() prints the appropriate values for the window,
-                click Pass, otherwise click Fail.
-            """;
+    private static final String INSTRUCTIONS =
+            "0. There is a test window with a \"Press\" button,\n" +
+            "    Its original bounds should be printed in the text area below.\n" +
+            "1. Resize the test window using the upper left corner.\n" +
+            "2. Press the button to print the result of getBounds() to the text area.\n" +
+            "3. Previously, a window could report an incorrect position on the\n" +
+            "    screen after resizing the window in this way.\n" +
+            "    If getBounds() prints the appropriate values for the window,\n" +
+            "    click Pass, otherwise click Fail.";
 
     private static JTextArea textArea;
     private static Frame frame;
@@ -92,6 +91,6 @@ public class GetBoundsResizeTest {
     }
 
     private static void logFrameBounds(String format) {
-        textArea.append(format.formatted(frame.getBounds()));
+        textArea.append(String.format(format, frame.getBounds()));
     }
 }
