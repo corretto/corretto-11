@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2023, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -26,6 +26,7 @@
  * @bug 8206929 8212885
  * @summary ensure that client only resumes a session if certain properties
  *    of the session are compatible with the new connection
+ * @library /javax/net/ssl/templates
  * @run main/othervm -Djdk.tls.client.protocols=TLSv1.2 ResumeChecksClient BASIC
  * @run main/othervm -Djdk.tls.client.protocols=TLSv1.3 ResumeChecksClient BASIC
  * @run main/othervm ResumeChecksClient BASIC
@@ -43,13 +44,7 @@ import java.security.*;
 import java.net.*;
 import java.util.*;
 
-public class ResumeChecksClient {
-
-    static String pathToStores = "../../../../javax/net/ssl/etc";
-    static String keyStoreFile = "keystore";
-    static String trustStoreFile = "truststore";
-    static String passwd = "passphrase";
-
+public class ResumeChecksClient extends SSLContextTemplate {
     enum TestMode {
         BASIC,
         VERSION_2_TO_3,
@@ -59,38 +54,32 @@ public class ResumeChecksClient {
     }
 
     public static void main(String[] args) throws Exception {
+        new ResumeChecksClient(TestMode.valueOf(args[0])).run();
+    }
 
-        TestMode mode = TestMode.valueOf(args[0]);
+    private final TestMode testMode;
+    public ResumeChecksClient(TestMode mode) {
+        this.testMode = mode;
+    }
 
-        String keyFilename =
-            System.getProperty("test.src", "./") + "/" + pathToStores +
-                "/" + keyStoreFile;
-        String trustFilename =
-            System.getProperty("test.src", "./") + "/" + pathToStores +
-                "/" + trustStoreFile;
-
-        System.setProperty("javax.net.ssl.keyStore", keyFilename);
-        System.setProperty("javax.net.ssl.keyStorePassword", passwd);
-        System.setProperty("javax.net.ssl.trustStore", trustFilename);
-        System.setProperty("javax.net.ssl.trustStorePassword", passwd);
-
+    private void run() throws Exception {
         Server server = startServer();
         server.signal();
-        SSLContext sslContext = SSLContext.getDefault();
+        SSLContext sslContext = createClientSSLContext();
         while (!server.started) {
             Thread.yield();
         }
-        SSLSession firstSession = connect(sslContext, server.port, mode, false);
+        SSLSession firstSession = connect(sslContext, server.port, testMode, false);
 
         server.signal();
         long secondStartTime = System.currentTimeMillis();
         Thread.sleep(10);
-        SSLSession secondSession = connect(sslContext, server.port, mode, true);
+        SSLSession secondSession = connect(sslContext, server.port, testMode, true);
 
         server.go = false;
         server.signal();
 
-        switch (mode) {
+        switch (testMode) {
         case BASIC:
             // fail if session is not resumed
             checkResumedSession(firstSession, secondSession);
@@ -105,7 +94,7 @@ public class ResumeChecksClient {
             }
             break;
         default:
-            throw new RuntimeException("unknown mode: " + mode);
+            throw new RuntimeException("unknown mode: " + testMode);
         }
     }
 
@@ -287,7 +276,7 @@ public class ResumeChecksClient {
         return server;
     }
 
-    private static class Server implements Runnable {
+    private static class Server extends SSLContextTemplate implements Runnable {
 
         public volatile boolean go = true;
         private boolean signal = false;
@@ -313,7 +302,7 @@ public class ResumeChecksClient {
         public void run() {
             try {
 
-                SSLContext sc = SSLContext.getDefault();
+                SSLContext sc = createServerSSLContext();
                 ServerSocketFactory fac = sc.getServerSocketFactory();
                 SSLServerSocket ssock = (SSLServerSocket)
                     fac.createServerSocket(0);
