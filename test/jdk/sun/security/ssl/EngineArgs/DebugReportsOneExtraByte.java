@@ -26,6 +26,7 @@
  * @bug 7126889
  * @summary Incorrect SSLEngine debug output
  * @library /test/lib /javax/net/ssl/templates
+ * @build jdk.test.lib.Utils
  * @run main DebugReportsOneExtraByte
  */
 /*

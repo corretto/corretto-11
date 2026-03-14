@@ -31,6 +31,8 @@
  * @bug 4980882 8207250 8237474
  * @summary SSLEngine should enforce setUseClientMode
  * @library /javax/net/ssl/templates
+ * @library /test/lib
+ * @build jdk.test.lib.Utils
  * @run main/othervm EngineEnforceUseClientMode
  * @author Brad R. Wetmore
  */

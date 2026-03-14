@@ -27,6 +27,7 @@
  * @summary Vectors and fixed length fields should be verified
  *          for allowed sizes.
  * @library /test/lib /javax/net/ssl/templates
+ * @build jdk.test.lib.Utils
  * @modules java.base/sun.security.ssl
  * @run main/othervm LengthCheckTest
  * @key randomness
