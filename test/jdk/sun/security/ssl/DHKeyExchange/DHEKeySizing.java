@@ -31,6 +31,8 @@
  * @bug 6956398 8301700
  * @summary make ephemeral DH key match the length of the certificate key
  * @library /javax/net/ssl/templates
+ * @library /test/lib
+ * @build jdk.test.lib.Utils
  * @run main/othervm
  *      DHEKeySizing TLS_DHE_RSA_WITH_AES_128_CBC_SHA  false 1643 267
  * @run main/othervm -Djsse.enableFFDHE=false

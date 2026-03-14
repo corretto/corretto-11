@@ -32,6 +32,8 @@
  * @summary javax.net.ssl.SSLSocket.SSLSocket(InetAddress,int) shouldn't
  *              throw exception
  * @library /javax/net/ssl/templates
+ * @library /test/lib
+ * @build jdk.test.lib.Utils
  * @run main/othervm CloseEngineException
  */
 
