@@ -36,6 +36,7 @@ import java.io.FilePermission;
 import java.io.ObjectInputStream;
 import java.io.RandomAccessFile;
 import java.security.ProtectionDomain;
+import java.security.Security;
 import java.security.Signature;
 
 /** A repository of "shared secrets", which are a mechanism for
@@ -74,6 +75,7 @@ public class SharedSecrets {
     private static JavaObjectInputStreamAccess javaObjectInputStreamAccess;
     private static JavaObjectInputFilterAccess javaObjectInputFilterAccess;
     private static JavaIORandomAccessFileAccess javaIORandomAccessFileAccess;
+    private static JavaSecurityPropertiesAccess javaSecurityPropertiesAccess;
     private static JavaSecuritySignatureAccess javaSecuritySignatureAccess;
     private static JavaxCryptoSealedObjectAccess javaxCryptoSealedObjectAccess;
 
@@ -246,6 +248,19 @@ public class SharedSecrets {
             unsafe.ensureClassInitialized(ProtectionDomain.class);
         }
         return javaSecurityAccess;
+    }
+
+    public static void setJavaSecurityPropertiesAccess(JavaSecurityPropertiesAccess jspa) {
+        javaSecurityPropertiesAccess = jspa;
+    }
+
+    public static JavaSecurityPropertiesAccess getJavaSecurityPropertiesAccess() {
+        var access = javaSecurityPropertiesAccess;
+        if (access == null) {
+            unsafe.ensureClassInitialized(Security.class);
+            access = javaSecurityPropertiesAccess;
+        }
+        return access;
     }
 
     public static JavaUtilZipFileAccess getJavaUtilZipFileAccess() {
