@@ -27,3 +27,19 @@ _ga-release_
 
 _release-11.0.XX.YY.Z_
 : The source code for each release is recorded by a branch or a tag with a name of this form. XX stands for the OpenJDK 11 update number, YY for the OpenJDK 11 build number, and Z for the Corretto-specific revision number. The latter starts at 1 and is incremented in subsequent releases as long as the update and build numbers remain constant.
+
+### OpenJDK Readme
+```
+
+Welcome to the JDK!
+===================
+
+For information about building the JDK, including how to retrieve all
+of the source code, please see either of these files:
+
+  * doc/building.html   (html version)
+  * doc/building.md     (markdown version)
+
+See http://openjdk.java.net/ for more information about the OpenJDK
+Community and the JDK.
+```
