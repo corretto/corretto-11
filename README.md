@@ -34,3 +34,18 @@ Corretto 11 release builds can be found on the github [release page](https://git
 Corretto 11 nightly builds can be found on our [download page](https://downloads.corretto.aws/#/downloads?build=nightly&version=11).
 
 Production and nightly builds for all Corretto versions can be found at [downloads.corretto.aws/#/overview](https://downloads.corretto.aws/#/overview).
+
+### OpenJDK Readme
+```
+
+Welcome to the JDK!
+
+For information about building the JDK, including how to retrieve all
+of the source code, please see either of these files:
+
+  * doc/building.html   (html version)
+  * doc/building.md     (markdown version)
+
+See http://openjdk.java.net/ for more information about the OpenJDK
+Community and the JDK.
+```

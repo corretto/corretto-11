@@ -745,11 +745,30 @@ jdk.jar.disabledAlgorithms=MD2, MD5, RSA keySize < 1024, \
 # This is in addition to the jdk.certpath.disabledAlgorithms property above.
 #
 # See the specification of "jdk.certpath.disabledAlgorithms" for the
-# syntax of the disabled algorithm string. Additionally, TLS cipher suites
-# can be disabled with this property using one or more "*" wildcard characters.
-# For example, "TLS_RSA_*" disables all cipher suites that start with
-# "TLS_RSA_". Only cipher suites starting with "TLS_" are allowed to have
-# wildcard characters.
+# syntax of the disabled algorithm string.
+#
+# Additional TLS-specific syntax supported by this property:
+#
+#   - TLS cipher suites can be disabled with this property using one or more
+#     "*" wildcard characters. For example, "TLS_RSA_*" disables all cipher
+#     suites that start with "TLS_RSA_". Only cipher suites starting with
+#     "TLS_" are allowed to have wildcard characters.
+#
+#   - TLS protocol specific usage constraints are supported by this property:
+#
+#     UsageConstraint:
+#         usage UsageType { UsageType }
+#
+#     UsageType:
+#         HandshakeSignature | CertificateSignature
+#
+#     HandshakeSignature restricts the use of the algorithm in TLS handshake
+#     signatures. CertificateSignature restricts the use of the algorithm in
+#     certificate signatures. An algorithm with this constraint cannot include
+#     other usage types defined in the jdk.certpath.disabledAlgorithms
+#     property. The usage type follows the keyword and more than one usage type
+#     can be specified with a whitespace delimiter.
+#     Example: "rsa_pkcs1_sha1 usage HandshakeSignature"
 #
 # Note: The algorithm restrictions do not apply to trust anchors or
 # self-signed certificates.
@@ -762,7 +781,8 @@ jdk.jar.disabledAlgorithms=MD2, MD5, RSA keySize < 1024, \
 #       rsa_pkcs1_sha1, secp224r1, TLS_RSA_*
 jdk.tls.disabledAlgorithms=SSLv3, RC4, DES, \
     MD5withRSA, DH keySize < 1024, EC keySize < 224, 3DES_EDE_CBC, anon, NULL, \
-    ECDH, TLS_RSA_*, \
+    ECDH, TLS_RSA_*, rsa_pkcs1_sha1 usage HandshakeSignature, \
+    ecdsa_sha1 usage HandshakeSignature, dsa_sha1 usage HandshakeSignature, \
     include jdk.disabled.namedCurves
 
 #
@@ -1297,6 +1317,9 @@ jdk.sasl.disabledMechanisms=
 #   CAMERFIRMA_TLS : Distrust TLS Server certificates anchored by
 #   a Camerfirma root CA and issued after April 15, 2025.
 #
+#   CHUNGHWA_TLS : Distrust TLS Server certificates anchored by
+#   a Chunghwa root CA and issued after March 17, 2026.
+#
 # Leading and trailing whitespace surrounding each value are ignored.
 # Unknown values are ignored. If the property is commented out or set to the
 # empty String, no policies are enforced.
@@ -1308,7 +1331,8 @@ jdk.sasl.disabledMechanisms=
 # jdk.certpath.disabledAlgorithms; those restrictions are still enforced even
 # if this property is not enabled.
 #
-jdk.security.caDistrustPolicies=SYMANTEC_TLS,ENTRUST_TLS,CAMERFIRMA_TLS
+jdk.security.caDistrustPolicies=SYMANTEC_TLS,ENTRUST_TLS,CAMERFIRMA_TLS,\
+    CHUNGHWA_TLS
 
 #
 # FilePermission path canonicalization
@@ -1419,3 +1443,48 @@ jdk.io.permissionsUseCanonicalPath=false
 #
 # jdk.tls.alpnCharset=UTF-8
 jdk.tls.alpnCharset=ISO_8859_1
+
+#
+# X.509 AuthorityInfoAccess caIssuer URI Filtering
+#
+# This property defines a whitespace-separated list of filters that
+# are applied to URIs found in the authorityInfoAccess extension in
+# X.509 certificates. Any caIssuers URIs in X.509 certificates are only
+# followed when the com.sun.security.enableAIAcaIssuers System property is
+# enabled and the filter allows the URI. By default this property imposes a
+# deny-all ruleset.  This property may be overridden by a System property
+# of the same name.
+#
+# The filters must take the form of absolute, hierarchical URIs as defined by
+# the java.net.URI class. Additionally, only the following protocols are
+# allowed as filters: http, https, ldap and ftp.
+# See RFC 5280, section 4.2.2.1 for details about the types of URIs allowed for
+# the extension and their specific requirements.
+# The filter matching rules are applied to each CA issuer URI as follows:
+# 1. The scheme must match (case-insensitive).
+# 2. A hostname or address must be specified in the filter URI.  It must match
+#    the host or address in the caIssuers URI (case-insensitive).  No name
+#    resolution is performed on hostnames to match IP addresses.
+# 3. The port number must match.  For filter and caIssuer URIs, when a port
+#    number is omitted, the well-known port for that scheme will be used in the
+#    comparison.
+# 4. For hierarchical filesystem schemes (e.g. http[s], ftp):
+#    a. The normalized path portion of the filter URI is matched in a
+#       case-sensitive manner.  If the final component of the path does not end
+#       in a slash (/), it is considered to be a file path component and must
+#       be an exact match of the caIssuer's URI file path component.  If the
+#       final filter component ends in a slash, then it must either match or be
+#       a prefix of the caIssuer's URI path component (e.g. a filter path of
+#       /ab/cd/ will match a caIssuer path of /ab/cd/, /ab/cd/ef and
+#       /ab/cd/ef/ghi).
+#    b. Query strings will be ignored in filter rules and caIssuer URIs.
+#    c. Fragments will be ignored in filter rules and caIssuer URIs.
+# 5. For ldap URIs:
+#    a. The base DN must be an exact match (case-insensitive).
+#    b. Any query string in the rule, if specified, is ignored.
+# 6. A single value "any" (case-insensitive) will create an allow-all rule.
+#
+# As an example, here is a valid filter policy consisting of two rules:
+#    com.sun.security.allowedAIALocations=http://some.company.com/cacert \
+#          ldap://ldap.company.com/dc=company,dc=com?caCertificate;binary
+com.sun.security.allowedAIALocations=

@@ -25,7 +25,8 @@
  * @test
  * @bug 8326643
  * @summary Test for out-of-sequence change_cipher_spec in TLSv1.3
- * @library /javax/net/ssl/templates
+ * @library /javax/net/ssl/templates /test/lib
+ * @build jdk.test.lib.Utils
  * @run main/othervm EngineOutOfSeqCCS
  */
 

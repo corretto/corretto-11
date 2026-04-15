@@ -151,7 +151,7 @@ task bundleThirdPartyBinaries {
 task createTestImage(type: Exec) {
     dependsOn executeBuild
     workingDir "$buildRoot"
-    commandLine 'make','test-image-hotspot-jtreg-native','test-image-jdk-jtreg-native','test-image-hotspot-gtest'
+    commandLine 'make','test-image'
 }
 
 task packageTestImage(type: Tar) {

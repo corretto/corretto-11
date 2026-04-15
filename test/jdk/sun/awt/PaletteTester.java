@@ -50,20 +50,19 @@ public class PaletteTester {
 
     static VImageColors demo;
 
-    private static final String INSTRUCTIONS = """
-        This test should be run on any Windows platform in 8-bit
-        (256 color) display mode only. To check for errors, run a browser
-        application (Firefox or Internet Explorer) at the same time
-        and switch between this test and the browser (by clicking on the
-        title bars).
-
-        The three panels in this test should look roughly the same (there
-        may be some dithering differences if you switch display modes
-        during the test, but the overall look should be the same.  If
-        completely different colors are being used (either for the orange
-        background fill, the text, the image, or the rectangles), then the
-        test has failed.
-        """;
+    private static final String INSTRUCTIONS =
+        "This test should be run on any Windows platform in 8-bit\n" +
+        "(256 color) display mode only. To check for errors, run a browser\n" +
+        "application (Firefox or Internet Explorer) at the same time\n" +
+        "and switch between this test and the browser (by clicking on the\n" +
+        "title bars).\n" +
+        "\n" +
+        "The three panels in this test should look roughly the same (there\n" +
+        "may be some dithering differences if you switch display modes\n" +
+        "during the test, but the overall look should be the same.  If\n" +
+        "completely different colors are being used (either for the orange\n" +
+        "background fill, the text, the image, or the rectangles), then the\n" +
+        "test has failed.";
 
     private static void init() {
 

@@ -1,3 +1,6 @@
 grant codebase "file:${test.classes}/*" {
     permission java.security.AllPermission;
 };
+grant codebase "file:${test.classes}/../../../../test/lib/-" {
+    permission java.security.AllPermission;
+};

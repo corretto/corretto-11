@@ -39,23 +39,22 @@ import javax.swing.SwingUtilities;
 
 public class AddRemoveMenuBarTest_1 {
 
-    private static final String INSTRUCTIONS = """
-        An initially empty frame should appear.
-
-        Click anywhere in the frame to add a menu bar at the top of the frame.
-
-        Click again to replace the menu bar with another menu bar.
-
-        Each menu bar has one (empty) menu, labelled with the
-        number of the menu bar appearing.
-
-        After a menubar is added, the frame should not be resized nor repositioned
-        on the screen;
-
-        it should have the same size and position.
-
-        Upon test completion, click Pass or Fail appropriately.
-        """;
+    private static final String INSTRUCTIONS =
+        "An initially empty frame should appear.\n" +
+        "\n" +
+        "Click anywhere in the frame to add a menu bar at the top of the frame.\n" +
+        "\n" +
+        "Click again to replace the menu bar with another menu bar.\n" +
+        "\n" +
+        "Each menu bar has one (empty) menu, labelled with the\n" +
+        "number of the menu bar appearing.\n" +
+        "\n" +
+        "After a menubar is added, the frame should not be resized nor repositioned\n" +
+        "on the screen;\n" +
+        "\n" +
+        "it should have the same size and position.\n" +
+        "\n" +
+        "Upon test completion, click Pass or Fail appropriately.";
 
     public static void main(String[] args) throws Exception {
         PassFailJFrame passFailJFrame = new PassFailJFrame.Builder()

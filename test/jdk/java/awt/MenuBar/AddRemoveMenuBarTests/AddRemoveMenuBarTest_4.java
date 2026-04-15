@@ -41,24 +41,23 @@ import javax.swing.SwingUtilities;
 
 public class AddRemoveMenuBarTest_4 {
 
-    private static final String INSTRUCTIONS = """
-            There is a frame with a menubar and a single button.
-
-            The button is labelled 'Add new MenuBar'.
-
-            If you click the button, the menubar is replaced with another menubar.
-            This can be done repeatedly.
-
-            The <n>-th menubar contains one menu, 'TestMenu<n>',
-            with two items, 'one <n>' and 'two <n>'.
-
-            Click again to replace the menu bar with another menu bar.
-
-            After a menubar has been replaced with another menubar,
-            the frame should not be resized nor repositioned on the screen.
-
-            Upon test completion, click Pass or Fail appropriately.
-            """;
+    private static final String INSTRUCTIONS =
+            "There is a frame with a menubar and a single button.\n" +
+            "\n" +
+            "The button is labelled 'Add new MenuBar'.\n" +
+            "\n" +
+            "If you click the button, the menubar is replaced with another menubar.\n" +
+            "This can be done repeatedly.\n" +
+            "\n" +
+            "The <n>-th menubar contains one menu, 'TestMenu<n>',\n" +
+            "with two items, 'one <n>' and 'two <n>'.\n" +
+            "\n" +
+            "Click again to replace the menu bar with another menu bar.\n" +
+            "\n" +
+            "After a menubar has been replaced with another menubar,\n" +
+            "the frame should not be resized nor repositioned on the screen.\n" +
+            "\n" +
+            "Upon test completion, click Pass or Fail appropriately.";
 
     public static void main(String[] args) throws Exception {
         PassFailJFrame passFailJFrame = new PassFailJFrame.Builder()
