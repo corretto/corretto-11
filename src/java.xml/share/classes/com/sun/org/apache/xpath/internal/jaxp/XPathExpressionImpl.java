@@ -30,6 +30,7 @@ import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFunctionResolver;
 import javax.xml.xpath.XPathVariableResolver;
 import jdk.xml.internal.JdkXmlFeatures;
+import jdk.xml.internal.XMLSecurityManager;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 
@@ -46,7 +47,8 @@ public class XPathExpressionImpl extends XPathImplUtil implements XPathExpressio
      * from the context.
      */
     protected XPathExpressionImpl() {
-        this(null, null, null, null, false, new JdkXmlFeatures(false));
+        this(null, null, null, null, false, new JdkXmlFeatures(true),
+            new XMLSecurityManager(true));
     };
 
     protected XPathExpressionImpl(com.sun.org.apache.xpath.internal.XPath xpath,
@@ -54,13 +56,14 @@ public class XPathExpressionImpl extends XPathImplUtil implements XPathExpressio
             XPathFunctionResolver functionResolver,
             XPathVariableResolver variableResolver) {
         this(xpath, prefixResolver, functionResolver, variableResolver,
-             false, new JdkXmlFeatures(false));
+             false, new JdkXmlFeatures(true),
+             new XMLSecurityManager(true));
     };
 
     protected XPathExpressionImpl(com.sun.org.apache.xpath.internal.XPath xpath,
             JAXPPrefixResolver prefixResolver,XPathFunctionResolver functionResolver,
             XPathVariableResolver variableResolver, boolean featureSecureProcessing,
-            JdkXmlFeatures featureManager) {
+            JdkXmlFeatures featureManager, XMLSecurityManager xmlSecMgr) {
         this.xpath = xpath;
         this.prefixResolver = prefixResolver;
         this.functionResolver = functionResolver;
@@ -69,6 +72,7 @@ public class XPathExpressionImpl extends XPathImplUtil implements XPathExpressio
         this.overrideDefaultParser = featureManager.getFeature(
                 JdkXmlFeatures.XmlFeature.JDK_OVERRIDE_PARSER);
         this.featureManager = featureManager;
+        this.xmlSecMgr = xmlSecMgr;
     };
 
     public void setXPath (com.sun.org.apache.xpath.internal.XPath xpath) {
