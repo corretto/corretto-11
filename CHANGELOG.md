@@ -37,7 +37,6 @@ The following CVEs are addressed in 11.0.31.11.1:
 | CVE-2026-22021 | 5.3  | security-libs/java.security |
 | CVE-2026-22013 | 5.3  | security-libs/org.ietf.jgss |
 | CVE-2026-23865 | 5.3  | client-libs/2d              |
-| CVE-2026-22020 | 7.1  | hotspot/compiler            |
 | CVE-2026-22018 | 3.7  | core-libs/java.util         |
 | CVE-2026-22007 | 2.9  | security-libs/java.security |
 | CVE-2026-34268 | 2.9  | security-libs/java.security |
