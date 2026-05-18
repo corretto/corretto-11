@@ -314,6 +314,7 @@ stringStream::stringStream(size_t initial_capacity) :
   _capacity(sizeof(_small_buffer)),
   _is_fixed(false)
 {
+  DEBUG_ONLY(_is_frozen = false);
   if (initial_capacity > _capacity) {
     grow(initial_capacity);
   }
@@ -328,6 +329,7 @@ stringStream::stringStream(char* fixed_buffer, size_t fixed_buffer_size) :
   _capacity(fixed_buffer_size),
   _is_fixed(true)
 {
+  DEBUG_ONLY(_is_frozen = false);
   zero_terminate();
 }
 
@@ -350,6 +352,7 @@ void stringStream::grow(size_t new_capacity) {
 }
 
 void stringStream::write(const char* s, size_t len) {
+  assert(_is_frozen == false, "Modification forbidden");
   assert(_capacity >= _written + 1, "Sanity");
   if (len == 0) {
     return;
@@ -389,6 +392,7 @@ void stringStream::zero_terminate() {
 }
 
 void stringStream::reset() {
+  assert(_is_frozen == false, "Modification forbidden");
   _written = 0; _precount = 0; _position = 0;
   _newlines = 0;
   zero_terminate();
