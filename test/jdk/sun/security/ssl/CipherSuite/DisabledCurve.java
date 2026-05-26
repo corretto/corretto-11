@@ -23,12 +23,12 @@
 
 /*
  * @test
- * @bug 8246330
- * @library /javax/net/ssl/templates
- * @run main/othervm -Djdk.tls.namedGroups="sect283r1"
+ * @bug 8246330 8381551
+ * @library /javax/net/ssl/templates /test/lib
+ * @run main/othervm -Djdk.tls.namedGroups="secp384r1"
         DisabledCurve DISABLE_NONE PASS
- * @run main/othervm -Djdk.tls.namedGroups="sect283r1"
-        DisabledCurve sect283r1 FAIL
+ * @run main/othervm -Djdk.tls.namedGroups="secp384r1"
+        DisabledCurve secp384r1 FAIL
 */
 import java.security.Security;
 import java.util.Arrays;
@@ -49,20 +49,20 @@ public class DisabledCurve extends SSLSocketTemplate {
     @Override
     protected SSLContext createClientSSLContext() throws Exception {
         return createSSLContext(
-                new SSLContextTemplate.Cert[] {
-                        SSLContextTemplate.Cert.CA_ECDSA_SECT283R1 },
-                new SSLContextTemplate.Cert[] {
-                        SSLContextTemplate.Cert.EE_ECDSA_SECT283R1 },
+                new SSLSocketTemplate.Cert[] {
+                        SSLSocketTemplate.Cert.CA_ECDSA_SECP384R1 },
+                new SSLSocketTemplate.Cert[] {
+                        SSLSocketTemplate.Cert.EE_ECDSA_SECP384R1 },
                 getClientContextParameters());
     }
 
     @Override
     protected SSLContext createServerSSLContext() throws Exception {
         return createSSLContext(
-                new SSLContextTemplate.Cert[] {
-                        SSLContextTemplate.Cert.CA_ECDSA_SECT283R1 },
-                new SSLContextTemplate.Cert[] {
-                        SSLContextTemplate.Cert.EE_ECDSA_SECT283R1 },
+                new SSLSocketTemplate.Cert[] {
+                        SSLSocketTemplate.Cert.CA_ECDSA_SECP384R1 },
+                new SSLSocketTemplate.Cert[] {
+                        SSLSocketTemplate.Cert.EE_ECDSA_SECP384R1 },
                 getServerContextParameters());
     }
 
@@ -91,22 +91,23 @@ public class DisabledCurve extends SSLSocketTemplate {
     public static void main(String[] args) throws Exception {
         String expected = args[1];
         String disabledName = ("DISABLE_NONE".equals(args[0]) ? "" : args[0]);
+        boolean disabled = false;
         if (disabledName.equals("")) {
             Security.setProperty("jdk.disabled.namedCurves", "");
+        } else {
+            disabled = true;
+            Security.setProperty("jdk.certpath.disabledAlgorithms", "secp384r1");
         }
-        System.setProperty("jdk.sunec.disableNative", "false");
 
         for (index = 0; index < protocols.length; index++) {
             try {
                 (new DisabledCurve()).run();
                 if (expected.equals("FAIL")) {
                     throw new RuntimeException(
-                            "The test case should not reach here");
+                            "Expected test to fail, but it passed");
                 }
             } catch (SSLException | IllegalStateException ssle) {
-                if ((expected.equals("FAIL"))
-                        && Security.getProperty("jdk.disabled.namedCurves")
-                                .contains(disabledName)) {
+                if (expected.equals("FAIL") && disabled) {
                     System.out.println(
                             "Expected exception was thrown: TEST PASSED");
                 } else {
