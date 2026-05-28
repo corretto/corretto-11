@@ -1727,7 +1727,7 @@ int    mp_cmp_mag(mp_int *a, mp_int *b)
  */
 int    mp_cmp_int(const mp_int *a, long z, int kmflag)
 {
-  mp_int  tmp;
+  mp_int  tmp = {0};
   int     out;
 
   ARGCHK(a != NULL, MP_EQ);
