@@ -136,13 +136,26 @@ public class DistributionPointFetcher {
             List<DistributionPoint> points =
                     ext.get(CRLDistributionPointsExtension.POINTS);
             Set<X509CRL> results = new HashSet<>();
+            CertStoreException savedCSE = null;
             for (Iterator<DistributionPoint> t = points.iterator();
                  t.hasNext() && !Arrays.equals(reasonsMask, ALL_REASONS); ) {
-                DistributionPoint point = t.next();
-                Collection<X509CRL> crls = getCRLs(selector, certImpl,
-                    point, reasonsMask, signFlag, prevKey, prevCert, provider,
-                    certStores, trustAnchors, validity, variant, anchor);
-                results.addAll(crls);
+                try {
+                    DistributionPoint point = t.next();
+                    Collection<X509CRL> crls = getCRLs(selector, certImpl,
+                        point, reasonsMask, signFlag, prevKey, prevCert, provider,
+                        certStores, trustAnchors, validity, variant, anchor);
+                    results.addAll(crls);
+                } catch (CertStoreException cse) {
+                    if (savedCSE == null) {
+                        savedCSE = cse;
+                    } else {
+                        savedCSE.addSuppressed(cse);
+                    }
+                }
+            }
+            // only throw CertStoreException if no CRLs are retrieved
+            if (results.isEmpty() && savedCSE != null) {
+                throw savedCSE;
             }
             if (debug != null) {
                 debug.println("Returning " + results.size() + " CRLs");
@@ -214,6 +227,11 @@ public class DistributionPointFetcher {
                     }
                 }
             } catch (CertStoreException cse) {
+                if (savedCSE == null) {
+                    savedCSE = cse;
+                } else {
+                    savedCSE.addSuppressed(cse);
+                }
                 savedCSE = cse;
             }
         }
