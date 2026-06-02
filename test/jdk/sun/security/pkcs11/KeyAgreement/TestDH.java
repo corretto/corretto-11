@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2003, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2003, 2025, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -38,14 +38,14 @@ import java.security.Provider;
 import java.util.Arrays;
 import javax.crypto.KeyAgreement;
 import javax.crypto.SecretKey;
+import jtreg.SkippedException;
 
 public class TestDH extends PKCS11Test {
 
     @Override
     public void main(Provider p) throws Exception {
         if (p.getService("KeyAgreement", "DH") == null) {
-            System.out.println("DH not supported, skipping");
-            return;
+            throw new SkippedException("DH not supported, skipping");
         }
         KeyPairGenerator kpg = KeyPairGenerator.getInstance("DH", p);
         kpg.initialize(512);
