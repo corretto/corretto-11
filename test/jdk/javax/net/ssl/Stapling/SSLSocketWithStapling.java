@@ -28,7 +28,7 @@
  * @test
  * @bug 8046321 8153829
  * @summary OCSP Stapling for TLS
- * @library ../../../../java/security/testlibrary
+ * @library /test/lib ../../../../java/security/testlibrary
  * @build CertificateBuilder SimpleOCSPServer
  * @run main/othervm SSLSocketWithStapling
  */

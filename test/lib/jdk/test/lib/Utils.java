@@ -144,6 +144,9 @@ public final class Utils {
     */
     public static final long DEFAULT_TEST_TIMEOUT = TimeUnit.SECONDS.toMillis(120);
 
+    // IllegalArgumentException messages
+    public static final String BAD_BOUND = "bound must be positive";
+
     private Utils() {
         // Private constructor to prevent class instantiation
     }
@@ -822,4 +825,112 @@ public final class Utils {
         return slice;
     }
 
+    // The following three methods are taken from java.util.random.RandomGenerator
+    // and its support class jdk.internal.util.random.RandomSupport in OpenJDK 17
+
+    /**
+     * Returns a pseudorandomly chosen {@code long} value between zero
+     * (inclusive) and the specified bound (exclusive).
+     *
+     * @param rng the random number generator to use.
+     * @param bound the upper bound (exclusive) for the returned value.
+     * Must be positive.
+     *
+     * @return a pseudorandomly chosen {@code long} value between
+     *         zero (inclusive) and the bound (exclusive)
+     *
+     * @throws IllegalArgumentException if {@code bound} is not positive
+     *
+     * @implSpec The default implementation checks that {@code bound} is a
+     * positive  {@code long}. Then invokes {@code nextLong()}, limiting the
+     * result to be greater than or equal zero and less than {@code bound}. If
+     * {@code bound} is a power of two then limiting is a simple masking
+     * operation. Otherwise, the result is re-calculated by invoking
+     * {@code nextLong()} until the result is greater than or equal zero and
+     * less than {@code bound}.
+     */
+    public static long nextLong(Random rng, long bound) {
+        checkBound(bound);
+
+        return boundedNextLong(rng, bound);
+    }
+
+    /**
+     * Checks a {@code long} upper bound value for validity.
+     *
+     * @param bound the upper bound (exclusive)
+     *
+     * @throws IllegalArgumentException if {@code bound} is not positive
+     */
+    public static void checkBound(long bound) {
+        if (bound <= 0) {
+            throw new IllegalArgumentException(BAD_BOUND);
+        }
+    }
+
+    /**
+     * This is the form of {@link RandomGenerator#nextLong() nextLong}() used by
+     * the public method {@link RandomGenerator#nextLong(long) nextLong}(bound).
+     * This is essentially a version of
+     * {@link RandomSupport#boundedNextLong(RandomGenerator, long, long) boundedNextLong}(rng, origin, bound)
+     * that has been specialized for the case where the {@code origin} is zero
+     * and the {@code bound} is greater than zero. The value returned is chosen
+     * pseudorandomly from nonnegative integer values less than {@code bound}.
+     *
+     * @implNote This method first calls {@code nextLong()} to obtain
+     * a {@code long} value that is assumed to be pseudorandomly
+     * chosen uniformly and independently from the 2<sup>64</sup>
+     * possible {@code long} values (that is, each of the 2<sup>64</sup>
+     * possible long values is equally likely to be chosen).
+     * Under some circumstances (when the specified range is not
+     * a power of 2), {@code nextLong()} may be called additional times
+     * to ensure that that the values in the specified range are
+     * equally likely to be chosen (provided the assumption holds).
+     *
+     * The implementation considers two cases:
+     * <ol>
+     *
+     * <li> If {@code bound} is an exact power of two 2<sup><i>m</i></sup>
+     * for some integer <i>m</i>, then return the sum of {@code origin} and the
+     * <i>m</i> lowest-order bits of the value from
+     * {@link RandomGenerator#nextLong() nextLong}().</li>
+     *
+     * <li> Otherwise, the basic idea is to use the remainder modulo
+     *      <i>bound</i> of the value from {@code nextLong()},
+     * but with this approach some values will be over-represented. Therefore a
+     * loop is used to avoid potential bias by rejecting candidates that vare
+     * too large. Assuming that the results from
+     * {@link RandomGenerator#nextLong() nextLong}() are truly chosen uniformly
+     * and independently, the expected number of iterations will be somewhere
+     * between 1 and 2, depending on the precise value of <i>bound</i>.</li>
+     *
+     * </ol>
+     *
+     * @param rng a random number generator to be used as a
+     *        source of pseudorandom {@code long} values
+     * @param bound the upper bound (exclusive); must be greater than zero
+     *
+     * @return a pseudorandomly chosen {@code long} value
+     */
+    public static long boundedNextLong(Random rng, long bound) {
+        // Specialize boundedNextLong for origin == 0, bound > 0
+        final long m = bound - 1;
+        long r = rng.nextLong();
+        if ((bound & m) == 0L) {
+            // The bound is a power of 2.
+            r &= m;
+        } else {
+            // Must reject over-represented candidates
+            /* This loop takes an unlovable form (but it works):
+               because the first candidate is already available,
+               we need a break-in-the-middle construction,
+               which is concisely but cryptically performed
+               within the while-condition of a body-less for loop. */
+            for (long u = r >>> 1;
+                 u + m - (r = u % bound) < 0L;
+                 u = rng.nextLong() >>> 1)
+                ;
+        }
+        return r;
+    }
 }

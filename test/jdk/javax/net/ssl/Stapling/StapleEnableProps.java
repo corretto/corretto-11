@@ -28,7 +28,7 @@
  * @test
  * @bug 8145854 8153829
  * @summary SSLContextImpl.statusResponseManager should be generated if required
- * @library ../../../../java/security/testlibrary
+ * @library /test/lib ../../../../java/security/testlibrary
  * @build CertificateBuilder SimpleOCSPServer
  * @run main/othervm StapleEnableProps
  */

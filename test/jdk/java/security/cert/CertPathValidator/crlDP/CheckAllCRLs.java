@@ -64,7 +64,7 @@ import sun.security.testlibrary.CertificateBuilder;
  *          fresh or stale.
  * @modules java.base/sun.security.x509
  *          java.base/sun.security.util
- * @library ../../../testlibrary
+ * @library /test/lib ../../../testlibrary
  * @build CertificateBuilder CheckAllCRLs
  * @run main/othervm -Dcom.sun.security.enableCRLDP=true CheckAllCRLs
  */

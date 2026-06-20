@@ -24,7 +24,7 @@
 /*
  * @test
  * @bug 8046321
- * @library ../../../../java/security/testlibrary
+ * @library /test/lib ../../../../java/security/testlibrary
  * @build CertificateBuilder SimpleOCSPServer
  * @run main/othervm -Djavax.net.debug=ssl:respmgr java.base/sun.security.ssl.StatusResponseManagerTests
  * @summary OCSP Stapling for TLS
