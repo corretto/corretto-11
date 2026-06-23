@@ -143,12 +143,12 @@ AC_DEFUN([BASIC_CHECK_MAKE_VERSION],
           if test "x$OPENJDK_BUILD_OS_ENV" = "xwindows.cygwin"; then
             MAKE_EXPECTED_ENV='cygwin'
           elif test "x$OPENJDK_BUILD_OS_ENV" = "xwindows.msys2"; then
-            MAKE_EXPECTED_ENV='msys'
+            MAKE_EXPECTED_ENV='cygwin|msys'
           else
             AC_MSG_ERROR([Unknown Windows environment])
           fi
           MAKE_BUILT_FOR=`$MAKE_CANDIDATE --version | $GREP -i 'built for'`
-          IS_MAKE_CORRECT_ENV=`$ECHO $MAKE_BUILT_FOR | $GREP $MAKE_EXPECTED_ENV`
+          IS_MAKE_CORRECT_ENV=`$ECHO $MAKE_BUILT_FOR | $GREP -E $MAKE_EXPECTED_ENV`
         else
           # Not relevant for non-Windows
           IS_MAKE_CORRECT_ENV=true
