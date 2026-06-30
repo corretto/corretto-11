@@ -164,6 +164,15 @@ task prepareArtifacts {
             }
             into "${buildDir}/${correttoMacDir}"
         }
+
+        // Normalize legal file permissions to match the OpenJDK build output (read-only)
+        exec {
+            commandLine 'bash', '-c', "find ${buildDir}/${correttoMacDir}/Contents/Home/legal -type f | xargs -n100 chmod 444"
+        }
+        exec {
+            commandLine 'bash', '-c', "find ${buildDir}/${correttoMacDir}/Contents/Home/legal -type d | xargs -n100 chmod 755"
+        }
+
         // Set the directory as bundle
         exec {
             commandLine "SetFile", "-a", "B", "${buildDir}/${correttoMacDir}"
