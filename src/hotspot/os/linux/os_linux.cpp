@@ -822,6 +822,10 @@ static void *thread_native_entry(Thread *thread) {
     }
   }
 
+  if (DelayThreadStartALot) {
+    os::naked_short_sleep(100);
+  }
+
   // call one more level start routine
   thread->call_run();
 
@@ -961,6 +965,7 @@ bool os::create_thread(Thread* thread, ThreadType thr_type,
   // Calculate stack size if it's not specified by caller.
   size_t stack_size = os::Posix::get_initial_stack_size(thr_type, req_stack_size);
   size_t guard_size = os::Linux::default_guard_size(thr_type);
+
   // Configure glibc guard page. Must happen before calling
   // get_static_tls_area_size(), which uses the guard_size.
   pthread_attr_setguardsize(&attr, guard_size);
@@ -981,13 +986,24 @@ bool os::create_thread(Thread* thread, ThreadType thr_type,
   }
   assert(is_aligned(stack_size, os::vm_page_size()), "stack_size not aligned");
 
-  // Add an additional page to the stack size to reduce its chances of getting large page aligned
-  // so that the stack does not get backed by a transparent huge page.
-  size_t default_large_page_size = os::large_page_size();
-  if (default_large_page_size != 0 &&
-      stack_size >= default_large_page_size &&
-      is_aligned(stack_size, default_large_page_size)) {
-    stack_size += os::vm_page_size();
+  if (THPStackMitigation) {
+    // In addition to the glibc guard page that prevents inter-thread-stack hugepage
+    // coalescing (see comment in os::Linux::default_guard_size()), we also make
+    // sure the stack size itself is not huge-page-size aligned; that makes it much
+    // more likely for thread stack boundaries to be unaligned as well and hence
+    // protects thread stacks from being targeted by khugepaged.
+
+    // Note JDK 11/8: In order to minimize changes to these old releases, here we
+    // continue to assume that <static large page size> == <thp page size> (instead
+    // of querying THP page geometry from the OS). Outside of obscure corner cases
+    // (e.g. 1GB static huge pages set up as only variant on x64) this is not a problem,
+    // and these corner cases are served better with modern JVM variants.
+    size_t default_large_page_size = os::large_page_size();
+    if (default_large_page_size != 0 &&
+        stack_size >= default_large_page_size &&
+        is_aligned(stack_size, default_large_page_size)) {
+      stack_size += os::vm_page_size();
+    }
   }
 
   int status = pthread_attr_setstacksize(&attr, stack_size);
@@ -3501,6 +3517,27 @@ bool os::Linux::libnuma_init() {
 }
 
 size_t os::Linux::default_guard_size(os::ThreadType thr_type) {
+
+  if (THPStackMitigation) {
+    // If THPs are unconditionally enabled, the following scenario can lead to huge RSS
+    // - parent thread spawns, in quick succession, multiple child threads
+    // - child threads are slow to start
+    // - thread stacks of future child threads are adjacent and get merged into one large VMA
+    //   by the kernel, and subsequently transformed into huge pages by khugepaged
+    // - child threads come up, place JVM guard pages, thus splinter the large VMA, splinter
+    //   the huge pages into many (still paged-in) small pages.
+    // The result of that sequence are thread stacks that are fully paged-in even though the
+    // threads did not even start yet.
+    // We prevent that by letting the glibc allocate a guard page, which causes a VMA with different
+    // permission bits to separate two ajacent thread stacks and therefore prevent merging stacks
+    // into one VMA.
+    //
+    // Yes, this means we have two guard sections - the glibc and the JVM one - per thread. But the
+    // cost for that one extra protected page is dwarfed from a large win in performance and memory
+    // that avoiding interference by khugepaged buys us.
+    return os::vm_page_size();
+  }
+
   // Creating guard page is very expensive. Java thread has HotSpot
   // guard pages, only enable glibc guard page for non-Java threads.
   // (Remember: compiler thread is a Java thread, too!)
@@ -4153,9 +4190,42 @@ bool os::Linux::setup_large_page_type(size_t page_size) {
   return UseSHM;
 }
 
+// JDK 11 and 8: is_thp_always_mode was added to support JDK-8312182 without
+// having to backport a long chain of newer THP-releated patches.
+static bool is_thp_always_mode() {
+  const char* filename = "/sys/kernel/mm/transparent_hugepage/enabled";
+  bool result = false;
+  FILE* f = ::fopen(filename, "r");
+  if (f != NULL) {
+    char buf[64];
+    char* s = fgets(buf, sizeof(buf), f);
+    assert(s == buf, "Should have worked");
+    if (::strstr(buf, "[always]") != NULL) {
+      result = true;
+    }
+    fclose(f);
+  }
+  return result;
+}
+
 void os::large_page_init() {
   // Always initialize the default large page size even if large pages are not being used.
   size_t large_page_size = Linux::setup_large_page_size();
+
+  // If THPs are unconditionally enabled (THP mode "always"), khugepaged may attempt to
+  // coalesce small pages in thread stacks to huge pages. That costs a lot of memory and
+  // is usually unwanted for thread stacks. Therefore we attempt to prevent THP formation in
+  // thread stacks unless the user explicitly allowed THP formation by manually disabling
+  // -XX:-THPStackMitigation.
+  if (is_thp_always_mode()) {
+    if (THPStackMitigation) {
+      log_info(pagesize)("JVM will attempt to prevent THPs in thread stacks.");
+    } else {
+      log_info(pagesize)("JVM will *not* prevent THPs in thread stacks. This may cause high RSS.");
+    }
+  } else {
+    FLAG_SET_ERGO(bool, THPStackMitigation, false); // Mitigation not needed
+  }
 
   // Handle the case where we do not want to use huge pages
   if (!UseLargePages &&
