@@ -2,6 +2,51 @@
 
 The following sections describe the changes for each release of Amazon Corretto 11.
 
+## Corretto version: 11.0.32.9.1
+Release Date: July 21, 2026
+
+**Target Platforms <sup>1</sup>**
+
++ RPM-based Linux using glibc 2.12 or later, x86, x86_64
++ Debian-based Linux using glibc 2.12 or later, x86, x86_64
++ RPM-based Linux using glibc 2.17 or later, aarch64
++ Debian-based Linux using glibc 2.17 or later, aarch64
++ Linux using glibc 2.25 or later, Arm
++ Linux using muslc 1.2.2 or later, Arm
++ Alpine-based Linux, x86_64
++ Alpine-based Linux, aarch64
++ Windows 11 or later, x86, x86_64
++ macOS 14.0 and later, x86_64
++ macOS 14.0 and later, aarch64
+
+**1.** This is the platform targeted by the build. See [Using Amazon Corretto](https://aws.amazon.com/corretto/faqs/#Using_Amazon_Corretto)
+in the Amazon Corretto FAQ for supported platforms
+
+The following issues are addressed in 11.0.32.9.1:
+
+| Issue Name | Platform | Description | Link |
+|------------|----------|-------------|------|
+| Import jdk-11.0.32+9 | All | Update Corretto baseline to OpenJDK 11.0.32+9 | [jdk-11.0.32+9](https://github.com/openjdk/jdk11u/releases/tag/jdk-11.0.32+9) |
+| Fix iso8601_time timezone offset on 32-bit musl | ArmV7 | Fix LogDecorations.iso8601_utctime_test gtest failure on ARM v7 musl where the UTC offset prints as +-136 instead of +0000.| [422](https://github.com/corretto/corretto-11/pull/422) |
+
+
+
+The following CVEs are addressed in 11.0.32.9.1:
+
+| CVE | CVSS | Component |
+|-----|------|-----------|
+| CVE-2026-47057 | 7.5 | core-libs/javax.script |
+| CVE-2026-41254 | 7.5 | client-libs/2d |
+| CVE-2026-47063 | 7.5 | security-libs/java.security |
+| CVE-2026-47058 | 7.4 | core-libs/javax.script |
+| CVE-2026-60147 | 6.5 | security-libs/java.security |
+| CVE-2026-46968 | 5.9 | security-libs/javax.net.ssl |
+| CVE-2026-47027 | 5.3 | security-libs/java.security |
+| CVE-2026-47021 | 5.3 | client-libs/2d |
+| CVE-2026-46917 | 5.3 | security-libs/javax.net.ssl |
+| CVE-2026-47059 | 3.7 | client-libs/2d |
+| CVE-2026-47010 | 3.7 | client-libs/javax.imageio |
+
 ## Corretto version: 11.0.31.11.1
 Release Date: April 21, 2026
 
