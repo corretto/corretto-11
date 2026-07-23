@@ -581,8 +581,8 @@ public class HttpURLConnection extends java.net.HttpURLConnection {
 
     public synchronized void setRequestMethod(String method)
                         throws ProtocolException {
-        if (connecting) {
-            throw new IllegalStateException("connect in progress");
+        if (connected || connecting) {
+            throw new IllegalStateException("Already connected");
         }
         super.setRequestMethod(method);
     }
