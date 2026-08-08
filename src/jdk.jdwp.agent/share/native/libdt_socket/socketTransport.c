@@ -276,7 +276,7 @@ getPortNumber(const char *s_port) {
 
 static jdwpTransportError
 parseAddress(const char *address, struct sockaddr_in *sa) {
-    char *colon;
+    const char *colon;
     int port;
 
     memset((void *)sa, 0, sizeof(struct sockaddr_in));
