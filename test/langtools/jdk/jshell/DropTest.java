@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, 2025, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -26,19 +26,19 @@
  * @bug 8081431 8080069 8167128
  * @summary Test of JShell#drop().
  * @build KullaTesting TestingInputStream
- * @run testng DropTest
+ * @run junit DropTest
  */
 
 import jdk.jshell.DeclarationSnippet;
 import jdk.jshell.Snippet;
 import jdk.jshell.VarSnippet;
-import org.testng.annotations.Test;
 
 import static jdk.jshell.Snippet.Status.*;
+import org.junit.jupiter.api.Test;
 
-@Test
 public class DropTest extends KullaTesting {
 
+    @Test
     public void testDrop() {
         Snippet var = varKey(assertEval("int x;"));
         Snippet method = methodKey(assertEval("int mu() { return x * 4; }"));
@@ -87,6 +87,7 @@ public class DropTest extends KullaTesting {
         assertActiveKeys();
     }
 
+    @Test
     public void testDropImport() {
         Snippet imp = importKey(assertEval("import java.util.*;"));
         Snippet decl = varKey(
@@ -100,11 +101,13 @@ public class DropTest extends KullaTesting {
         assertDeclareFail("list;", "compiler.err.cant.resolve.location");
     }
 
+    @Test
     public void testDropStatement() {
         Snippet x = key(assertEval("if (true);"));
         assertDrop(x, ste(x, VALID, DROPPED, true, null));
     }
 
+    @Test
     public void testDropVarToMethod() {
         Snippet x = varKey(assertEval("int x;"));
         DeclarationSnippet method = methodKey(assertEval("double mu() { return x * 4; }"));
@@ -122,6 +125,7 @@ public class DropTest extends KullaTesting {
         assertActiveKeys();
     }
 
+    @Test
     public void testDropMethodToMethod() {
         Snippet a = methodKey(assertEval("double a() { return 2; }"));
         DeclarationSnippet b = methodKey(assertEval("double b() { return a() * 10; }"));
@@ -138,6 +142,7 @@ public class DropTest extends KullaTesting {
         assertActiveKeys();
     }
 
+    @Test
     public void testDropClassToMethod() {
         Snippet c = classKey(assertEval("class C { int f() { return 7; } }"));
         DeclarationSnippet m = methodKey(assertEval("int m() { return new C().f(); }"));
@@ -149,6 +154,7 @@ public class DropTest extends KullaTesting {
         assertActiveKeys();
     }
 
+    @Test
     public void testDropVarToClass() {
         Snippet x = varKey(assertEval("int x;"));
         DeclarationSnippet a = classKey(assertEval("class A { double a = 4 * x; }"));
@@ -164,6 +170,7 @@ public class DropTest extends KullaTesting {
         assertActiveKeys();
     }
 
+    @Test
     public void testDropMethodToClass() {
         Snippet x = methodKey(assertEval("int x() { return 0; }"));
         DeclarationSnippet a = classKey(assertEval("class A { double a = 4 * x(); }"));
@@ -178,6 +185,7 @@ public class DropTest extends KullaTesting {
         assertActiveKeys();
     }
 
+    @Test
     public void testDropClassToClass() {
         Snippet a = classKey(assertEval("class A {}"));
         Snippet b = classKey(assertEval("class B extends A {}"));
@@ -203,6 +211,7 @@ public class DropTest extends KullaTesting {
         assertActiveKeys();
     }
 
+    @Test
     public void testDropNoUpdate() {
         String as1 = "class A {}";
         String as2 = "class A extends java.util.ArrayList<Boolean> {}";

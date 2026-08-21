@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, 2025, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -26,7 +26,7 @@
  * @bug 8139829
  * @summary Test access to members of user defined class.
  * @build KullaTesting TestingInputStream ExpectedDiagnostic
- * @run testng/timeout=600 ClassMembersTest
+ * @run junit/timeout=600 ClassMembersTest
  */
 
 import java.lang.annotation.RetentionPolicy;
@@ -36,15 +36,19 @@ import java.util.List;
 import javax.tools.Diagnostic;
 
 import jdk.jshell.SourceCodeAnalysis;
-import org.testng.annotations.DataProvider;
-import org.testng.annotations.Test;
 import jdk.jshell.TypeDeclSnippet;
 import static jdk.jshell.Snippet.Status.OVERWRITTEN;
 import static jdk.jshell.Snippet.Status.VALID;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class ClassMembersTest extends KullaTesting {
 
-    @Test(dataProvider = "memberTestCase")
+    @ParameterizedTest
+    @MethodSource("memberTestCaseGenerator")
     public void memberTest(AccessModifier accessModifier, CodeChunk codeChunk, Static isStaticMember, Static isStaticReference) {
         MemberTestCase testCase = new MemberTestCase(accessModifier, codeChunk, isStaticMember, isStaticReference);
         assertEval(testCase.generateSource());
@@ -71,7 +75,8 @@ public class ClassMembersTest extends KullaTesting {
         return list;
     }
 
-    @Test(dataProvider = "memberTestCase")
+    @ParameterizedTest
+    @MethodSource("memberTestCaseGenerator")
     public void extendsMemberTest(AccessModifier accessModifier, CodeChunk codeChunk, Static isStaticMember, Static isStaticReference) {
         MemberTestCase testCase = new ExtendsMemberTestCase(accessModifier, codeChunk, isStaticMember, isStaticReference);
         String input = testCase.generateSource();
@@ -144,7 +149,8 @@ public class ClassMembersTest extends KullaTesting {
                 new ExpectedDiagnostic("compiler.err.non-static.cant.be.ref", 0, 8, 1, -1, -1, Diagnostic.Kind.ERROR));
     }
 
-    @Test(dataProvider = "retentionPolicyTestCase")
+    @ParameterizedTest
+    @MethodSource("retentionPolicyTestCaseGenerator")
     public void annotationTest(RetentionPolicy policy) {
         assertEval("import java.lang.annotation.*;");
         String annotationSource =
@@ -167,7 +173,6 @@ public class ClassMembersTest extends KullaTesting {
         assertEval("C.Inner.class.getAnnotationsByType(A.class).length > 0;", isRuntimeVisible);
     }
 
-    @DataProvider(name = "retentionPolicyTestCase")
     public Object[][] retentionPolicyTestCaseGenerator() {
         List<Object[]> list = new ArrayList<>();
         for (RetentionPolicy policy : RetentionPolicy.values()) {
@@ -176,7 +181,6 @@ public class ClassMembersTest extends KullaTesting {
         return list.toArray(new Object[list.size()][]);
     }
 
-    @DataProvider(name = "memberTestCase")
     public Object[][] memberTestCaseGenerator() {
         List<Object[]> list = new ArrayList<>();
         for (AccessModifier accessModifier : AccessModifier.values()) {
