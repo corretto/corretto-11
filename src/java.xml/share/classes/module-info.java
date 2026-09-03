@@ -287,7 +287,23 @@
  * <td></td>
  * <td style="text-align:center">27</td>
  * </tr>
-* </tbody>
+ * <tr>
+ * <th scope="row" style="font-weight:normal">enableTemplatesImplDeserialization</th>
+ * <td>Enables or disables deserialization of the JDK's implementation of the
+ * {@link javax.xml.transform.Templates} interface.
+ * </td>
+ * <td style="text-align:center">yes</td>
+ * <td style="text-align:center">yes</td>
+ * <td style="text-align:center">boolean</td>
+ * <td>true or false. True indicates that deserialization is allowed. False indicates that
+ * deserialization is disallowed.</td>
+ * <td style="text-align:center">false</td>
+ * <td style="text-align:center">false</td>
+ * <td style="text-align:center">Yes</td>
+ * <td style="text-align:center"><a href="#Transform">Transform</a> [7]</td>
+ * <td style="text-align:center">7</td>
+ * </tr>
+ * </tbody>
  * </table>
  * <p>
  * <b>[1]</b> The name of a property. The fully-qualified name, prefix + name,
@@ -309,6 +325,10 @@
  * field are IDs described in table <a href="#Processor">Processors</a>.
  * <p>
  * <b>[6]</b> Indicates the initial release the property is introduced.
+ * <p>
+ * <b>[7]</b> This property can be set only via a system property or in jaxp.properties.
+ * Setting this property on a transformer factory or on a {@code Transformer}
+ * instance has no effect.
  *
  *
  *
