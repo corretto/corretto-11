@@ -30,6 +30,7 @@ import static com.sun.org.apache.xalan.internal.XalanConstants.XPATH_ALLOW_NON_X
 import static jdk.xml.internal.JdkXmlUtils.OVERRIDE_PARSER;
 import static jdk.xml.internal.JdkXmlUtils.SP_USE_CATALOG;
 import static jdk.xml.internal.JdkXmlUtils.RESET_SYMBOL_TABLE;
+import static jdk.xml.internal.JdkXmlUtils.SP_ENABLE_TEMPLATESIMPL_DESERIALIZATION;
 
 /**
  * This class manages JDK's XML Features. Previously added features and properties
@@ -99,7 +100,16 @@ public class JdkXmlFeatures {
          */
         JDK_XPATH_SYSTEM_PROPERTY(XPATH_ALLOW_NON_XSLT_SYS_PROPS, XPATH_ALLOW_NON_XSLT_SYS_PROPS,
                 null, null,
-                false, false, true, true);
+                false, false, true, true),
+
+        /*
+         * Feature TemplatesImplDeserialization
+         * FSP: TemplatesImpl deserialization is enforced by FSP. When FSP is on,
+         * TemplatesImpl deserialization is disabled.
+         */
+        ENABLE_TEMPLATESIMPL_DESERIALIZATION(
+                SP_ENABLE_TEMPLATESIMPL_DESERIALIZATION, SP_ENABLE_TEMPLATESIMPL_DESERIALIZATION,
+                null, null, false, false, true, true);
 
         private final String name;
         private final String nameSP;
@@ -116,19 +126,20 @@ public class JdkXmlFeatures {
          * @param nameSP the name of the System Property
          * @param nameOld the name of the corresponding legacy property
          * @param nameOldSP the system property of the legacy property
-         * @param value the value of the feature
-         * @param hasSystem a flag to indicate whether the feature is supported
+         * @param valueDefault the default value of the feature
+         * @param valueEnforced the FSP-enforced value of the feature
+         * @param hasSystem a flag indicating whether a system property is supported for the feature
          * @param enforced a flag indicating whether the feature is
          * FSP (Feature_Secure_Processing) enforced
          * with a System property
          */
         XmlFeature(String name, String nameSP, String nameOld, String nameOldSP,
-                boolean value, boolean valueEnforced, boolean hasSystem, boolean enforced) {
+                boolean valueDefault, boolean valueEnforced, boolean hasSystem, boolean enforced) {
             this.name = name;
             this.nameSP = nameSP;
             this.nameOld = nameOld;
             this.nameOldSP = nameOldSP;
-            this.valueDefault = value;
+            this.valueDefault = valueDefault;
             this.valueEnforced = valueEnforced;
             this.hasSystem = hasSystem;
             this.enforced = enforced;
