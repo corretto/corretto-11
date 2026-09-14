@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2004, 2026, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -26,6 +26,7 @@
 package sun.tools.jstatd;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.nio.*;
 import java.io.*;
 import java.net.*;
@@ -51,8 +52,15 @@ public class RemoteHostImpl implements RemoteHost, HostListener {
     private MonitoredHost monitoredHost;
     private Set<Integer> activeVms;
     private static RemoteVm rvm;
+    private final ObjectInputFilter filter;
+    private final Map<RemoteVm, RemoteVmImpl> exportedVMs = new ConcurrentHashMap<>();
 
     public RemoteHostImpl() throws MonitorException {
+        this(null);
+    }
+
+    public RemoteHostImpl(ObjectInputFilter filter) throws MonitorException {
+        this.filter = filter;
         try {
             monitoredHost = MonitoredHost.getMonitoredHost("localhost");
         } catch (URISyntaxException e) { }
@@ -78,7 +86,8 @@ public class RemoteHostImpl implements RemoteHost, HostListener {
             VmIdentifier vmid = new VmIdentifier(vmidStr);
             MonitoredVm mvm = monitoredHost.getMonitoredVm(vmid);
             rvm = new RemoteVmImpl((BufferedMonitoredVm)mvm);
-            stub = (RemoteVm) UnicastRemoteObject.exportObject(rvm, 0);
+            stub = (RemoteVm) UnicastRemoteObject.exportObject(rvm, 0, filter);
+            exportedVMs.put(stub, (RemoteVmImpl) rvm);
         }
         catch (URISyntaxException e) {
             throw new RuntimeException("Malformed VmIdentifier URI: "
@@ -88,7 +97,11 @@ public class RemoteHostImpl implements RemoteHost, HostListener {
     }
 
     public void detachVm(RemoteVm rvm) throws RemoteException {
-        rvm.detach();
+        // Do not invoke on caller-supplied Object.
+        RemoteVm v = exportedVMs.remove(rvm);
+        if (v != null) {
+            v.detach();
+        }
     }
 
     public int[] activeVms() throws MonitorException {
