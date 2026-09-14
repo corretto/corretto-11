@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2004, 2026, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -25,6 +25,7 @@
 
 package sun.tools.jstatd;
 
+import java.io.ObjectInputFilter;
 import java.rmi.*;
 import java.rmi.server.*;
 import java.rmi.registry.Registry;
@@ -46,6 +47,8 @@ public class Jstatd {
     private static int port = -1;
     private static boolean startRegistry = true;
     private static RemoteHost remoteHost;
+
+    private static final String rmiFilterPattern = "sun.jvmstat.monitor.remote.RemoteVm;com.sun.proxy.jdk.proxy*;java.lang.reflect.Proxy;java.rmi.server.RemoteObjectInvocationHandler;java.rmi.server.RemoteObject;!*";
 
     private static void printUsage() {
         System.err.println("usage: jstatd [-nr] [-p port] [-n rminame]\n" +
@@ -139,9 +142,10 @@ public class Jstatd {
         try {
             // use 1.5.0 dynamically generated subs.
             System.setProperty("java.rmi.server.ignoreSubClasses", "true");
-            remoteHost = new RemoteHostImpl();
+            ObjectInputFilter filter = ObjectInputFilter.Config.createFilter(rmiFilterPattern);
+            remoteHost = new RemoteHostImpl(filter);
             RemoteHost stub = (RemoteHost) UnicastRemoteObject.exportObject(
-                    remoteHost, 0);
+                    remoteHost, 0, filter);
             bind(name.toString(), stub);
             System.out.println("jstatd started (bound to " + name.toString() + ")");
             System.out.flush();
