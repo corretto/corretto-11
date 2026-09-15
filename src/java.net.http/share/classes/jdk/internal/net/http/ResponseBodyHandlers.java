@@ -352,7 +352,7 @@ public final class ResponseBodyHandlers {
 
             filenameParam = filenameParam.trim();
 
-            if (PROHIBITED.contains(filenameParam)) {
+            if (PROHIBITED.contains(filenameParam) || !CheckFilename.isAllowed(filenameParam)) {
                 throw unchecked(responseInfo,
                         "Prohibited Content-Disposition filename parameter:"
                                 + filenameParam);
