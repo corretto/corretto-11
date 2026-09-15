@@ -37,10 +37,15 @@ allprojects {
     version = {
         def full = file('version.txt').text.trim()
         def tokens = full.tokenize(".")
+        // version.txt does not carry PATCH element, so this is a temp workaround until Corretto versioning change
+        def patchMatcher = rootProject.file('make/conf/version-numbers.conf').text =~
+                /(?m)^\s*DEFAULT_VERSION_PATCH\s*=\s*(\d+)/
+        def patchNum = patchMatcher.find() ? patchMatcher.group(1) : '0'
         [full    : full,
          major   : tokens[0],
          minor   : tokens[1],
          security: tokens[2],
+         patch   : patchNum,
          build   : tokens[3],
          revision: tokens[4],
          upstream: "${tokens[0]}.${tokens[1]}.${tokens[2]}.${tokens[3]}"]
