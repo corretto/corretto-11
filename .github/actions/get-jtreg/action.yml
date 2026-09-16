@@ -41,13 +41,13 @@ runs:
 
     - name: 'Check cache for JTReg'
       id: get-cached-jtreg
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: jtreg/installed
         key: jtreg-${{ steps.version.outputs.value }}
 
     - name: 'Checkout the JTReg source'
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       with:
         repository: openjdk/jtreg
         ref: jtreg-${{ steps.version.outputs.value }}
