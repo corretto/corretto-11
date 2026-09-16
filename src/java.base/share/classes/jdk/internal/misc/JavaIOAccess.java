@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005, 2006, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2025, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -27,8 +27,11 @@ package jdk.internal.misc;
 
 import java.io.Console;
 import java.nio.charset.Charset;
+import java.util.Optional;
 
 public interface JavaIOAccess {
-    public Console console();
-    public Charset charset();
+    Console console();
+    Charset charset();
+    Optional<Console> passwordConsole();
+    char[] readPasswordNoNewLine(Console c);
 }
