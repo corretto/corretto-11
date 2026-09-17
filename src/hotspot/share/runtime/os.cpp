@@ -188,9 +188,9 @@ char* os::iso8601_time(char* buffer, size_t buffer_length, bool utc) {
     abs_local_to_UTC = -(abs_local_to_UTC);
   }
   // Convert time zone offset seconds to hours and minutes.
-  const time_t zone_hours = (abs_local_to_UTC / seconds_per_hour);
-  const time_t zone_min =
-    ((abs_local_to_UTC % seconds_per_hour) / seconds_per_minute);
+  const int zone_hours = static_cast<int>(abs_local_to_UTC / seconds_per_hour);
+  const int zone_min =
+    static_cast<int>((abs_local_to_UTC % seconds_per_hour) / seconds_per_minute);
 
   // Print an ISO 8601 date and time stamp into the buffer
   const int year = 1900 + time_struct.tm_year;
