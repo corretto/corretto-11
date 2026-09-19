@@ -28,6 +28,7 @@ package build.tools.cldrconverter;
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.ResolverStyle;
@@ -43,7 +44,7 @@ class MetaZonesParseHandler extends AbstractLDMLHandler<String> {
     final static DateTimeFormatter MZ_TIME = new DateTimeFormatterBuilder()
             .append(DateTimeFormatter.ISO_LOCAL_DATE)
             .appendPattern("[ HH[:mm[:ss]]]")
-            .toFormatter()
+            .toFormatter(Locale.ROOT)
             .withResolverStyle(ResolverStyle.LENIENT);
 
     private String tzid, metazone;
@@ -80,7 +81,7 @@ class MetaZonesParseHandler extends AbstractLDMLHandler<String> {
             String to = attributes.getValue("to");
             LocalDateTime fromLDT = from != null ? MZ_TIME.parse(from, LocalDateTime::from) : LocalDateTime.MIN;
             LocalDateTime toLDT = to != null ? MZ_TIME.parse(to, LocalDateTime::from) : LocalDateTime.MAX;
-            LocalDateTime now = LocalDateTime.now();
+            LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
 
             if (fromLDT.isBefore(now) && toLDT.isAfter(now)) {
                 metazone = attributes.getValue("mzone");
