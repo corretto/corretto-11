@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005, 2013, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2025, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -31,23 +31,30 @@
 #include <stdlib.h>
 #include <Wincon.h>
 
-static HANDLE hStdOut = INVALID_HANDLE_VALUE;
-static HANDLE hStdIn = INVALID_HANDLE_VALUE;
-JNIEXPORT jboolean JNICALL
-Java_java_io_Console_istty(JNIEnv *env, jclass cls)
+JNIEXPORT jint JNICALL
+Java_java_io_Console_ttyStatus(JNIEnv *env, jclass cls)
 {
-    if (hStdIn == INVALID_HANDLE_VALUE &&
-        (hStdIn = GetStdHandle(STD_INPUT_HANDLE)) == INVALID_HANDLE_VALUE) {
-        return JNI_FALSE;
+    jint ret = 0;
+    HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
+    HANDLE hStdIn = GetStdHandle(STD_INPUT_HANDLE);
+    HANDLE hStdErr = GetStdHandle(STD_ERROR_HANDLE);
+
+    if (hStdIn != INVALID_HANDLE_VALUE &&
+        GetFileType(hStdIn) == FILE_TYPE_CHAR) {
+        ret |= java_io_Console_TTY_STDIN_MASK;
     }
-    if (hStdOut == INVALID_HANDLE_VALUE &&
-        (hStdOut = GetStdHandle(STD_OUTPUT_HANDLE)) == INVALID_HANDLE_VALUE) {
-        return JNI_FALSE;
+
+    if (hStdOut != INVALID_HANDLE_VALUE &&
+        GetFileType(hStdOut) == FILE_TYPE_CHAR) {
+        ret |= java_io_Console_TTY_STDOUT_MASK;
     }
-    if (GetFileType(hStdIn) != FILE_TYPE_CHAR ||
-        GetFileType(hStdOut) != FILE_TYPE_CHAR)
-        return JNI_FALSE;
-    return JNI_TRUE;
+
+    if (hStdErr != INVALID_HANDLE_VALUE &&
+        GetFileType(hStdErr) == FILE_TYPE_CHAR) {
+        ret |= java_io_Console_TTY_STDERR_MASK;
+    }
+
+    return ret;
 }
 
 JNIEXPORT jstring JNICALL
@@ -67,6 +74,7 @@ Java_java_io_Console_echo(JNIEnv *env, jclass cls, jboolean on)
 {
     DWORD fdwMode;
     jboolean old;
+    HANDLE hStdIn = GetStdHandle(STD_INPUT_HANDLE);
     if (! GetConsoleMode(hStdIn, &fdwMode)) {
         JNU_ThrowIOExceptionWithLastError(env, "GetConsoleMode failed");
         return !on;
