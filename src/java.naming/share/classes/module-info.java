@@ -29,11 +29,11 @@
  * Common standard JNDI environment properties that may be supported
  * by JNDI providers are defined and documented in
  * {@link javax.naming.Context}. Specific JNDI provider implementations
- * may also support other environment properties, which are specific
+ * may also support other environment or system properties, which are specific
  * to their implementation.
  *
  * @implNote
- * The following implementation specific properties are supported by the
+ * The following implementation specific environment properties are supported by the
  * default LDAP Naming Service Provider implementation in the JDK:
  * <ul>
  *     <li>{@code java.naming.ldap.factory.socket}:
@@ -86,6 +86,46 @@
  *         channel binding information to the server.
  *     </li>
  * </ul>
+ * <p>The following implementation specific system properties are supported by the
+ * default LDAP Naming Service Provider implementation in the JDK:
+ * <ul>
+ *     <li>{@code jdk.jndi.object.factoriesFilter}:
+ *          <br>The value of this system property defines a filter used by
+ *          the JNDI runtime implementation to control the set of object factory classes which will
+ *          be allowed to instantiate objects from object references returned by naming/directory systems.
+ *          The factory class named by the reference instance will be matched against this filter.
+ *          The filter property supports pattern-based filter syntax with the same format as
+ *          {@link java.io.ObjectInputFilter.Config#createFilter(String) jdk.serialFilter}. Limit patterns
+ *          specified in the filter property are unused.
+ *          This property can also be specified as a {@linkplain java.security.Security security property}.
+ *          This property is also supported by the <a href="{@docRoot}/jdk.naming.rmi/module-summary.html">default JNDI
+ *          RMI Provider</a>.
+ *          <br>The default value allows any object factory class specified by the reference
+ *          instance to recreate the referenced object.
+ *     </li>
+ *     <li>{@code jdk.jndi.ldap.object.factoriesFilter}:
+ *          <br>The value of this system property defines a filter used by
+ *          the JDK LDAP provider implementation to further restrict the set of object factory classes which will
+ *          be allowed to instantiate objects from object references returned by LDAP systems.
+ *          The factory class named by the {@linkplain javax.naming.Reference reference instance} first will be
+ *          matched against this specific filter and then against the global filter. The factory class is rejected
+ *          if any of these two filters reject it, or if none of them allow it.
+ *          The filter property supports pattern-based filter syntax with the same format as
+ *          {@link java.io.ObjectInputFilter.Config#createFilter(String) jdk.serialFilter}. Limit patterns
+ *          specified in the filter property are unused.
+ *          <br>The default value allows any object factory class provided by the JDK LDAP provider
+ *          implementation.
+ *         <br>This system property will be used to filter LDAP specific object factories only if
+ *         global {@link javax.naming.spi.ObjectFactoryBuilder} is {@linkplain
+ *         javax.naming.spi.NamingManager#setObjectFactoryBuilder(javax.naming.spi.ObjectFactoryBuilder)
+ *         not set}.
+ *     </li>
+ * </ul>
+ * <p>Other providers may define additional properties in their module description:
+ * <ul>
+ *  <li><a href="{@docRoot}/jdk.naming.dns/module-summary.html">DNS Naming Provider</a></li>
+ *  <li><a href="{@docRoot}/jdk.naming.rmi/module-summary.html">RMI Naming Provider</a></li>
+ * </ul>
  *
  * @moduleGraph
  * @since 9
@@ -106,6 +146,8 @@ module java.naming {
         jdk.naming.rmi;
     exports com.sun.jndi.ldap to
         jdk.naming.ldap;
+    exports com.sun.naming.internal to
+         jdk.naming.rmi;
 
     uses javax.naming.ldap.StartTlsResponse;
     uses javax.naming.spi.InitialContextFactory;
