@@ -2,6 +2,35 @@
 
 The following sections describe the changes for each release of Amazon Corretto 11.
 
+## Corretto version: 11.0.32.12.1
+Release Date: September 29, 2026
+
+**Target Platforms <sup>1</sup>**
+
++ RPM-based Linux using glibc 2.12 or later, x86, x86_64
++ Debian-based Linux using glibc 2.12 or later, x86, x86_64
++ RPM-based Linux using glibc 2.17 or later, aarch64
++ Debian-based Linux using glibc 2.17 or later, aarch64
++ Linux using glibc 2.25 or later, Arm
++ Linux using muslc 1.2.2 or later, Arm
++ Alpine-based Linux, x86_64
++ Alpine-based Linux, aarch64
++ Windows 11 or later, x86, x86_64
++ macOS 14.0 and later, x86_64
++ macOS 14.0 and later, aarch64
+
+**1.** This is the platform targeted by the build. See [Using Amazon Corretto](https://aws.amazon.com/corretto/faqs/#Using_Amazon_Corretto)
+in the Amazon Corretto FAQ for supported platforms
+
+The following issues are addressed in 11.0.32.12.1:
+
+| Issue Name | Platform | Description | Link |
+|------------|----------|-------------|------|
+| JDK-8388214 | All | (tz) Update Timezone Data to 2026c | Main: [JDK-8388214](https://bugs.openjdk.org/browse/JDK-8388214)<br>&nbsp;<br>Related: [8380223](https://bugs.openjdk.org/browse/JDK-8380223), [8381379](https://bugs.openjdk.org/browse/JDK-8381379), [8390388](https://bugs.openjdk.org/browse/JDK-8390388), [8390380](https://bugs.openjdk.org/browse/JDK-8390380), [8391256](https://bugs.openjdk.org/browse/JDK-8391256) |
+| JDK-8392377 | All | (tz) Update Timezone Data to 2026d | Main: [JDK-8392377](https://bugs.openjdk.org/browse/JDK-8392377)<br>&nbsp;<br>Related: [8392730](https://bugs.openjdk.org/browse/JDK-8392730), [8392519](https://bugs.openjdk.org/browse/JDK-8392519) |
+| Fix macos info.plist version string metadata (#79) | macOS | Adds openjdk patch version string when it is non-zero | [PR-79](https://github.com/corretto/corretto-25/pull/79) |
+| JDK-8386991 | AL2023 | Insets are incorrectly set in newer Gnome versions | [JDK-8386991](https://bugs.openjdk.org/browse/JDK-8386991) |
+
 ## Corretto version: 11.0.32.10.1
 Release Date: August 18, 2026
 
