@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009, 2023, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009, 2026, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -934,7 +934,7 @@ class ZipFileSystem extends FileSystem {
 
     private volatile boolean isOpen = true;
     private final SeekableByteChannel ch; // channel to the zipfile
-    final byte[]  cen;     // CEN & ENDHDR
+    final byte[]  cen;     // CEN
     private END  end;
     private long locpos;   // position of first LOC header (usually 0)
 
@@ -956,21 +956,30 @@ class ZipFileSystem extends FileSystem {
         close();
     }
 
-    // Reads len bytes of data from the specified offset into buf.
-    // Returns the total number of bytes read.
-    // Each/every byte read from here (except the cen, which is mapped).
-    final long readFullyAt(byte[] buf, int off, long len, long pos)
-        throws IOException
-    {
+    /**
+     * Reads len bytes of data at the given file position into the given byte array
+     * starting at the given array offset. The method blocks until len bytes have been
+     * read, end of stream is detected, or an exception is thrown. Returns the total
+     * number of bytes read.
+     */
+    final long readNBytesAt(byte[] buf, int off, long len, long pos) throws IOException {
         ByteBuffer bb = ByteBuffer.wrap(buf);
         bb.position(off);
         bb.limit((int)(off + len));
-        return readFullyAt(bb, pos);
+
+        long totalRead = 0;
+        while (totalRead < len) {
+            int n = readAt(bb, pos);
+            if (n < 0) {
+                break;
+            }
+            pos += n;
+            totalRead +=n;
+        }
+        return totalRead;
     }
 
-    private final long readFullyAt(ByteBuffer bb, long pos)
-        throws IOException
-    {
+    private int readAt(ByteBuffer bb, long pos) throws IOException {
         synchronized(ch) {
             return ch.position(pos).read(bb);
         }
@@ -996,7 +1005,7 @@ class ZipFileSystem extends FileSystem {
                 Arrays.fill(buf, 0, off, (byte)0);
             }
             int len = buf.length - off;
-            if (readFullyAt(buf, off, len, pos + off) != len)
+            if (readNBytesAt(buf, off, len, pos + off) != len)
                 zerror("zip END header not found");
 
             // Now scan the block backwards for END header signature
@@ -1018,14 +1027,14 @@ class ZipFileSystem extends FileSystem {
                     // try if there is zip64 end;
                     byte[] loc64 = new byte[ZIP64_LOCHDR];
                     if (end.endpos < ZIP64_LOCHDR ||
-                        readFullyAt(loc64, 0, loc64.length, end.endpos - ZIP64_LOCHDR)
+                        readNBytesAt(loc64, 0, loc64.length, end.endpos - ZIP64_LOCHDR)
                         != loc64.length ||
                         !locator64SigAt(loc64, 0)) {
                         return end;
                     }
                     long end64pos = ZIP64_LOCOFF(loc64);
                     byte[] end64buf = new byte[ZIP64_ENDHDR];
-                    if (readFullyAt(end64buf, 0, end64buf.length, end64pos)
+                    if (readNBytesAt(end64buf, 0, end64buf.length, end64pos)
                         != end64buf.length ||
                         !end64SigAt(end64buf, 0)) {
                         return end;
@@ -1075,15 +1084,15 @@ class ZipFileSystem extends FileSystem {
         if (locpos < 0)
             zerror("invalid END header (bad central directory offset)");
 
-        // read in the CEN and END
-        byte[] cen = new byte[(int)(end.cenlen + ENDHDR)];
-        if (readFullyAt(cen, 0, cen.length, cenpos) != end.cenlen + ENDHDR) {
+        // read in the CEN
+        byte[] cen = new byte[(int)(end.cenlen)];
+        if (readNBytesAt(cen, 0, cen.length, cenpos) != end.cenlen) {
             zerror("read CEN tables failed");
         }
         // Iterate through the entries in the central directory
         inodes = new LinkedHashMap<>(end.centot + 1);
         int pos = 0;
-        int limit = cen.length - ENDHDR;
+        int limit = cen.length;
         while (pos < limit) {
             if (!cenSigAt(cen, pos))
                 zerror("invalid CEN header (bad signature)");
@@ -1115,7 +1124,7 @@ class ZipFileSystem extends FileSystem {
             // skip ext and comment
             pos += (CENHDR + nlen + elen + clen);
         }
-        if (pos + ENDHDR != cen.length) {
+        if (pos != cen.length) {
             zerror("invalid CEN header (bad header size)");
         }
         buildNodeTree();
@@ -1226,7 +1235,7 @@ class ZipFileSystem extends FileSystem {
         // 'name' field of the loc. if this byte is '/', which means the original
         // entry has an absolute path in original zip/jar file, the e.writeLOC()
         // is used to output the loc, in which the leading "/" will be removed
-        if (readFullyAt(buf, 0, LOCHDR + 1 , locoff) != LOCHDR + 1)
+        if (readNBytesAt(buf, 0, LOCHDR + 1 , locoff) != LOCHDR + 1)
             throw new ZipException("loc: reading failed");
 
         if (updateHeader || LOCNAM(buf) > 0 && buf[LOCHDR] == '/') {
@@ -1243,7 +1252,7 @@ class ZipFileSystem extends FileSystem {
         }
         int n;
         while (size > 0 &&
-            (n = (int)readFullyAt(buf, 0, buf.length, locoff)) != -1)
+            (n = (int)readNBytesAt(buf, 0, buf.length, locoff)) != -1)
         {
             if (size < n)
                 n = (int)size;
@@ -1896,7 +1905,7 @@ class ZipFileSystem extends FileSystem {
             if (pos <= 0) {
                 pos = -pos + locpos;
                 byte[] buf = new byte[LOCHDR];
-                if (readFullyAt(buf, 0, buf.length, pos) != LOCHDR) {
+                if (readNBytesAt(buf, 0, buf.length, pos) != LOCHDR) {
                     throw new ZipException("invalid loc " + pos + " for entry reading");
                 }
                 pos += LOCHDR + LOCNAM(buf) + LOCEXT(buf);
@@ -2558,6 +2567,10 @@ class ZipFileSystem extends FileSystem {
 
         // read NTFS, UNIX and ZIP64 data from cen.extra
         void readExtra(ZipFileSystem zipfs) throws IOException {
+            // Note that Section 4.5, Extensible data fields, of the PKWARE ZIP File
+            // Format Specification does not mandate a specific order for the
+            // data in the extra field, therefore Zip FS cannot assume the data
+            // is written in the same order by Zip libraries as Zip FS.
             if (extra == null)
                 return;
             int elen = extra.length;
@@ -2568,6 +2581,7 @@ class ZipFileSystem extends FileSystem {
             }
             int off = 0;
             int newOff = 0;
+            boolean hasZip64LocOffset = false;
             while (off + 4 < elen) {
                 // extra spec: HeaderID+DataSize+Data
                 int pos = off;
@@ -2638,7 +2652,7 @@ class ZipFileSystem extends FileSystem {
                     ctime  = winToJavaTime(LL(extra, pos + 20));
                     break;
                 case EXTID_EXTT:
-                    // spec says the Extened timestamp in cen only has mtime
+                    // spec says the Extended timestamp in cen only has mtime
                     // need to read the loc to get the extra a/ctime, if flag
                     // "zipinfo-time" is not specified to false;
                     // there is performance cost (move up to loc and read) to
@@ -2648,45 +2662,15 @@ class ZipFileSystem extends FileSystem {
                             mtime = unixToJavaTime(LG(extra, pos + 1));
                          break;
                     }
-                    byte[] buf = new byte[LOCHDR];
-                    if (zipfs.readFullyAt(buf, 0, buf.length , locoff)
-                        != buf.length)
-                        throw new ZipException("loc: reading failed");
-                    if (!locSigAt(buf, 0))
-                        throw new ZipException("loc: wrong sig ->"
-                                           + Long.toString(getSig(buf, 0), 16));
-                    int locElen = LOCEXT(buf);
-                    if (locElen < 9)    // EXTT is at lease 9 bytes
-                        break;
-                    int locNlen = LOCNAM(buf);
-                    buf = new byte[locElen];
-                    if (zipfs.readFullyAt(buf, 0, buf.length , locoff + LOCHDR + locNlen)
-                        != buf.length)
-                        throw new ZipException("loc extra: reading failed");
-                    int locPos = 0;
-                    while (locPos + 4 < buf.length) {
-                        int locTag = SH(buf, locPos);
-                        int locSZ  = SH(buf, locPos + 2);
-                        locPos += 4;
-                        if (locTag  != EXTID_EXTT) {
-                            locPos += locSZ;
-                             continue;
-                        }
-                        int end = locPos + locSZ - 4;
-                        int flag = CH(buf, locPos++);
-                        if ((flag & 0x1) != 0 && locPos <= end) {
-                            mtime = unixToJavaTime(LG(buf, locPos));
-                            locPos += 4;
-                        }
-                        if ((flag & 0x2) != 0 && locPos <= end) {
-                            atime = unixToJavaTime(LG(buf, locPos));
-                            locPos += 4;
-                        }
-                        if ((flag & 0x4) != 0 && locPos <= end) {
-                            ctime = unixToJavaTime(LG(buf, locPos));
-                            locPos += 4;
-                        }
-                        break;
+                    // If the LOC offset is 0xFFFFFFFF, then we need to read the
+                    // LOC offset from the EXTID_ZIP64 extra data. Therefore
+                    // wait until all of the CEN extra data fields have been processed
+                    // prior to reading the LOC extra data field in order to obtain
+                    // the Info-ZIP Extended Timestamp.
+                    if (locoff != ZIP64_MINVAL) {
+                        readLocEXTT(zipfs);
+                    } else {
+                        hasZip64LocOffset = true;
                     }
                     break;
                 default:    // unknown tag
@@ -2695,10 +2679,65 @@ class ZipFileSystem extends FileSystem {
                 }
                 off += (sz + 4);
             }
+
+            // We need to read the LOC extra data and the LOC offset was obtained
+            // from the EXTID_ZIP64 field.
+            if (hasZip64LocOffset) {
+                readLocEXTT(zipfs);
+            }
+
             if (newOff != 0 && newOff != extra.length)
                 extra = Arrays.copyOf(extra, newOff);
             else
                 extra = null;
+        }
+
+        /**
+         * Read the LOC extra field to obtain the Info-ZIP Extended Timestamp fields
+         * @param zipfs The Zip FS to use
+         * @throws IOException If an error occurs
+         */
+        private void readLocEXTT(ZipFileSystem zipfs) throws IOException {
+            byte[] buf = new byte[LOCHDR];
+            if (zipfs.readNBytesAt(buf, 0, buf.length , locoff)
+                != buf.length)
+                throw new ZipException("loc: reading failed");
+            if (!locSigAt(buf, 0))
+                throw new ZipException("R"
+                                   + Long.toString(getSig(buf, 0), 16));
+            int locElen = LOCEXT(buf);
+            if (locElen < 9)    // EXTT is at least 9 bytes
+                return;
+            int locNlen = LOCNAM(buf);
+            buf = new byte[locElen];
+            if (zipfs.readNBytesAt(buf, 0, buf.length , locoff + LOCHDR + locNlen)
+                != buf.length)
+                throw new ZipException("loc extra: reading failed");
+            int locPos = 0;
+            while (locPos + 4 < buf.length) {
+                int locTag = SH(buf, locPos);
+                int locSZ  = SH(buf, locPos + 2);
+                locPos += 4;
+                if (locTag  != EXTID_EXTT) {
+                    locPos += locSZ;
+                     continue;
+                }
+                int end = locPos + locSZ - 4;
+                int flag = CH(buf, locPos++);
+                if ((flag & 0x1) != 0 && locPos <= end) {
+                    mtime = unixToJavaTime(LG(buf, locPos));
+                    locPos += 4;
+                }
+                if ((flag & 0x2) != 0 && locPos <= end) {
+                    atime = unixToJavaTime(LG(buf, locPos));
+                    locPos += 4;
+                }
+                if ((flag & 0x4) != 0 && locPos <= end) {
+                    ctime = unixToJavaTime(LG(buf, locPos));
+                    locPos += 4;
+                }
+                break;
+            }
         }
 
         /**
