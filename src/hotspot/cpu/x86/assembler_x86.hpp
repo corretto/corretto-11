@@ -1052,6 +1052,7 @@ private:
   void cmpxchgl(Register reg, Address adr);
 
   void cmpxchgq(Register reg, Address adr);
+  void cmpxchgw(Register reg, Address adr);
 
   // Ordered Compare Scalar Double-Precision Floating-Point Values and set EFLAGS
   void comisd(XMMRegister dst, Address src);
@@ -1333,6 +1334,7 @@ private:
   void lfence();
 
   void lock();
+  void size_prefix();
 
   void lzcntl(Register dst, Register src);
 
