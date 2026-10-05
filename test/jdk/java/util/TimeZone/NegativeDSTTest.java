@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019, 2026, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -37,7 +37,7 @@ import static org.testng.Assert.assertEquals;
 
 /**
  * @test
- * @bug 8212970
+ * @bug 8212970 8388214
  * @summary Test whether the savings are positive in time zones that have
  *      negative savings in the source TZ files.
  * @run testng NegativeDSTTest
@@ -73,15 +73,17 @@ public class NegativeDSTTest {
             {WINDHOEK, LocalDate.of(1994, 3, 23), ONE_HOUR, false},
             {WINDHOEK, LocalDate.of(2016, 9, 23), 2 * ONE_HOUR, true},
 
-            // Africa/Casablanca for the Rule "Morocco" Defines negative DST till 2037 as of 2019a.
+            // Africa/Casablanca for the Rule "Morocco" defines negative DST until early 2026,
+            // then returns to standard UTC permanently later that year, starting with 2026c.
             {CASABLANCA, LocalDate.of(1939, 9, 13), ONE_HOUR, true},
             {CASABLANCA, LocalDate.of(1939, 11, 20), 0, false},
             {CASABLANCA, LocalDate.of(2018, 6, 18), ONE_HOUR, true},
             {CASABLANCA, LocalDate.of(2019, 1, 1), ONE_HOUR, true},
             {CASABLANCA, LocalDate.of(2019, 5, 6), 0, false},
-            {CASABLANCA, LocalDate.of(2037, 10, 5), 0, false},
-            {CASABLANCA, LocalDate.of(2037, 11, 16), ONE_HOUR, true},
-            {CASABLANCA, LocalDate.of(2038, 11, 1), ONE_HOUR, true},
+            {CASABLANCA, LocalDate.of(2026, 2, 16), 0, false},
+            {CASABLANCA, LocalDate.of(2026, 3, 23), ONE_HOUR, true},
+            {CASABLANCA, LocalDate.of(2026, 9, 21), 0, false},
+            {CASABLANCA, LocalDate.of(2038, 11, 1), 0, false},
         };
     }
 

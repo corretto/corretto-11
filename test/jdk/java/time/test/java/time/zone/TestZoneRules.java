@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019, 2026, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -45,7 +45,7 @@ import static org.testng.Assert.assertTrue;
  *      negative savings in the source TZ files. Also, check the transition cutover
  *      time beyond 24:00, which should translate into the next day.
  *
- * @bug 8212970
+ * @bug 8212970 8388214
  */
 @Test
 public class TestZoneRules {
@@ -80,15 +80,17 @@ public class TestZoneRules {
             {WINDHOEK, LocalDate.of(1994, 3, 23), ZoneOffset.ofHours(1), ZoneOffset.ofHours(1), false},
             {WINDHOEK, LocalDate.of(2016, 9, 23), ZoneOffset.ofHours(2), ZoneOffset.ofHours(1), true},
 
-            // Africa/Casablanca for the Rule "Morocco" Defines negative DST till 2037 as of 2019a.
+            // Africa/Casablanca for the Rule "Morocco" defines negative DST until early 2026,
+            // then returns to standard UTC permanently later that year, starting with 2026c.
             {CASABLANCA, LocalDate.of(1939, 9, 13), ZoneOffset.ofHours(1), ZoneOffset.ofHours(0), true},
             {CASABLANCA, LocalDate.of(1939, 11, 20), ZoneOffset.ofHours(0), ZoneOffset.ofHours(0), false},
             {CASABLANCA, LocalDate.of(2018, 6, 18), ZoneOffset.ofHours(1), ZoneOffset.ofHours(0), true},
             {CASABLANCA, LocalDate.of(2019, 1, 1), ZoneOffset.ofHours(1), ZoneOffset.ofHours(0), true},
             {CASABLANCA, LocalDate.of(2019, 5, 6), ZoneOffset.ofHours(0), ZoneOffset.ofHours(0), false},
-            {CASABLANCA, LocalDate.of(2037, 10, 5), ZoneOffset.ofHours(0), ZoneOffset.ofHours(0), false},
-            {CASABLANCA, LocalDate.of(2037, 11, 16), ZoneOffset.ofHours(1), ZoneOffset.ofHours(0), true},
-            {CASABLANCA, LocalDate.of(2038, 11, 8), ZoneOffset.ofHours(1), ZoneOffset.ofHours(0), true},
+            {CASABLANCA, LocalDate.of(2026, 2, 16), ZoneOffset.ofHours(0), ZoneOffset.ofHours(0), false},
+            {CASABLANCA, LocalDate.of(2026, 3, 23), ZoneOffset.ofHours(1), ZoneOffset.ofHours(0), true},
+            {CASABLANCA, LocalDate.of(2026, 9, 21), ZoneOffset.ofHours(0), ZoneOffset.ofHours(0), false},
+            {CASABLANCA, LocalDate.of(2038, 11, 8), ZoneOffset.ofHours(0), ZoneOffset.ofHours(0), false},
         };
     }
 
