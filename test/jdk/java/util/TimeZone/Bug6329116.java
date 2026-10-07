@@ -25,7 +25,7 @@
  * @test
  * @bug 6329116 6756569 6757131 6758988 6764308 6796489 6834474 6609737 6507067
  *      7039469 7090843 7103108 7103405 7158483 8008577 8059206 8064560 8072042
- *      8077685 8151876 8166875 8169191 8170316 8176044 8388214
+ *      8077685 8151876 8166875 8169191 8170316 8176044 8388214 8392377
  * @summary Make sure that timezone short display names are idenical to Olson's data.
  * @library /java/text/testlib
  * @build Bug6329116 TextFileReader
@@ -41,6 +41,7 @@ public class Bug6329116 extends IntlTest {
     // As of CLDR v48.2, CLDR provides these short names for zones with explicit DST offsets.
     private static final Map<String, String> CLDR_SHORT_NAMES = Map.of(
             "America/Edmonton", "MST",
+            "America/Inuvik", "MST",
             "Canada/Mountain", "MST",
             "America/Yellowknife", "MST",
             "America/Vancouver", "PST",
