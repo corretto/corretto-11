@@ -51,8 +51,8 @@ def jdkBinaryDir = "${buildRoot}/${project.correttoJdkArchiveName}"
 def jdkPackageName = "java-${project.version.major}-amazon-corretto-devel"
 
 ospackage {
-    version project.version.upstream
-    release project.version.revision
+    version = project.version.full
+    release = project.version.revision
 
     url "${packageInfo.url}"
     vendor "${packageInfo.vendor}"
@@ -108,7 +108,7 @@ task generateJdkRpm(type: Rpm) {
     summary "Amazon Corretto ${project.version.major} development environment"
     packageGroup 'Development/Tools'
     // Remove after https://github.com/nebula-plugins/gradle-ospackage-plugin/issues/401 is merged and released
-    sourcePackage "${jdkPackageName}-${project.version.major}.${project.version.minor}.${project.version.security}.${project.version.build}-${project.version.revision}.src.rpm"
+    sourcePackage = "${jdkPackageName}-${project.version.full}-${project.version.revision}.src.rpm"
 
     prefix(jdkHome)
     postInstall file("$buildRoot/scripts/postin_java.sh")

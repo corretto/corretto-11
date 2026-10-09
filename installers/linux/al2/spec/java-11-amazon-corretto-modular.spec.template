@@ -18,11 +18,12 @@
 # Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
 
 # The Corretto github project provides tarfiles with five dotted
-# version parts.  The first four are the typical Java version + build,
-# and the last one is the release ID.
+# version parts.  The first four are the typical Java version parts described: https://openjdk.org/jeps/322,
+# and the last one is the BUILD number used in `configure --with-version-build=`.
 %global java_version    $java_version
 %global java_major_version    $java_spec_version
 %global java_security_version    $java_security_version
+%global patch_id        $patch_id
 %global build_id        $build_id
 %global release_id      $release_id
 %global version_opt     $version_opt
@@ -61,7 +62,7 @@
 %global java_imgdir build/linux-%{_arch}-normal-server-$debug_level/images/
 
 # Higher numbers win for the alternatives program.
-%global alternatives_priority %( printf '%02d%02d%02d%02d' %{java_major_version} %{java_security_version} %{build_id} %{release_id} )
+%global alternatives_priority %( printf '%02d%02d%02d%02d' %{java_major_version} %{java_security_version} %{patch_id} %{build_id} )
 
 # Instruct rpmbuild to copy jars rather than de-compress and re-compress.
 %global __jar_repack 0
@@ -92,15 +93,16 @@ Name: java-%{java_major_version}-amazon-corretto%{?experimental_feature:-%{exper
 # Matches the 'full version' from Java's release notes:
 # https://www.oracle.com/technetwork/java/javase/11-0-2-relnotes-5188746.html
 # Eg: 11.0.2+7
-Version: %{java_version}+%{build_id}
+Version: %{java_version}.%{patch_id}.%{build_id}
 Release: %{release_id}%{?dist}
+
 Epoch: 1
 Group: Development/Languages
 AutoReqProv: 0
 License: ASL 1.1 and ASL 2.0 and BSD and BSD with advertising and GPL+ and GPLv2 and GPLv2 with exceptions and IJG and LGPLv2+ and MIT and MPLv2.0 and Public Domain and W3C and zlib and ISC and FTL and RSA.
 Vendor: Amazon
 Url: https://github.com/corretto/corretto-11
-Source0: amazon-corretto-source-%{java_version}.%{build_id}.%{release_id}.tar.gz
+Source0: amazon-corretto-source-%{java_version}.%{patch_id}.%{build_id}.tar.gz
 
 # jpackage-utils/javapackages-filesystem is required for both build and runtime.
 # For build, it provides the jvmdir macro. For runtime,
@@ -261,7 +263,7 @@ bash ./configure \\
         --with-version-date="%{version_date}" \\
 %endif
         --with-version-build="%{build_id}" \\
-        --with-vendor-version-string="Corretto%{?experimental_feature:-%{experimental_feature}}-%{java_version}.%{build_id}.%{release_id}" \\
+        --with-vendor-version-string="Corretto%{?experimental_feature:-%{experimental_feature}}-%{java_version}.%{patch_id}.%{build_id}" \\
         --with-version-pre= \\
         --with-vendor-name="Amazon.com Inc." \\
         --with-vendor-url="https://aws.amazon.com/corretto/" \\
