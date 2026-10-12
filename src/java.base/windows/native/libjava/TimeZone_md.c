@@ -330,6 +330,7 @@ static int getWinTimeZone(char *winZoneName)
                 if (ret != ERROR_SUCCESS) {
                     goto err;
                 }
+                RegCloseKey(hSubKey);
                 break;
             }
 
@@ -366,6 +367,7 @@ static int getWinTimeZone(char *winZoneName)
                  * found matched record, terminate search
                  */
                 strcpy(winZoneName, subKeyName);
+                RegCloseKey(hSubKey);
                 break;
             }
         out:
