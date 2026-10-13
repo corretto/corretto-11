@@ -109,6 +109,7 @@ task inflateRpmSpecModular {
                     java_major_version   : version.major,
                     java_security_version   : version.security,
                     java_version        : javaVersion,
+                    patch_id            : patchId,
                     build_id            : buildId,
                     release_id          : releaseId,
                     version_opt         : versionOpt,
