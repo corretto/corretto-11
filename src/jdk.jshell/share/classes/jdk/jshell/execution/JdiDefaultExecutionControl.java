@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2026, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -32,12 +32,9 @@ import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.function.Consumer;
 import com.sun.jdi.BooleanValue;
 import com.sun.jdi.ClassNotLoadedException;
 import com.sun.jdi.Field;
@@ -48,6 +45,10 @@ import com.sun.jdi.StackFrame;
 import com.sun.jdi.ThreadReference;
 import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.VirtualMachine;
+import java.security.SecureRandom;
+import java.util.Arrays;
+import java.util.Base64;
+import java.util.concurrent.CompletableFuture;
 import jdk.jshell.spi.ExecutionControl;
 import jdk.jshell.spi.ExecutionEnv;
 import static jdk.jshell.execution.Util.remoteInputOutput;
@@ -92,23 +93,39 @@ public class JdiDefaultExecutionControl extends JdiExecutionControl {
      */
     static ExecutionControl create(ExecutionEnv env, String remoteAgent,
             boolean isLaunch, String host, int timeout) throws IOException {
+        Process processToStop = null;
         try (final ServerSocket listener = new ServerSocket(0, 1, InetAddress.getLoopbackAddress())) {
             // timeout on I/O-socket
             listener.setSoTimeout(timeout);
             int port = listener.getLocalPort();
 
             // Set-up the JDI connection
-            JdiInitiator jdii = new JdiInitiator(port,
+            JdiInitiator jdii = new JdiInitiator(-1,
                     env.extraRemoteVMOptions(), remoteAgent, isLaunch, host,
                     timeout, Collections.emptyMap());
             VirtualMachine vm = jdii.vm();
-            Process process = jdii.process();
+            Process process = processToStop = jdii.process();
+            byte[] secret;
 
-            List<Consumer<String>> deathListeners = new ArrayList<>();
+            OutputStream stdout = process.getOutputStream();
+
+            //send the port number:
+            stdout.write(("" + port + "\n").getBytes());
+            stdout.flush();
+
+            //generate a secret that will help us validate the correct remote is attached:
+            secret = new byte[64];
+            new SecureRandom().nextBytes(secret);
+            stdout.write((Base64.getEncoder().encodeToString(secret) + "\n").getBytes());
+            stdout.flush();
+
+            CompletableFuture<String> agentStopped = new CompletableFuture<>();
+
             Util.detectJdiExitEvent(vm, s -> {
-                for (Consumer<String> h : deathListeners) {
-                    h.accept(s);
-                }
+                agentStopped.complete(s);
+            });
+            process.onExit().thenRun(() -> {
+                agentStopped.complete("Remote process died.");
             });
 
             // Set-up the commands/reslts on the socket.  Piggy-back snippet
@@ -116,15 +133,35 @@ public class JdiDefaultExecutionControl extends JdiExecutionControl {
             Socket socket = listener.accept();
             // out before in -- match remote creation so we don't hang
             OutputStream out = socket.getOutputStream();
+            InputStream in = socket.getInputStream();
+
+            socket.setSoTimeout(timeout);
+
+            //verify the secret:
+            byte[] receivedSecret = in.readNBytes(secret.length);
+
+            if (!Arrays.equals(secret, receivedSecret)) {
+                throw new IOException("Incorrect secret received.");
+            }
+
+            socket.setSoTimeout(0);
+
             Map<String, OutputStream> outputs = new HashMap<>();
             outputs.put("out", env.userOut());
             outputs.put("err", env.userErr());
             Map<String, InputStream> input = new HashMap<>();
             input.put("in", env.userIn());
-            return remoteInputOutput(socket.getInputStream(), out, outputs, input,
+            ExecutionControl result = remoteInputOutput(in, out, outputs, input,
                     (objIn, objOut) -> new JdiDefaultExecutionControl(env,
-                                        objOut, objIn, vm, process, remoteAgent, deathListeners));
-        }
+                                        objOut, objIn, vm, process, remoteAgent,
+                                        agentStopped));
+            processToStop = null;
+            return result;
+        } finally {
+            if (processToStop != null) {
+                processToStop.destroy();
+            }
+}
     }
 
     /**
@@ -136,7 +173,7 @@ public class JdiDefaultExecutionControl extends JdiExecutionControl {
     private JdiDefaultExecutionControl(ExecutionEnv env,
             ObjectOutput cmdout, ObjectInput cmdin,
             VirtualMachine vm, Process process, String remoteAgent,
-            List<Consumer<String>> deathListeners) {
+            CompletableFuture<String> agentStopped) {
         super(cmdout, cmdin);
         this.vm = vm;
         this.process = process;
@@ -144,8 +181,10 @@ public class JdiDefaultExecutionControl extends JdiExecutionControl {
         // We have now succeeded in establishing the connection.
         // If there is an exit now it propagates all the way up
         // and the VM should be disposed of.
-        deathListeners.add(s -> env.closeDown());
-        deathListeners.add(s -> disposeVM());
+        agentStopped.thenAccept(s -> {
+            env.closeDown();
+            disposeVM();
+        });
      }
 
     @Override
