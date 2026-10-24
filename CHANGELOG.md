@@ -2,6 +2,32 @@
 
 The following sections describe the changes for each release of Amazon Corretto 11.
 
+## Corretto version: 11.0.33.0.10
+Release Date: October 24, 2026
+
+**Target Platforms <sup>1</sup>**
+
++ RPM-based Linux using glibc 2.12 or later, x86, x86_64
++ Debian-based Linux using glibc 2.12 or later, x86, x86_64
++ RPM-based Linux using glibc 2.17 or later, aarch64
++ Debian-based Linux using glibc 2.17 or later, aarch64
++ Linux using glibc 2.25 or later, Arm
++ Linux using muslc 1.2.2 or later, Arm
++ Alpine-based Linux, x86_64
++ Alpine-based Linux, aarch64
++ Windows 11 or later, x86, x86_64
++ macOS 15.0 and later, x86_64
++ macOS 15.0 and later, aarch64
+
+**1.** This is the platform targeted by the build. See [Using Amazon Corretto](https://aws.amazon.com/corretto/faqs/#Using_Amazon_Corretto)
+in the Amazon Corretto FAQ for supported platforms
+
+The following CVEs are addressed in 11.0.33.0.10:
+
+| CVE | CVSS | Component |
+|-----|------|-----------|
+| CVE-2026-114820 | 9.1 | security-libs/java.security |
+
 ## Corretto version: 11.0.33.0.9
 Release Date: October 20, 2026
 
