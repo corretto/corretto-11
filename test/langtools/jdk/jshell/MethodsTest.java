@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, 2025, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -26,7 +26,7 @@
  * @bug 8080357 8167643 8187359 8199762 8080353
  * @summary Tests for EvaluationState.methods
  * @build KullaTesting TestingInputStream ExpectedDiagnostic
- * @run testng MethodsTest
+ * @run junit MethodsTest
  */
 
 import javax.tools.Diagnostic;
@@ -34,17 +34,19 @@ import javax.tools.Diagnostic;
 import jdk.jshell.Snippet;
 import jdk.jshell.MethodSnippet;
 import jdk.jshell.Snippet.Status;
-import org.testng.annotations.Test;
 
 import static jdk.jshell.Snippet.Status.*;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
-@Test
 public class MethodsTest extends KullaTesting {
 
+    @Test
     public void noMethods() {
         assertNumberOfActiveMethods(0);
     }
 
+    @Test
     public void testSignature1() {
         MethodSnippet m1 = methodKey(assertEval("void f() { g(); }", added(RECOVERABLE_DEFINED)));
         assertMethodDeclSnippet(m1, "f", "()void", RECOVERABLE_DEFINED, 1, 0);
@@ -54,6 +56,7 @@ public class MethodsTest extends KullaTesting {
         assertMethodDeclSnippet(m2, "g", "()void", VALID, 0, 0);
     }
 
+    @Test
     public void testSignature2() {
         MethodSnippet m1 = (MethodSnippet) assertDeclareFail("void f() { return g(); }", "compiler.err.prob.found.req");
         assertMethodDeclSnippet(m1, "f", "()void", REJECTED, 0, 2);
@@ -63,7 +66,8 @@ public class MethodsTest extends KullaTesting {
         assertMethodDeclSnippet(m2, "f", "()int", RECOVERABLE_DEFINED, 1, 0);
     }
 
-    @Test(enabled = false) // TODO 8081690
+    @Test // TODO 8081690
+    @Disabled
     public void testSignature3() {
         MethodSnippet m1 = methodKey(assertEval("void f(Bar b) { }", added(RECOVERABLE_NOT_DEFINED)));
         assertMethodDeclSnippet(m1, "f", "(Bar)void", RECOVERABLE_NOT_DEFINED, 1, 0);
@@ -75,6 +79,7 @@ public class MethodsTest extends KullaTesting {
     }
 
     // 8080357
+    @Test
     public void testNonReplUnresolved() {
         // internal case
         assertEval("class CCC {}", added(VALID));
@@ -83,6 +88,7 @@ public class MethodsTest extends KullaTesting {
         assertDeclareFail("void f2() { System.xxxx(); }", "compiler.err.cant.resolve.location.args");
     }
 
+    @Test
     public void methods() {
         assertEval("int x() { return 10; }");
         assertEval("String y() { return null; }");
@@ -91,6 +97,7 @@ public class MethodsTest extends KullaTesting {
         assertActiveKeys();
     }
 
+    @Test
     public void methodOverload() {
         assertEval("int m() { return 1; }");
         assertEval("int m(int x) { return 2; }");
@@ -135,6 +142,7 @@ public class MethodsTest extends KullaTesting {
     }
     ***/
 
+    @Test
     public void methodsRedeclaration1() {
         Snippet x = methodKey(assertEval("int x() { return 10; }"));
         Snippet y = methodKey(assertEval("String y() { return \"\"; }"));
@@ -154,6 +162,7 @@ public class MethodsTest extends KullaTesting {
         assertActiveKeys();
     }
 
+    @Test
     public void methodsRedeclaration2() {
         assertEval("int a() { return 1; }");
         assertMethods(method("()int", "a"));
@@ -175,6 +184,7 @@ public class MethodsTest extends KullaTesting {
         assertActiveKeys();
     }
 
+    @Test
     public void methodsRedeclaration3() {
         Snippet x = methodKey(assertEval("int x(Object...a) { return 10; }"));
         assertMethods(method("(Object...)int", "x"));
@@ -188,6 +198,7 @@ public class MethodsTest extends KullaTesting {
     }
 
 
+    @Test
     public void methodsRedeclaration4() {
         Snippet a = methodKey(assertEval("int foo(int a) { return a; }"));
         assertEval("int x = foo(10);");
@@ -200,6 +211,7 @@ public class MethodsTest extends KullaTesting {
     }
 
     // 8199762
+    @Test
     public void methodsRedeclaration5() {
         Snippet m1 = methodKey(assertEval("int m(Object o) { return 10; }"));
         assertMethods(method("(Object)int", "m"));
@@ -216,6 +228,7 @@ public class MethodsTest extends KullaTesting {
         assertActiveKeys();
     }
 
+    @Test
     public void methodsErrors() {
         assertDeclareFail("String f();",
                 new ExpectedDiagnostic("compiler.err.missing.meth.body.or.decl.abstract", 0, 11, 7, -1, -1, Diagnostic.Kind.ERROR));
@@ -252,6 +265,7 @@ public class MethodsTest extends KullaTesting {
         assertActiveKeys();
     }
 
+    @Test
     public void objectMethodNamedMethodsErrors() {
         assertDeclareFail("boolean equals(double d1, double d2) {  return d1 == d2; }",
                 new ExpectedDiagnostic("jdk.eval.error.object.method", 8, 14, 8, -1, -1, Diagnostic.Kind.ERROR));
@@ -271,6 +285,7 @@ public class MethodsTest extends KullaTesting {
     }
 
 
+    @Test
     public void methodsAccessModifierIgnored() {
         Snippet f = methodKey(assertEval("public String f() {return null;}",
                 added(VALID)));
@@ -290,6 +305,7 @@ public class MethodsTest extends KullaTesting {
         assertActiveKeys();
     }
 
+    @Test
     public void methodsWarn() {
         Snippet f = assertDeclareWarn1("static String f() {return null;}",
                 new ExpectedDiagnostic("jdk.eval.warn.illegal.modifiers", 0, 6, 0, -1, -1, Diagnostic.Kind.WARNING),
@@ -305,6 +321,7 @@ public class MethodsTest extends KullaTesting {
         assertActiveKeys();
     }
 
+    @Test
     public void methodSignatureUnresolved() {
         MethodSnippet key = (MethodSnippet) methodKey(assertEval("und m() { return new und(); }", added(RECOVERABLE_NOT_DEFINED)));
         assertMethodDeclSnippet(key, "m", "()und", RECOVERABLE_NOT_DEFINED, 1, 0);
@@ -317,7 +334,8 @@ public class MethodsTest extends KullaTesting {
         assertActiveKeys();
     }
 
-    @Test(enabled = false) // TODO 8081689
+    @Test // TODO 8081689
+    @Disabled
     public void classMethodsAreNotVisible() {
         assertEval(
             "class A {" +
@@ -338,6 +356,7 @@ public class MethodsTest extends KullaTesting {
         assertActiveKeys();
     }
 
+    @Test
     public void lambdas() {
         assertEval("class Inner1 implements Runnable {" +
                 "public Runnable lambda1 = () -> {};" +
