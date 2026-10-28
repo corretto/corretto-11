@@ -1,0 +1,42 @@
+name: "Refresh jdk11u-dev from Upstream"
+on:
+  schedule:
+    - cron: '0 8 * * *'
+  workflow_dispatch:
+env:
+  UPSTREAM_REMOTE: https://github.com/openjdk/jdk11u-dev.git
+  UPSTREAM_MIRROR: upstream-dev
+  LOCAL_BRANCH: nightly
+
+permissions:
+  contents: write
+
+jobs:
+    refresh-jdk11-dev:
+        runs-on: ubuntu-latest
+        name: "Update Corretto-11 nightly"
+        if: github.repository_owner == 'corretto'
+        steps:
+            - name: "Checkout code"
+              uses: actions/checkout@v2
+              with:
+                fetch-depth: 0
+                ref: ${{ env.LOCAL_BRANCH }}
+
+            - name: "Configure the user"
+              run: |
+                git config user.email "no-reply@amazon.com"
+                git config user.name "corretto-github-robot"
+
+            - name: "Merge openjdk/jdk11u-dev:master to the corretto-11:nightly"
+              run: |
+                git fetch $UPSTREAM_REMOTE master || exit 1
+                git push origin FETCH_HEAD:refs/heads/$UPSTREAM_MIRROR
+                git merge -m "Merge $UPSTREAM_MIRROR" FETCH_HEAD
+
+            - name: "Update Corretto version"
+              shell: bash
+              run: bash ./.github/scripts/update-version.sh $UPSTREAM_REMOTE
+
+            - name: "Push to the corretto-11"
+              run: git push origin $LOCAL_BRANCH
