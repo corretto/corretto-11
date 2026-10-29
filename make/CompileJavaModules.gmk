@@ -249,6 +249,7 @@ java.sql_SETUP := GENERATE_JDKBYTECODE_NOWARNINGS
 
 ################################################################################
 
+java.sql.rowset_COPY := .xsd
 java.sql.rowset_ADD_JAVAC_FLAGS += -Xdoclint:all/protected '-Xdoclint/package:java.*,javax.*'
 java.sql.rowset_CLEAN_FILES += $(wildcard \
     $(TOPDIR)/src/java.sql.rowset/share/classes/com/sun/rowset/*.properties \

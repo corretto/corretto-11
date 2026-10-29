@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2014, 2026, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -70,7 +70,7 @@
  * </pre>
  * and a corresponding System Property:
  * <pre>
- *     {@systemProperty jdk.xml.isStandalone}
+ *     {@code jdk.xml.isStandalone}
  * </pre>
  *
  * <h3>System Properties</h3>
@@ -233,7 +233,7 @@
  * <td>17</td>
  * </tr>
  * <tr>
- * <td id="extensionClassLoader">jdk.xml.xpathExprGrpLimit</td>
+ * <td id="extensionClassLoader">{@code jdk.xml.xpathExprGrpLimit}</td>
  * <td>Limits the number of groups an XPath expression can contain.
  * </td>
  * <td style="text-align:center" rowspan="3">yes</td>
@@ -251,14 +251,14 @@
  * <td style="text-align:center" rowspan="3">19</td>
  * </tr>
  * <tr>
- * <td id="extensionClassLoader">jdk.xml.xpathExprOpLimit</td>
+ * <td id="extensionClassLoader">{@code jdk.xml.xpathExprOpLimit}</td>
  * <td>Limits the number of operators an XPath expression can contain.
  * </td>
  * <td style="text-align:center">100</td>
  * <td style="text-align:center">100</td>
  * </tr>
  * <tr>
- * <td id="extensionClassLoader">jdk.xml.xpathTotalOpLimit</td>
+ * <td id="extensionClassLoader">{@code jdk.xml.xpathTotalOpLimit}</td>
  * <td>Limits the total number of XPath operators in an XSL Stylesheet.
  * </td>
  * <td style="text-align:center">10000</td>
@@ -266,6 +266,42 @@
  * <td style="text-align:center">
  *     <a href="#Transform">Transform</a><br>
  * </td>
+ * </tr>
+ * <tr>
+ * <td id="allowNonXSLTSysProps">{@code jdk.xml.allowNonXSLTSysProps}</td>
+ * <td>controls whether XPath's {@code system-property()} function is permitted to
+ * access non-XSLT-defined JVM system properties in addition to the standard XSLT-defined
+ * properties supported by the JDK. Attempts to access non-XSLT-defined properties will
+ * fail with an XPathExpressionException during XPath expression evaluation.
+ * </td>
+ * <td style="text-align:center">yes</td>
+ * <td style="text-align:center">yes</td>
+ * <td style="text-align:center">Boolean</td>
+ * <td>
+ * true or false. True allows access to non-XSLT JVM system properties; False
+ * restricts access to only XSLT-defined properties.
+ * </td>
+ * <td style="text-align:center">false</td>
+ * <td style="text-align:center">false</td>
+ * <td style="text-align:center">Yes</td>
+ * <td></td>
+ * <td style="text-align:center">27</td>
+ * </tr>
+ * <tr>
+ * <th scope="row" style="font-weight:normal">enableTemplatesImplDeserialization</th>
+ * <td>Enables or disables deserialization of the JDK's implementation of the
+ * {@link javax.xml.transform.Templates} interface.
+ * </td>
+ * <td style="text-align:center">yes</td>
+ * <td style="text-align:center">yes</td>
+ * <td style="text-align:center">boolean</td>
+ * <td>true or false. True indicates that deserialization is allowed. False indicates that
+ * deserialization is disallowed.</td>
+ * <td style="text-align:center">false</td>
+ * <td style="text-align:center">false</td>
+ * <td style="text-align:center">Yes</td>
+ * <td style="text-align:center"><a href="#Transform">Transform</a> [7]</td>
+ * <td style="text-align:center">7</td>
  * </tr>
  * </tbody>
  * </table>
@@ -289,6 +325,10 @@
  * field are IDs described in table <a href="#Processor">Processors</a>.
  * <p>
  * <b>[6]</b> Indicates the initial release the property is introduced.
+ * <p>
+ * <b>[7]</b> This property can be set only via a system property or in jaxp.properties.
+ * Setting this property on a transformer factory or on a {@code Transformer}
+ * instance has no effect.
  *
  *
  *

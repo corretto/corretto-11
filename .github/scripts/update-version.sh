@@ -2,13 +2,7 @@
 
 set -xeuo pipefail
 
-UPSTREAM_REMOTE=upstream-$1
-VERSION_BRANCH=$2
-
-git config user.email "no-reply@amazon.com"
-git config user.name "corretto-github-robot"
-
-git checkout ${VERSION_BRANCH}
+UPSTREAM_REMOTE=$1
 
 # Load the current OpenJDK version
 source make/autoconf/version-numbers

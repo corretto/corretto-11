@@ -2,6 +2,109 @@
 
 The following sections describe the changes for each release of Amazon Corretto 11.
 
+## Corretto version: 11.0.33.0.10
+Release Date: October 24, 2026
+
+**Target Platforms <sup>1</sup>**
+
++ RPM-based Linux using glibc 2.12 or later, x86, x86_64
++ Debian-based Linux using glibc 2.12 or later, x86, x86_64
++ RPM-based Linux using glibc 2.17 or later, aarch64
++ Debian-based Linux using glibc 2.17 or later, aarch64
++ Linux using glibc 2.25 or later, Arm
++ Linux using muslc 1.2.2 or later, Arm
++ Alpine-based Linux, x86_64
++ Alpine-based Linux, aarch64
++ Windows 11 or later, x86, x86_64
++ macOS 15.0 and later, x86_64
++ macOS 15.0 and later, aarch64
+
+**1.** This is the platform targeted by the build. See [Using Amazon Corretto](https://aws.amazon.com/corretto/faqs/#Using_Amazon_Corretto)
+in the Amazon Corretto FAQ for supported platforms
+
+The following CVEs are addressed in 11.0.33.0.10:
+
+| CVE | CVSS | Component |
+|-----|------|-----------|
+| CVE-2026-114820 | 9.1 | security-libs/java.security |
+
+## Corretto version: 11.0.33.0.9
+Release Date: October 20, 2026
+
+**Target Platforms <sup>1</sup>**
+
++ RPM-based Linux using glibc 2.12 or later, x86, x86_64
++ Debian-based Linux using glibc 2.12 or later, x86, x86_64
++ RPM-based Linux using glibc 2.17 or later, aarch64
++ Debian-based Linux using glibc 2.17 or later, aarch64
++ Linux using glibc 2.25 or later, Arm
++ Linux using muslc 1.2.2 or later, Arm
++ Alpine-based Linux, x86_64
++ Alpine-based Linux, aarch64
++ Windows 11 or later, x86, x86_64
++ macOS 15.0 and later, x86_64
++ macOS 15.0 and later, aarch64
+
+**1.** This is the platform targeted by the build. See [Using Amazon Corretto](https://aws.amazon.com/corretto/faqs/#Using_Amazon_Corretto)
+in the Amazon Corretto FAQ for supported platforms
+
+The following issues are addressed in 11.0.33.0.9:
+
+| Issue Name | Platform | Description | Link |
+|------------|----------|-------------|------|
+| Import jdk-11.0.33+9 | All | Update Corretto baseline to OpenJDK 11.0.33+9 | [jdk-11.0.33+9](https://github.com/openjdk/jdk11u/releases/tag/jdk-11.0.33+9) |
+| Fix timezone name caching and Windows registry handles | Windows | Fix timezone name caching and Windows registry handles | [#432](https://github.com/corretto/corretto-11/pull/432) |
+| Fix Windows timezone mappings | Windows | Fix Windows timezone mappings | [#431](https://github.com/corretto/corretto-11/pull/431) |
+| Align Corretto versioning to match openjdk | Linux | Align Corretto versioning to match openjdk | [#428](https://github.com/corretto/corretto-11/pull/428) |
+| Update timezone data to 2026e | All | Update timezone data to 2026e | [#427](https://github.com/corretto/corretto-11/pull/427) |
+| JDK-8392730 | All | CLDRConverter interprets usesMetazone UTC timestamps in the build host default timezone | [#426](https://github.com/corretto/corretto-11/pull/426) |
+
+
+
+The following CVEs are addressed in 11.0.33.0.9:
+
+| CVE | CVSS | Component |
+|-----|------|-----------|
+| CVE-2026-91403 | 9.1 | security-libs/javax.net.ssl |
+| CVE-2026-91415 | 7.0 | client-libs/2d |
+| CVE-2026-91398 | 6.8 | core-libs/java.net |
+| CVE-2026-91382 | 6.5 | client-libs/2d |
+| CVE-2026-91411 | 6.5 | security-libs/org.ietf.jgss |
+| CVE-2026-87294 | 6.5 | security-libs/java.security |
+| CVE-2026-91395 | 6.5 | core-libs/java.util.jar |
+| CVE-2026-91396 | 6.5 | core-libs/java.util.jar |
+| CVE-2026-83395 | 6.5 | core-libs/java.net |
+| CVE-2026-91394 | 5.9 | core-libs/java.net |
+| CVE-2026-83387 | 5.9 | core-libs/java.sql |
+| CVE-2026-91462 | 5.9 | security-libs/org.ietf.jgss |
+| CVE-2026-83374 | 5.9 | security-libs/java.security |
+| CVE-2026-91410 | 5.3 | core-libs/java.io |
+| CVE-2026-91332 | 5.3 | core-libs/java.net |
+| CVE-2026-91451 | 5.3 | core-libs/java.net |
+| CVE-2026-91373 | 5.3 | security-libs/javax.net.ssl |
+| CVE-2026-83380 | 5.3 | security-libs/javax.security |
+| CVE-2026-83400 | 5.3 | xml/jaxp |
+| CVE-2026-91463 | 5.3 | security-libs/org.ietf.jgss |
+| CVE-2026-91464 | 5.3 | security-libs/org.ietf.jgss |
+| CVE-2026-91453 | 5.3 | core-libs/java.net |
+| CVE-2026-91452 | 5.3 | core-libs/java.net |
+| CVE-2026-91418 | 5.3 | client-libs/javax.imageio |
+| CVE-2026-91487 | 4.8 | hotspot/compiler |
+| CVE-2026-83381 | 4.8 | security-libs/java.security |
+| CVE-2026-91374 | 4.8 | core-svc/tools |
+| CVE-2026-91375 | 4.7 | tools/jlink |
+| CVE-2026-91379 | 4.7 | tools/jshell |
+| CVE-2026-91380 | 4.0 | core-libs/java.util |
+| CVE-2026-91334 | 3.7 | client-libs/javax.imageio |
+| CVE-2026-87290 | 5.9 | xml/jaxp |
+| CVE-2026-87367 | 3.7 | xml/jaxp |
+| CVE-2026-87292 | 3.7 | core-libs/java.net |
+| CVE-2026-83376 | 3.7 | security-libs/javax.net.ssl |
+| CVE-2026-91461 | 3.7 | security-libs/java.security |
+| CVE-2026-91397 | 3.6 | core-svc |
+| CVE-2026-91400 | 3.1 | client-libs/javax.sound |
+| CVE-2026-91335 | 2.6 | client-libs/java.awt |
+
 ## Corretto version: 11.0.32.12.1
 Release Date: September 29, 2026
 

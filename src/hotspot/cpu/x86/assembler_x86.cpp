@@ -1654,6 +1654,15 @@ void Assembler::cmpxchgl(Register reg, Address adr) { // cmpxchg
   emit_operand(reg, adr);
 }
 
+void Assembler::cmpxchgw(Register reg, Address adr) { // cmpxchg
+  InstructionMark im(this);
+  size_prefix();
+  prefix(adr, reg);
+  emit_int8(0x0F);
+  emit_int8((unsigned char)0xB1);
+  emit_operand(reg, adr);
+}
+
 // The 8-bit cmpxchg compares the value at adr with the contents of rax,
 // and stores reg into adr if so; otherwise, the value at adr is loaded into rax,.
 // The ZF is set if the compared values were equal, and cleared otherwise.
@@ -2267,6 +2276,10 @@ void Assembler::lfence() {
 
 void Assembler::lock() {
   emit_int8((unsigned char)0xF0);
+}
+
+void Assembler::size_prefix() {
+  emit_int8(0x66);
 }
 
 void Assembler::lzcntl(Register dst, Register src) {

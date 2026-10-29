@@ -112,6 +112,12 @@ public class JdkXmlUtils {
             = SecuritySupport.getJAXPSystemProperty(Integer.class, CDATA_CHUNK_SIZE, "0");
 
     /**
+     * Enable TemplatesImpl deserialization.
+     */
+    public static final String SP_ENABLE_TEMPLATESIMPL_DESERIALIZATION =
+            "jdk.xml.enableTemplatesImplDeserialization";
+
+    /**
      * The system-default factory
      */
     private static final SAXParserFactory defaultSAXFactory = getSAXFactory(false);
