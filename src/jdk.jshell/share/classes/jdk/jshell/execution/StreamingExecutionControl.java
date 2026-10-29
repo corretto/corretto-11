@@ -159,6 +159,13 @@ public class StreamingExecutionControl implements ExecutionControl {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @apiNote This method always throws {@link NotImplementedException}.
+     *
+     * @throws ExecutionControl.NotImplementedException always thrown.
+     */
     @Override
     public Object extensionCommand(String command, Object arg)
             throws NotImplementedException {

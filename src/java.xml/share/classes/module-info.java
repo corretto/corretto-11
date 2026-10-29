@@ -70,7 +70,7 @@
  * </pre>
  * and a corresponding System Property:
  * <pre>
- *     {@systemProperty jdk.xml.isStandalone}
+ *     {@code jdk.xml.isStandalone}
  * </pre>
  *
  * <h3>System Properties</h3>
@@ -233,7 +233,7 @@
  * <td>17</td>
  * </tr>
  * <tr>
- * <td id="extensionClassLoader">{@systemProperty jdk.xml.xpathExprGrpLimit}</td>
+ * <td id="extensionClassLoader">{@code jdk.xml.xpathExprGrpLimit}</td>
  * <td>Limits the number of groups an XPath expression can contain.
  * </td>
  * <td style="text-align:center" rowspan="3">yes</td>
@@ -251,14 +251,14 @@
  * <td style="text-align:center" rowspan="3">19</td>
  * </tr>
  * <tr>
- * <td id="extensionClassLoader">{@systemProperty jdk.xml.xpathExprOpLimit}</td>
+ * <td id="extensionClassLoader">{@code jdk.xml.xpathExprOpLimit}</td>
  * <td>Limits the number of operators an XPath expression can contain.
  * </td>
  * <td style="text-align:center">100</td>
  * <td style="text-align:center">100</td>
  * </tr>
  * <tr>
- * <td id="extensionClassLoader">{@systemProperty jdk.xml.xpathTotalOpLimit}</td>
+ * <td id="extensionClassLoader">{@code jdk.xml.xpathTotalOpLimit}</td>
  * <td>Limits the total number of XPath operators in an XSL Stylesheet.
  * </td>
  * <td style="text-align:center">10000</td>
@@ -268,7 +268,7 @@
  * </td>
  * </tr>
  * <tr>
- * <td id="allowNonXSLTSysProps">{@systemProperty jdk.xml.allowNonXSLTSysProps}</td>
+ * <td id="allowNonXSLTSysProps">{@code jdk.xml.allowNonXSLTSysProps}</td>
  * <td>controls whether XPath's {@code system-property()} function is permitted to
  * access non-XSLT-defined JVM system properties in addition to the standard XSLT-defined
  * properties supported by the JDK. Attempts to access non-XSLT-defined properties will
