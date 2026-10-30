@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2018, 2023, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2026, Amazon.com Inc. or its affiliates. All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -23,10 +24,11 @@
 
 /*
  * @test
- * @bug 8206929 8212885
+ * @bug 8206929 8212885 8394261
  * @summary ensure that client only resumes a session if certain properties
  *    of the session are compatible with the new connection
- * @library /javax/net/ssl/templates
+ * @library /javax/net/ssl/templates /test/lib
+ * @build jdk.test.lib.util.ForceGC
  * @run main/othervm -Djdk.tls.client.protocols=TLSv1.2 ResumeChecksClient BASIC
  * @run main/othervm -Djdk.tls.client.protocols=TLSv1.3 ResumeChecksClient BASIC
  * @run main/othervm ResumeChecksClient BASIC
@@ -34,15 +36,19 @@
  * @run main/othervm ResumeChecksClient VERSION_3_TO_2
  * @run main/othervm -Djdk.tls.client.protocols=TLSv1.3 ResumeChecksClient CIPHER_SUITE
  * @run main/othervm -Djdk.tls.client.protocols=TLSv1.3 ResumeChecksClient SIGNATURE_SCHEME
+ * @run main/othervm -Djdk.tls.client.protocols=TLSv1.3 ResumeChecksClient FAMILY_DEPTH
  *
  */
 
 import javax.net.*;
 import javax.net.ssl.*;
 import java.io.*;
+import java.lang.ref.WeakReference;
 import java.security.*;
 import java.net.*;
 import java.util.*;
+
+import jdk.test.lib.util.ForceGC;
 
 public class ResumeChecksClient extends SSLContextTemplate {
     enum TestMode {
@@ -50,7 +56,8 @@ public class ResumeChecksClient extends SSLContextTemplate {
         VERSION_2_TO_3,
         VERSION_3_TO_2,
         CIPHER_SUITE,
-        SIGNATURE_SCHEME
+        SIGNATURE_SCHEME,
+        FAMILY_DEPTH
     }
 
     public static void main(String[] args) throws Exception {
@@ -76,26 +83,56 @@ public class ResumeChecksClient extends SSLContextTemplate {
         Thread.sleep(10);
         SSLSession secondSession = connect(sslContext, server.port, testMode, true);
 
-        server.go = false;
-        server.signal();
-
-        switch (testMode) {
-        case BASIC:
-            // fail if session is not resumed
-            checkResumedSession(firstSession, secondSession);
-            break;
-        case VERSION_2_TO_3:
-        case VERSION_3_TO_2:
-        case CIPHER_SUITE:
-        case SIGNATURE_SCHEME:
-            // fail if a new session is not created
-            if (secondSession.getCreationTime() <= secondStartTime) {
-                throw new RuntimeException("Existing session was used");
+        try {
+            switch (testMode) {
+            case BASIC:
+                // fail if session is not resumed
+                checkResumedSession(firstSession, secondSession);
+                break;
+            case VERSION_2_TO_3:
+            case VERSION_3_TO_2:
+            case CIPHER_SUITE:
+            case SIGNATURE_SCHEME:
+                // fail if a new session is not created
+                if (secondSession.getCreationTime() <= secondStartTime) {
+                    throw new RuntimeException("Existing session was used");
+                }
+                break;
+            case FAMILY_DEPTH:
+                checkFamilyDepth(sslContext, server, firstSession, secondSession);
+                break;
+            default:
+                throw new RuntimeException("unknown mode: " + testMode);
             }
-            break;
-        default:
-            throw new RuntimeException("unknown mode: " + testMode);
+        } finally {
+            server.go = false;
+            server.signal();
         }
+    }
+
+    private static void checkFamilyDepth(SSLContext sslContext, Server server,
+        SSLSession first, SSLSession second) throws Exception {
+        List<WeakReference<SSLSession>> refs = new ArrayList<>();
+        for (int i = 0; i < 50; i++) {
+            refs.add(new WeakReference<>(connect(sslContext, server)));
+        }
+        if (!new ForceGC().await(() -> refs.stream()
+                .filter(w -> w.get() != null).count() <= 5)) {
+            throw new AssertionError("Session garbage collection failed");
+        }
+
+        SSLSession descendant = connect(sslContext, server);
+        second.invalidate();
+        if (!first.isValid() || descendant.isValid() ||
+                connect(sslContext, server).getCreationTime() ==
+                        first.getCreationTime()) {
+            throw new AssertionError("Session invalidation failed");
+        }
+    }
+
+    private static SSLSession connect(SSLContext sslContext, Server server) {
+        server.signal();
+        return connect(sslContext, server.port, TestMode.FAMILY_DEPTH, false);
     }
 
     private static class NoSig implements AlgorithmConstraints {
@@ -139,6 +176,7 @@ public class ResumeChecksClient extends SSLContextTemplate {
 
             switch (mode) {
             case BASIC:
+            case FAMILY_DEPTH:
                 // do nothing to ensure resumption works
                 break;
             case VERSION_2_TO_3:
