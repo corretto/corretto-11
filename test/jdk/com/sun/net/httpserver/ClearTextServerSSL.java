@@ -27,7 +27,7 @@
  * @summary Tests for verifying that a non-SSL server can detect
  *          when a client attempts to use SSL.
  * @library /test/lib
- * @run junit/othervm ${test.main.class}
+ * @run junit/othervm ClearTextServerSSL
  */
 
 import com.sun.net.httpserver.HttpExchange;
@@ -105,7 +105,7 @@ public class ClearTextServerSSL {
                 } catch (IOException ioe) {
                     // unwraps unnecessary wrapping fixed in JDK-8216498
                     if (ioe.getCause() instanceof SSLException) {
-                        throw new SSLException(ioe);
+                        throw ioe.getCause();
                     } else {
                         throw ioe;
                     }
