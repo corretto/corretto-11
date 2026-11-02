@@ -28,7 +28,7 @@ import javax.net.ssl.*;
 
 /**
  * @test
- * @bug 8337664 8341059 8361212
+ * @bug 8337664 8341059 8361212 8386371
  * @summary Check that TLS Server certificates chaining back to distrusted
  *          Entrust roots are invalid
  * @library /test/lib
@@ -46,8 +46,7 @@ public class Entrust {
     // Each of the roots have a test certificate chain stored in a file
     // named "<root>-chain.pem".
     private static final String[] ROOTS_TO_TEST = new String[]{
-            "entrustevca", "entrustrootcaec1", "entrustrootcag2",
-            "entrustrootcag4", "entrust2048ca"};
+            "entrustevca", "entrustrootcaec1", "entrustrootcag2", "entrust2048ca"};
 
     // Date after the restrictions took effect when distrust was first announced
     private static final ZonedDateTime DISTRUST_DATE =
