@@ -56,11 +56,6 @@ final class EntrustTLSPolicy {
         //     OU=(c) 2009 Entrust, Inc. - for authorized use only,
         //     OU=See www.entrust.net/legal-terms, O=Entrust, Inc., C=US
         "43DF5774B03E7FEF5FE40D931A7BEDF1BB2E6B42738C4E6D3841103D3AA7F339",
-        // cacerts alias: entrustrootcag4
-        // DN: CN=Entrust Root Certification Authority - G4
-        //     OU=(c) 2015 Entrust, Inc. - for authorized use only,
-        //     OU=See www.entrust.net/legal-terms, O=Entrust, Inc., C=US,
-        "DB3517D1F6732A2D5AB97C533EC70779EE3270A62FB4AC4238372460E6F01E88",
         // cacerts alias: entrust2048ca
         // DN: CN=Entrust.net Certification Authority (2048),
         //     OU=(c) 1999 Entrust.net Limited,
