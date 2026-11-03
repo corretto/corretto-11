@@ -744,6 +744,9 @@ else # not windows
       ifeq ($(call isTargetOs, linux), true)
         JAWT_CFLAGS += -DHEADLESS
       endif
+      ifeq ($(call isTargetOs, aix), true)
+        JAWT_CFLAGS += -DHEADLESS
+      endif
     endif
   endif
 
