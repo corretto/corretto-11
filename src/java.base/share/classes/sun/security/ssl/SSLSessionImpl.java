@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 1996, 2025, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2026, Amazon.com Inc. or its affiliates. All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -31,13 +32,12 @@ import java.security.PrivateKey;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
-import java.util.Queue;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicLong;
 import javax.crypto.SecretKey;
 import javax.net.ssl.ExtendedSSLSession;
 import javax.net.ssl.SNIServerName;
@@ -103,8 +103,18 @@ final class SSLSessionImpl extends ExtendedSSLSession {
     private int                 negotiatedMaxFragLen = -1;
     private int                 maximumPacketSize;
 
-    private final Queue<SSLSessionImpl> childSessions =
-                                        new ConcurrentLinkedQueue<>();
+    // Shared by all members of a family. Sessions whose familyDepth reaches
+    // this limit are invalid. The limit applies to all branches of the family.
+    private final AtomicLong familyDepthLimit;
+
+    // This session's depth in its family, set by a copy constructor. Other
+    // constructors start a new family at depth 0.
+    private final long familyDepth;
+
+    // True once this session has produced a copy, even if that copy is later
+    // garbage collected. On invalidation, familyDepthLimit may be lowered
+    // only when this flag is true.
+    private boolean hasDescendant;
 
     /*
      * Is the session currently re-established with a session-resumption
@@ -149,6 +159,9 @@ final class SSLSessionImpl extends ExtendedSSLSession {
         this.creationTime = System.currentTimeMillis();
         this.identificationProtocol = null;
         this.boundValues = new ConcurrentHashMap<>();
+        this.familyDepthLimit = new AtomicLong(Long.MAX_VALUE);
+        this.familyDepth = 0;
+        this.hasDescendant = false;
     }
 
     /*
@@ -205,6 +218,9 @@ final class SSLSessionImpl extends ExtendedSSLSession {
         this.creationTime = creationTime;
         this.identificationProtocol = hc.sslConfig.identificationProtocol;
         this.boundValues = new ConcurrentHashMap<>();
+        this.familyDepthLimit = new AtomicLong(Long.MAX_VALUE);
+        this.familyDepth = 0;
+        this.hasDescendant = false;
 
         if (SSLLogger.isOn && SSLLogger.isOn("session")) {
              SSLLogger.finest("Session initialized:  " + this);
@@ -237,6 +253,12 @@ final class SSLSessionImpl extends ExtendedSSLSession {
         this.negotiatedMaxFragLen = baseSession.negotiatedMaxFragLen;
         this.maximumPacketSize = baseSession.maximumPacketSize;
         this.boundValues = baseSession.boundValues;
+        this.familyDepthLimit = baseSession.familyDepthLimit;
+        this.familyDepth = baseSession.familyDepth + 1;
+        synchronized (baseSession) {
+            baseSession.hasDescendant = true;
+            this.invalidated = baseSession.invalidated;
+        }
 
         if (SSLLogger.isOn && SSLLogger.isOn("session")) {
              SSLLogger.finest("Session initialized:  " + this);
@@ -253,10 +275,6 @@ final class SSLSessionImpl extends ExtendedSSLSession {
 
     void setPreSharedKey(SecretKey key) {
         preSharedKey = key;
-    }
-
-    void addChild(SSLSessionImpl session) {
-        childSessions.add(session);
     }
 
     void setTicketAgeAdd(int ticketAgeAdd) {
@@ -385,10 +403,14 @@ final class SSLSessionImpl extends ExtendedSSLSession {
     boolean isRejoinable() {
         // TLS 1.3 can have no session id
         if (protocolVersion.useTLS13PlusSpec()) {
-            return (!invalidated && isLocalAuthenticationValid());
+            return (!isInvalidated() && isLocalAuthenticationValid());
         }
         return sessionId != null && sessionId.length() != 0 &&
-                !invalidated && isLocalAuthenticationValid();
+                !isInvalidated() && isLocalAuthenticationValid();
+    }
+
+    boolean isInvalidated() {
+        return invalidated || familyDepth >= familyDepthLimit.get();
     }
 
     @Override
@@ -787,8 +809,8 @@ final class SSLSessionImpl extends ExtendedSSLSession {
         if (SSLLogger.isOn && SSLLogger.isOn("session")) {
              SSLLogger.finest("Invalidated session:  " + this);
         }
-        for (SSLSessionImpl child : childSessions) {
-            child.invalidate();
+        if (hasDescendant) {
+            familyDepthLimit.accumulateAndGet(familyDepth + 1, Math::min);
         }
     }
 

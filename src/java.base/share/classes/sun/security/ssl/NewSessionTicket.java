@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2018, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2026, Amazon.com Inc. or its affiliates. All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -257,11 +258,8 @@ final class NewSessionTicket {
             }
 
             // create and cache the new session
-            // The new session must be a child of the existing session so
-            // they will be invalidated together, etc.
             SSLSessionImpl sessionCopy =
                     new SSLSessionImpl(shc.handshakeSession, newId);
-            shc.handshakeSession.addChild(sessionCopy);
             sessionCopy.setPreSharedKey(psk);
             sessionCopy.setPskIdentity(newId.getId());
             sessionCopy.setTicketAgeAdd(nstm.ticketAgeAdd);
@@ -375,7 +373,6 @@ final class NewSessionTicket {
                 new SessionId(true, hc.sslContext.getSecureRandom());
             SSLSessionImpl sessionCopy = new SSLSessionImpl(sessionToSave,
                     newId);
-            sessionToSave.addChild(sessionCopy);
             sessionCopy.setPreSharedKey(psk);
             sessionCopy.setTicketAgeAdd(nstm.ticketAgeAdd);
             sessionCopy.setPskIdentity(nstm.ticket);
