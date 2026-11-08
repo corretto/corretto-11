@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 1999, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2026, Amazon.com Inc. or its affiliates. All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -233,6 +234,14 @@ final class SSLSessionContextImpl implements SSLSessionContext {
     }
 
     private boolean isTimedout(SSLSession sess) {
+        // Return true if the session is not valid.
+        if (sess instanceof SSLSessionImpl) {
+            SSLSessionImpl s = (SSLSessionImpl) sess;
+            if (s.isInvalidated()) {
+                return true;
+            }
+        }
+
         if (timeout == 0) {
             return false;
         }
