@@ -29,10 +29,11 @@ jobs:
                 git config user.name "corretto-github-robot"
 
             - name: "Merge openjdk/jdk11u:master to the corretto-11:develop"
+              id: merge
+              shell: bash
               run: |
-                git fetch $UPSTREAM_REMOTE master || exit 1
+                bash ./.github/scripts/merge-upstream.sh "$UPSTREAM_REMOTE" master "Merge upstream-jdk"
                 git push origin FETCH_HEAD:refs/heads/$UPSTREAM_MIRROR
-                git merge -m "Merge $UPSTREAM_MIRROR" FETCH_HEAD
 
             - name: "Update Corretto version"
               shell: bash
@@ -58,3 +59,11 @@ jobs:
                 git add version.txt
                 git commit -m "Merge $LOCAL_BRANCH into nightly" || echo "Nothing to merge; nightly up to date"
                 git push origin nightly
+
+            - name: "Fail on upstream merge conflict"
+              if: steps.merge.outputs.conflict == 'true'
+              env:
+                CONFLICT_COMMIT: ${{ steps.merge.outputs.conflict_commit }}
+              run: |
+                echo "Upstream commit $CONFLICT_COMMIT needs a manual merge. See the job summary."
+                exit 1
