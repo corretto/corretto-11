@@ -28,6 +28,7 @@ dependencies {
 def archSpecificFlags = []
 if (project.correttoArch == 'x86') {
     archSpecificFlags += '--with-target-bits=32'
+    archSpecificFlags += '--disable-warnings-as-errors'
 }
 if (project.correttoArch == 'aarch64') {
     archSpecificFlags += [
